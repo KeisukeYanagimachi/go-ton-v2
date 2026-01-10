@@ -700,7 +700,7 @@ export default function CandidateExamPage() {
                     onClick={handlePrev}
                     disabled={isSaving || activeIndex === 0}
                   >
-                    前の問題
+                    {isSaving ? "保存中..." : "前の問題"}
                   </Button>
                   <Button
                     variant="contained"
@@ -717,7 +717,7 @@ export default function CandidateExamPage() {
                     onClick={handleNext}
                     disabled={isSaving || activeIndex >= moduleItems.length - 1}
                   >
-                    次の問題へ
+                    {isSaving ? "保存中..." : "次の問題へ"}
                   </Button>
                 </Stack>
               </>
