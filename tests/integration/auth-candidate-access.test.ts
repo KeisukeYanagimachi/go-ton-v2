@@ -10,8 +10,8 @@ const createCandidate = async () =>
     data: {
       id: randomUUID(),
       fullName: `Candidate ${randomUUID()}`,
-      birthDate: new Date("1999-01-01")
-    }
+      birthDate: new Date("1999-01-01"),
+    },
   });
 
 const createVisitSlot = async () =>
@@ -20,8 +20,8 @@ const createVisitSlot = async () =>
       id: randomUUID(),
       startsAt: new Date("2030-01-01T09:00:00Z"),
       endsAt: new Date("2030-01-01T12:00:00Z"),
-      capacity: 10
-    }
+      capacity: 10,
+    },
   });
 
 const createExamVersion = async () => {
@@ -29,8 +29,8 @@ const createExamVersion = async () => {
     data: {
       id: randomUUID(),
       name: `Exam ${randomUUID()}`,
-      description: "Candidate auth test exam"
-    }
+      description: "Candidate auth test exam",
+    },
   });
 
   return prisma.examVersion.create({
@@ -39,8 +39,8 @@ const createExamVersion = async () => {
       examId: exam.id,
       versionNumber: 1,
       status: "PUBLISHED",
-      publishedAt: new Date()
-    }
+      publishedAt: new Date(),
+    },
   });
 };
 
@@ -52,6 +52,7 @@ describe("candidate authorization (integration)", () => {
   test("returns candidate when ticket and pin are valid", async () => {
     const candidate = await createCandidate();
     const visitSlot = await createVisitSlot();
+    const examVersion = await createExamVersion();
     const pin = "19990101";
     const ticketCode = `TICKET-${randomUUID()}`;
 
@@ -60,10 +61,11 @@ describe("candidate authorization (integration)", () => {
         id: randomUUID(),
         ticketCode,
         candidateId: candidate.id,
+        examVersionId: examVersion.id,
         visitSlotId: visitSlot.id,
         pinHash: hashPin(pin),
-        status: "ACTIVE"
-      }
+        status: "ACTIVE",
+      },
     });
 
     const record = await authorizeCandidate(ticketCode, pin);
@@ -75,6 +77,7 @@ describe("candidate authorization (integration)", () => {
   test("returns null when pin does not match", async () => {
     const candidate = await createCandidate();
     const visitSlot = await createVisitSlot();
+    const examVersion = await createExamVersion();
     const ticketCode = `TICKET-${randomUUID()}`;
 
     await prisma.ticket.create({
@@ -82,10 +85,11 @@ describe("candidate authorization (integration)", () => {
         id: randomUUID(),
         ticketCode,
         candidateId: candidate.id,
+        examVersionId: examVersion.id,
         visitSlotId: visitSlot.id,
         pinHash: hashPin("19990101"),
-        status: "ACTIVE"
-      }
+        status: "ACTIVE",
+      },
     });
 
     const record = await authorizeCandidate(ticketCode, "20000101");
@@ -96,6 +100,7 @@ describe("candidate authorization (integration)", () => {
   test("returns null when ticket is not active", async () => {
     const candidate = await createCandidate();
     const visitSlot = await createVisitSlot();
+    const examVersion = await createExamVersion();
     const ticketCode = `TICKET-${randomUUID()}`;
 
     await prisma.ticket.create({
@@ -103,10 +108,11 @@ describe("candidate authorization (integration)", () => {
         id: randomUUID(),
         ticketCode,
         candidateId: candidate.id,
+        examVersionId: examVersion.id,
         visitSlotId: visitSlot.id,
         pinHash: hashPin("19990101"),
-        status: "REVOKED"
-      }
+        status: "REVOKED",
+      },
     });
 
     const record = await authorizeCandidate(ticketCode, "19990101");
@@ -124,10 +130,11 @@ describe("candidate authorization (integration)", () => {
         id: randomUUID(),
         ticketCode,
         candidateId: candidate.id,
+        examVersionId: examVersion.id,
         visitSlotId: visitSlot.id,
         pinHash: hashPin("19990101"),
-        status: "ACTIVE"
-      }
+        status: "ACTIVE",
+      },
     });
 
     await prisma.attempt.create({
@@ -136,8 +143,8 @@ describe("candidate authorization (integration)", () => {
         candidateId: candidate.id,
         examVersionId: examVersion.id,
         ticketId: ticket.id,
-        status: "IN_PROGRESS"
-      }
+        status: "IN_PROGRESS",
+      },
     });
 
     const record = await authorizeCandidate(ticketCode, "19990101");

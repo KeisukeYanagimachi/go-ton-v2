@@ -10,8 +10,8 @@ const createCandidate = async () =>
     data: {
       id: randomUUID(),
       fullName: `Candidate ${randomUUID()}`,
-      birthDate: new Date("1999-01-01")
-    }
+      birthDate: new Date("1999-01-01"),
+    },
   });
 
 const createVisitSlot = async () =>
@@ -20,17 +20,37 @@ const createVisitSlot = async () =>
       id: randomUUID(),
       startsAt: new Date("2030-01-01T09:00:00Z"),
       endsAt: new Date("2030-01-01T12:00:00Z"),
-      capacity: 10
-    }
+      capacity: 10,
+    },
   });
+
+const createExamVersion = async () => {
+  const exam = await prisma.exam.create({
+    data: {
+      id: randomUUID(),
+      name: `Exam ${randomUUID()}`,
+      description: "Candidate login route test exam",
+    },
+  });
+
+  return prisma.examVersion.create({
+    data: {
+      id: randomUUID(),
+      examId: exam.id,
+      versionNumber: 1,
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+    },
+  });
+};
 
 const createRequest = (body: unknown) =>
   new Request("http://localhost/api/candidate/login", {
     method: "POST",
     headers: {
-      "content-type": "application/json"
+      "content-type": "application/json",
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   });
 
 describe("candidate login route (integration)", () => {
@@ -41,6 +61,7 @@ describe("candidate login route (integration)", () => {
   test("returns candidateId and ticketId for valid credentials", async () => {
     const candidate = await createCandidate();
     const visitSlot = await createVisitSlot();
+    const examVersion = await createExamVersion();
     const ticketCode = `TICKET-${randomUUID()}`;
     const pin = "19990101";
     const ticket = await prisma.ticket.create({
@@ -48,10 +69,11 @@ describe("candidate login route (integration)", () => {
         id: randomUUID(),
         ticketCode,
         candidateId: candidate.id,
+        examVersionId: examVersion.id,
         visitSlotId: visitSlot.id,
         pinHash: hashPin(pin),
-        status: "ACTIVE"
-      }
+        status: "ACTIVE",
+      },
     });
 
     const response = await POST(createRequest({ ticketCode, pin }));
@@ -59,7 +81,7 @@ describe("candidate login route (integration)", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       candidateId: candidate.id,
-      ticketId: ticket.id
+      ticketId: ticket.id,
     });
   });
 
@@ -68,18 +90,18 @@ describe("candidate login route (integration)", () => {
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toMatchObject({
-      error: "INVALID_REQUEST"
+      error: "INVALID_REQUEST",
     });
   });
 
   test("returns 401 for invalid credentials", async () => {
     const response = await POST(
-      createRequest({ ticketCode: "UNKNOWN", pin: "19990101" })
+      createRequest({ ticketCode: "UNKNOWN", pin: "19990101" }),
     );
 
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toMatchObject({
-      error: "UNAUTHORIZED"
+      error: "UNAUTHORIZED",
     });
   });
 });

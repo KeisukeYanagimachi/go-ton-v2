@@ -192,6 +192,8 @@ describe("data model constraints (integration)", () => {
   test("tickets.ticket_code is unique", async () => {
     const candidate = await createCandidate();
     const visitSlot = await createVisitSlot();
+    const exam = await createExam();
+    const examVersion = await createExamVersion(exam.id, 1);
     const ticketCode = `TICKET-${randomUUID()}`;
 
     await prisma.ticket.create({
@@ -199,6 +201,7 @@ describe("data model constraints (integration)", () => {
         id: randomUUID(),
         ticketCode,
         candidateId: candidate.id,
+        examVersionId: examVersion.id,
         visitSlotId: visitSlot.id,
         pinHash: "hashed-pin",
         status: "ACTIVE",
@@ -211,6 +214,7 @@ describe("data model constraints (integration)", () => {
           id: randomUUID(),
           ticketCode,
           candidateId: candidate.id,
+          examVersionId: examVersion.id,
           visitSlotId: visitSlot.id,
           pinHash: "hashed-pin",
           status: "ACTIVE",
@@ -304,6 +308,7 @@ describe("data model constraints (integration)", () => {
         id: randomUUID(),
         ticketCode: `TICKET-${randomUUID()}`,
         candidateId: candidate.id,
+        examVersionId: examVersion.id,
         visitSlotId: visitSlot.id,
         pinHash: "hashed-pin",
         status: "ACTIVE",
@@ -362,6 +367,7 @@ describe("data model constraints (integration)", () => {
         id: randomUUID(),
         ticketCode: `TICKET-${randomUUID()}`,
         candidateId: candidate.id,
+        examVersionId: examVersion.id,
         visitSlotId: visitSlot.id,
         pinHash: "hashed-pin",
         status: "ACTIVE",

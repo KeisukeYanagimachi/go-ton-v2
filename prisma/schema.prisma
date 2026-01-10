@@ -146,6 +146,7 @@ model Ticket {
   id                   String       @id @default(uuid()) @db.Uuid @map("id")
   ticketCode           String       @unique @map("ticket_code")
   candidateId          String       @db.Uuid @map("candidate_id")
+  examVersionId        String       @db.Uuid @map("exam_version_id")
   visitSlotId          String?      @db.Uuid @map("visit_slot_id")
   pinHash              String       @map("pin_hash")
   status               TicketStatus @default(ACTIVE) @map("status")
@@ -155,6 +156,7 @@ model Ticket {
   updatedAt            DateTime     @updatedAt @map("updated_at")
 
   candidate       Candidate  @relation(fields: [candidateId], references: [id])
+  examVersion     ExamVersion @relation(fields: [examVersionId], references: [id])
   visitSlot       VisitSlot? @relation(fields: [visitSlotId], references: [id])
   replacedByTicket Ticket?   @relation("TicketReplacement", fields: [replacedByTicketId], references: [id])
   replacesTickets  Ticket[]  @relation("TicketReplacement")
@@ -189,6 +191,7 @@ model ExamVersion {
   updatedAt     DateTime          @updatedAt @map("updated_at")
 
   exam             Exam                @relation(fields: [examId], references: [id])
+  tickets          Ticket[]
   modules          ExamVersionModule[]
   questions        ExamVersionQuestion[]
   attempts         Attempt[]
