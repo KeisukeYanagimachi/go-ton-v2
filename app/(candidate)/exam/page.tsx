@@ -14,7 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type AttemptModuleSnapshot = {
   moduleId: string;
@@ -118,6 +118,12 @@ export default function CandidateExamPage() {
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [hasAttemptedAdvance, setHasAttemptedAdvance] = useState(false);
   const [showUnanswered, setShowUnanswered] = useState(false);
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  const [timerReady, setTimerReady] = useState(false);
+  const remainingSecondsRef = useRef<number | null>(null);
+  const lastSyncSeconds = useRef<number | null>(null);
+  const syncIntervalId = useRef<ReturnType<typeof setInterval> | null>(null);
+  const tickIntervalId = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const storedTicketCode = sessionStorage.getItem("candidate.ticketCode");
@@ -158,6 +164,8 @@ export default function CandidateExamPage() {
         });
         setAnswers(initialAnswers);
         setActiveIndex(0);
+        setRemainingSeconds(payload.modules[0]?.remainingSeconds ?? null);
+        lastSyncSeconds.current = payload.modules[0]?.remainingSeconds ?? null;
         setIsLoading(false);
       } catch (requestError) {
         setError("NETWORK_ERROR");
@@ -185,9 +193,8 @@ export default function CandidateExamPage() {
     moduleItems.length > 0
       ? Math.round(((activeIndex + 1) / moduleItems.length) * 100)
       : 0;
-  const timerLabel = currentModule
-    ? formatSeconds(currentModule.remainingSeconds)
-    : "00:00:00";
+  const timerLabel =
+    remainingSeconds !== null ? formatSeconds(remainingSeconds) : "00:00:00";
   const errorMessageMap: Record<string, string> = {
     MISSING_CREDENTIALS: "ログイン情報が見つかりません。",
     UNAUTHORIZED: "認証に失敗しました。",
@@ -265,6 +272,90 @@ export default function CandidateExamPage() {
       setIsSaving(false);
     }
   };
+
+  useEffect(() => {
+    remainingSecondsRef.current = remainingSeconds;
+    if (remainingSeconds !== null && !timerReady) {
+      setTimerReady(true);
+    }
+  }, [remainingSeconds, timerReady]);
+
+  const persistTimer = async (elapsed: number) => {
+    if (!ticketCode || !pin || !currentModule || elapsed <= 0) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/candidate/timer", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ticketCode,
+          pin,
+          moduleId: currentModule.moduleId,
+          elapsedSeconds: elapsed,
+        }),
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const payload = (await response.json()) as {
+        remainingSeconds: number;
+      };
+
+      setRemainingSeconds(payload.remainingSeconds);
+      lastSyncSeconds.current = payload.remainingSeconds;
+    } catch (requestError) {
+      // Ignore timer sync errors; UI countdown continues locally.
+    }
+  };
+
+  useEffect(() => {
+    if (!currentModule || !timerReady) {
+      return undefined;
+    }
+
+    if (tickIntervalId.current) {
+      clearInterval(tickIntervalId.current);
+    }
+    if (syncIntervalId.current) {
+      clearInterval(syncIntervalId.current);
+    }
+
+    tickIntervalId.current = setInterval(() => {
+      setRemainingSeconds((previous) => {
+        if (previous === null) {
+          return previous;
+        }
+        return Math.max(0, previous - 1);
+      });
+    }, 1000);
+
+    syncIntervalId.current = setInterval(() => {
+      const last = lastSyncSeconds.current;
+      const currentRemaining = remainingSecondsRef.current;
+      if (last === null || currentRemaining === null) {
+        return;
+      }
+      const elapsed = Math.max(0, last - currentRemaining);
+      if (elapsed > 0) {
+        void persistTimer(elapsed);
+      }
+    }, 10000);
+
+    return () => {
+      if (tickIntervalId.current) {
+        clearInterval(tickIntervalId.current);
+        tickIntervalId.current = null;
+      }
+      if (syncIntervalId.current) {
+        clearInterval(syncIntervalId.current);
+        syncIntervalId.current = null;
+      }
+    };
+  }, [currentModule?.moduleId, ticketCode, pin, timerReady]);
 
   const handleNext = async () => {
     if (!activeItem) {
