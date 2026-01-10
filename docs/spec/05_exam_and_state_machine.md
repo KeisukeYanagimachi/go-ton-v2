@@ -4,6 +4,10 @@
 
 ---
 
+## ChangeLog
+
+- 2026-01-10: Candidate 試験開始時の Attempt 作成タイミングとスナップショット範囲を明文化
+
 ## 1. 本資料の位置づけ
 
 本資料は、社内SPIアプリにおける **試験進行ロジックと状態遷移** を定義する。
@@ -218,6 +222,27 @@ LOCKED → ABORTED
 - Attempt 開始後の条件は固定
 - LOCKED 中は Candidate 操作不可
 - SCORED 後の変更は禁止
+
+---
+
+## 11. Attempt 作成タイミングとスナップショット（追加）
+
+### 11.1 Attempt 作成タイミング
+
+- Candidate が **「試験開始」操作を実行した時点**で Attempt を作成する
+- 認証直後に作成しない（未開始 Attempt の無制限増加を防ぐ）
+
+### 11.2 Attempt 初期状態
+
+- 作成直後の status は `NOT_STARTED`
+- 試験開始処理の中で `IN_PROGRESS` に遷移する
+
+### 11.3 Attempt 開始時に作成するスナップショット
+
+- Attempt 開始時点で以下を **全て作成**する
+  - `attempt_items`（出題内容・配点・順序）
+  - `attempt_module_timers`（モジュール残り時間）
+- 「モジュール開始時に順次作成」などの遅延作成は行わない
 
 ---
 

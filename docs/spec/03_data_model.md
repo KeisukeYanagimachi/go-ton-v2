@@ -3,6 +3,7 @@
 ## ChangeLog
 
 - 2026-01-10: schema.sql の内容に合わせてモデル属性と制約を詳細化
+- 2026-01-10: Attempt 作成タイミングと session 取り扱いの補足を追記
 
 ## データモデル仕様（論理設計・不変条件）
 
@@ -350,6 +351,11 @@
 - SCORED
 - ABORTED
 
+**作成タイミング**
+
+- Candidate の「試験開始」操作で Attempt を作成する
+- 認証直後に作成しない
+
 ---
 
 ### 8.2 セッション・端末
@@ -383,6 +389,11 @@
 
 - 同一 Attempt に有効な session は1つのみ
 - status=ACTIVE は 1 つまで
+
+**運用ルール（補足）**
+
+- Attempt 作成時に AttemptSession を作成する
+- device_id は NULL を許容し、後から紐づけ可能とする
 
 ### 8.3 モジュールタイマー
 
