@@ -23,7 +23,11 @@ export default function StaffDevLoginForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/staff/dev-login", {
+      const endpoint =
+        process.env.NODE_ENV === "test"
+          ? "/api/staff/test-login"
+          : "/api/staff/dev-login";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "content-type": "application/json",
