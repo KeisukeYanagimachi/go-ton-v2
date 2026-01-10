@@ -7,6 +7,7 @@
 - 2026-01-10: MUIの導入範囲（Core/Icon/X系の扱い）を詳細化
 - 2026-01-10: Auth.js（Google SSO）の実装方針とセッション設計を明文化
 - 2026-01-10: Auth.js 本番SSOの環境変数を明記
+- 2026-01-10: Auth.js 本番SSOの境界と理由（whitelist / roleの正はDB）を追記
 
 ## 技術仕様（アーキテクチャ・技術方針）
 
@@ -161,6 +162,15 @@
   - roleCodes（参照用）
 - 役割情報は毎回 DB を正として取得する（セッションの role は参照用に限る）
   - 理由: role / is_active の変更は即時反映が必要なため
+
+#### 6.4.1 本番SSOの境界と理由（補足）
+
+- Auth.js の入口は `/api/auth/[...nextauth]` に統一する
+  - 理由: App Router の標準導線に揃え、認証経路を明示するため
+- whitelist / is_active の判定は Auth.js の `signIn` コールバックで必ず行う
+  - 理由: Google 側で成功しても、社内運用として許可されていない staff を排除する必要があるため
+- セッションは JWT を採用し、role は参照用・正はDBとする
+  - 理由: role / is_active の変更を即時に反映し、運用上の取り消しを遅延させないため
 
 **重要**
 
