@@ -493,7 +493,14 @@ export default function CandidateExamPage() {
           <Box sx={{ px: 3, py: 2.5, bgcolor: "#f8fafc" }}>
             <Stack spacing={1.5}>
               <Stack direction="row" spacing={1} alignItems="center">
-                <Box sx={{ width: 12, height: 12, bgcolor: "#137fec" }} />
+                <Box
+                  sx={{
+                    width: 12,
+                    height: 12,
+                    bgcolor: "#137fec",
+                    border: "1px solid #137fec",
+                  }}
+                />
                 <Typography variant="caption" sx={{ color: "#475569" }}>
                   回答済み
                 </Typography>
@@ -516,8 +523,8 @@ export default function CandidateExamPage() {
                   sx={{
                     width: 12,
                     height: 12,
-                    border: "1px solid rgba(251, 146, 60, 0.5)",
-                    bgcolor: "rgba(251, 146, 60, 0.12)",
+                    border: "1px dashed rgba(249, 115, 22, 0.7)",
+                    bgcolor: "#fff7ed",
                   }}
                 />
                 <Typography variant="caption" sx={{ color: "#475569" }}>
