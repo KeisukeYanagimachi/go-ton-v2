@@ -48,6 +48,7 @@
    - テスト戦略：unit/integration/e2e、Playwright必須シナリオ、CIでの安定動作方針
 
 8. `08_project_structure_and_coding_rules.md`
+9. `10_branch_strategy.md`
    - プロジェクト構成と規約：ディレクトリ構成、レイヤ規約、命名、トランザクション、data-testid等
 
 ---
