@@ -3,6 +3,7 @@
 ## ChangeLog
 
 - 2026-01-10: Candidate の「他 Attempt で使用中」の判定基準を明文化
+- 2026-01-10: 開発用ログインのURL/方法を明記
 
 ## 認証・認可仕様（Auth / Access Control）
 
@@ -60,6 +61,8 @@
   - whitelist 判定
   - is_active 判定
   - role 判定
+  - 開発用ログイン UI: `/staff-dev-login`
+  - 入力: staff のメールアドレス
 
 **重要**
 
@@ -74,6 +77,8 @@
 - テスト専用ログイン API を使用する
 - Playwright からのみ呼び出される
 - production ではビルド対象外とする
+  - テスト専用ログイン API: `POST /api/staff/test-login`
+  - 入力: staff のメールアドレス
 
 ---
 
@@ -84,6 +89,7 @@
 - 以下 2 要素を必須とする
   - Ticket（受験票コード / QR）
   - PIN（生年月日）
+  - ログイン UI: `/candidate-login`
 
 #### 3.2.2 認証時の検証内容
 

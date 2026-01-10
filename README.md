@@ -76,3 +76,14 @@ make test-e2e
 ```
 
 - `make test-e2e`: Playwright の E2E を Docker で実行します。
+
+## ログイン動線（開発用）
+
+### UI
+
+- Candidate ログイン: `http://localhost:3000/candidate-login`
+- Staff dev ログイン: `http://localhost:3000/staff-dev-login`
+
+### API
+
+- Staff test ログイン: `POST /api/staff/test-login`（`NODE_ENV=test` のみ）
