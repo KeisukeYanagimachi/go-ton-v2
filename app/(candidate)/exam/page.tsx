@@ -9,6 +9,7 @@ import {
   Divider,
   LinearProgress,
   Paper,
+  Snackbar,
   Stack,
   Typography,
 } from "@mui/material";
@@ -65,6 +66,7 @@ const questionStatusStyles = (
   number: number,
   activeNumber: number,
   hasAnswer: boolean,
+  showUnanswered: boolean,
 ) => {
   if (number === activeNumber) {
     return {
@@ -81,6 +83,15 @@ const questionStatusStyles = (
       bgcolor: "#137fec",
       color: "#ffffff",
       border: "1px solid transparent",
+      fontWeight: 700,
+    };
+  }
+
+  if (showUnanswered) {
+    return {
+      bgcolor: "#fff7ed",
+      color: "#9a3412",
+      border: "1px dashed rgba(249, 115, 22, 0.7)",
       fontWeight: 700,
     };
   }
@@ -106,6 +117,7 @@ export default function CandidateExamPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [hasAttemptedAdvance, setHasAttemptedAdvance] = useState(false);
+  const [showUnanswered, setShowUnanswered] = useState(false);
 
   useEffect(() => {
     const storedTicketCode = sessionStorage.getItem("candidate.ticketCode");
@@ -193,6 +205,7 @@ export default function CandidateExamPage() {
     setSaveError(null);
     setSaveMessage(null);
     setHasAttemptedAdvance(false);
+    setShowUnanswered(false);
     setAnswers((previous) => ({
       ...previous,
       [activeItem.attemptItemId]: optionId,
@@ -207,6 +220,7 @@ export default function CandidateExamPage() {
 
     if (!answers[activeItem.attemptItemId]) {
       setSaveError("ANSWER_REQUIRED");
+      setShowUnanswered(true);
       return false;
     }
 
@@ -258,6 +272,7 @@ export default function CandidateExamPage() {
     }
 
     setHasAttemptedAdvance(true);
+    setShowUnanswered(true);
     const saved = await handleSaveAnswer();
     if (!saved) {
       return;
@@ -274,6 +289,7 @@ export default function CandidateExamPage() {
     }
 
     setHasAttemptedAdvance(true);
+    setShowUnanswered(true);
     const saved = await handleSaveAnswer();
     if (!saved) {
       return;
@@ -439,6 +455,8 @@ export default function CandidateExamPage() {
               {questionNumbers.map((number, index) => {
                 const item = moduleItems[index];
                 const hasAnswer = Boolean(item && answers[item.attemptItemId]);
+                const shouldHighlight =
+                  showUnanswered && item && !answers[item.attemptItemId];
 
                 return (
                   <Box
@@ -460,6 +478,7 @@ export default function CandidateExamPage() {
                         number,
                         activeIndex + 1,
                         hasAnswer,
+                        shouldHighlight,
                       ),
                     }}
                     onClick={() => setActiveIndex(index)}
@@ -547,6 +566,12 @@ export default function CandidateExamPage() {
 
             {!isLoading && !error && snapshot && activeItem && (
               <>
+                <Snackbar
+                  open={Boolean(saveMessage)}
+                  autoHideDuration={2000}
+                  onClose={() => setSaveMessage(null)}
+                  message={saveMessage}
+                />
                 <Box>
                   <Stack
                     direction="row"
