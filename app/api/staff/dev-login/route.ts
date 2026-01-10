@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import {
+  DEV_STAFF_SESSION_COOKIE,
+  createDevStaffSessionToken,
+} from "@/features/auth/infra/dev-staff-session";
 import { authorizeStaff } from "@/features/auth/usecase/authorize-staff";
 
 const requestSchema = z.object({
-  email: z.string().email()
+  email: z.string().email(),
 });
 
 export const POST = async (request: Request) => {
@@ -15,10 +19,7 @@ export const POST = async (request: Request) => {
   const payload = requestSchema.safeParse(await request.json());
 
   if (!payload.success) {
-    return NextResponse.json(
-      { error: "INVALID_REQUEST" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400 });
   }
 
   const staff = await authorizeStaff(payload.data.email);
@@ -27,10 +28,30 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     staffUserId: staff.id,
     email: staff.email,
     displayName: staff.displayName,
-    roles: staff.roles
+    roles: staff.roles,
   });
+
+  const secret = process.env.AUTH_SECRET;
+  if (secret) {
+    const token = createDevStaffSessionToken(
+      {
+        staffUserId: staff.id,
+        email: staff.email,
+        roleCodes: staff.roles,
+      },
+      secret,
+    );
+    response.cookies.set(DEV_STAFF_SESSION_COOKIE, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
+  }
+
+  return response;
 };

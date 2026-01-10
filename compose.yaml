@@ -5,6 +5,7 @@ services:
       dockerfile: docker/Dockerfile
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/go-ton?schema=public
+      AUTH_SECRET: dev-secret
       NODE_ENV: development
     ports:
       - "3000:3000"

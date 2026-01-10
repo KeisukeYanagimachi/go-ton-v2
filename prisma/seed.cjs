@@ -8,7 +8,11 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 const hashPin = (pin) => createHash("sha256").update(pin).digest("hex");
-const seedTicketCodes = ["TICKET-CAND-001", "TICKET-CAND-002"];
+const seedTicketCodes = [
+  "TICKET-CAND-001",
+  "TICKET-CAND-002",
+  "TICKET-REISSUE-001",
+];
 
 const resetSeedAttempts = async () => {
   const attempts = await prisma.attempt.findMany({
@@ -282,6 +286,16 @@ async function main() {
         examVersionId: "71000000-0000-0000-0000-000000000002",
         visitSlotId: "30000000-0000-0000-0000-000000000001",
         pinHash: hashPin("20000202"),
+        status: "ACTIVE",
+        createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
+      },
+      {
+        id: "50000000-0000-0000-0000-000000000003",
+        ticketCode: "TICKET-REISSUE-001",
+        candidateId: "40000000-0000-0000-0000-000000000001",
+        examVersionId: "71000000-0000-0000-0000-000000000002",
+        visitSlotId: "30000000-0000-0000-0000-000000000001",
+        pinHash: hashPin("19990101"),
         status: "ACTIVE",
         createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
       },

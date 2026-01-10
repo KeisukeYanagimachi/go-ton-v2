@@ -5,6 +5,7 @@
 - 2026-01-10: Candidate の「他 Attempt で使用中」の判定基準を明文化
 - 2026-01-10: 開発用ログインのURL/方法を明記
 - 2026-01-10: Auth.js の本番SSOフローとセッション設計を明文化
+- 2026-01-10: dev/test ログインはサーバ発行のセッションCookieを使用することを明記
 
 ## 認証・認可仕様（Auth / Access Control）
 
@@ -72,6 +73,8 @@
   - role 判定
   - 開発用ログイン UI: `/staff-dev-login`
   - 入力: staff のメールアドレス
+- 開発用ログインは **サーバ発行のセッションCookie** を返し、
+  以後の staff 操作は Cookie を用いて認可判定する
 
 **重要**
 
@@ -88,6 +91,8 @@
 - production ではビルド対象外とする
   - テスト専用ログイン API: `POST /api/staff/test-login`
   - 入力: staff のメールアドレス
+- テスト専用ログイン API は **サーバ発行のセッションCookie** を返し、
+  staff 操作の認可に使用する
 
 ---
 
