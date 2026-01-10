@@ -158,6 +158,18 @@ export default function StaffDevLoginForm() {
           ログインに成功しました。{result.email}
         </Alert>
       )}
+      {result && (
+        <Box sx={{ mt: 2 }}>
+          <Button
+            variant="contained"
+            sx={{ fontWeight: 700 }}
+            href="/attempts"
+            data-testid="staff-attempts-link"
+          >
+            引き継ぎ操作へ
+          </Button>
+        </Box>
+      )}
 
       {result && (
         <Box
