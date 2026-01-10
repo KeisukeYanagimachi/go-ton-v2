@@ -1,5 +1,9 @@
 # 04_auth_and_access_control.md
 
+## ChangeLog
+
+- 2026-01-10: Candidate の「他 Attempt で使用中」の判定基準を明文化
+
 ## 認証・認可仕様（Auth / Access Control）
 
 ---
@@ -87,6 +91,8 @@
 - Ticket の status が ACTIVE であること
 - PIN が一致すること（ハッシュ比較）
 - Ticket が他の Attempt で使用中でないこと
+  - 使用中の定義: Attempt status が `NOT_STARTED` / `IN_PROGRESS` / `LOCKED` のいずれか
+  - 理由: 受験開始前〜引き継ぎ中は同一 Ticket の再ログインを防ぐ必要があるため。`SUBMITTED` 以降は受験完了として再認証対象外とする。
 
 ---
 
