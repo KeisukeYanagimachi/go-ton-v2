@@ -122,6 +122,12 @@
 - `sleep` 等の固定待機は禁止
 - Playwright の自動待機（expect）を使用する
 - 失敗時は screenshot / trace / video を保存する
+- Prisma Client は **常に最新スキーマで生成**されている必要がある
+  - app コンテナで `prisma generate` を実行した上で E2E を開始する
+  - 古い Client のまま実行すると、未反映カラム参照で 500 が発生するため
+- E2E は **毎回同じ初期状態**から開始する
+  - seed 実行前に、E2E 用 Ticket に紐づく Attempt を削除して状態を戻す
+  - Attempt が残ると「使用中」判定となり、ログインが失敗するため
 
 ---
 

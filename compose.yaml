@@ -40,6 +40,7 @@ services:
     image: mcr.microsoft.com/playwright:v1.57.0-jammy
     working_dir: /app
     environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/go-ton?schema=public
       E2E_BASE_URL: http://app:3000
       NODE_ENV: test
     volumes:
@@ -47,7 +48,12 @@ services:
     depends_on:
       app:
         condition: service_healthy
-    command: ["bash", "-lc", "npm ci && npx playwright test"]
+    command:
+      [
+        "bash",
+        "-lc",
+        "npm ci && npm run db:migrate && npm run db:seed && npx playwright test",
+      ]
 
 volumes:
   db-data:

@@ -8,8 +8,63 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 const hashPin = (pin) => createHash("sha256").update(pin).digest("hex");
+const seedTicketCodes = ["TICKET-CAND-001", "TICKET-CAND-002"];
+
+const resetSeedAttempts = async () => {
+  const attempts = await prisma.attempt.findMany({
+    where: { ticket: { ticketCode: { in: seedTicketCodes } } },
+    select: { id: true },
+  });
+
+  if (attempts.length === 0) {
+    return;
+  }
+
+  const attemptIds = attempts.map((attempt) => attempt.id);
+  const attemptItems = await prisma.attemptItem.findMany({
+    where: { attemptId: { in: attemptIds } },
+    select: { id: true },
+  });
+  const attemptItemIds = attemptItems.map((item) => item.id);
+
+  await prisma.attemptItemEvent.deleteMany({
+    where: { attemptId: { in: attemptIds } },
+  });
+
+  if (attemptItemIds.length > 0) {
+    await prisma.attemptItemMetric.deleteMany({
+      where: { attemptItemId: { in: attemptItemIds } },
+    });
+    await prisma.attemptAnswerScore.deleteMany({
+      where: { attemptItemId: { in: attemptItemIds } },
+    });
+    await prisma.attemptAnswer.deleteMany({
+      where: { attemptItemId: { in: attemptItemIds } },
+    });
+  }
+
+  await prisma.attemptItem.deleteMany({
+    where: { attemptId: { in: attemptIds } },
+  });
+  await prisma.attemptModuleTimer.deleteMany({
+    where: { attemptId: { in: attemptIds } },
+  });
+  await prisma.attemptModuleScore.deleteMany({
+    where: { attemptId: { in: attemptIds } },
+  });
+  await prisma.attemptScore.deleteMany({
+    where: { attemptId: { in: attemptIds } },
+  });
+  await prisma.attemptSession.deleteMany({
+    where: { attemptId: { in: attemptIds } },
+  });
+  await prisma.attempt.deleteMany({
+    where: { id: { in: attemptIds } },
+  });
+};
 
 async function main() {
+  await resetSeedAttempts();
   await prisma.staffRole.createMany({
     data: [
       {
