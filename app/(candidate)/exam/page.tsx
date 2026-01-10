@@ -61,13 +61,26 @@ const formatSeconds = (seconds: number) => {
   return `${pad(hours)}:${pad(minutes)}:${pad(remaining)}`;
 };
 
-const questionStatusStyles = (number: number, activeNumber: number) => {
+const questionStatusStyles = (
+  number: number,
+  activeNumber: number,
+  hasAnswer: boolean,
+) => {
   if (number === activeNumber) {
     return {
       bgcolor: "#ffffff",
       color: "#137fec",
       border: "2px solid #137fec",
       boxShadow: "0 0 0 4px rgba(19, 127, 236, 0.15)",
+      fontWeight: 700,
+    };
+  }
+
+  if (hasAnswer) {
+    return {
+      bgcolor: "#137fec",
+      color: "#ffffff",
+      border: "1px solid transparent",
       fontWeight: 700,
     };
   }
@@ -85,6 +98,11 @@ export default function CandidateExamPage() {
   const [snapshot, setSnapshot] = useState<AttemptSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [ticketCode, setTicketCode] = useState<string | null>(null);
+  const [pin, setPin] = useState<string | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string | null>>({});
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const storedTicketCode = sessionStorage.getItem("candidate.ticketCode");
@@ -95,6 +113,9 @@ export default function CandidateExamPage() {
       setIsLoading(false);
       return;
     }
+
+    setTicketCode(storedTicketCode);
+    setPin(storedPin);
 
     const fetchSnapshot = async () => {
       try {
@@ -116,6 +137,12 @@ export default function CandidateExamPage() {
 
         const payload = (await response.json()) as AttemptSnapshot;
         setSnapshot(payload);
+        const initialAnswers: Record<string, string | null> = {};
+        payload.items.forEach((item) => {
+          initialAnswers[item.attemptItemId] = item.selectedOptionId;
+        });
+        setAnswers(initialAnswers);
+        setActiveIndex(0);
         setIsLoading(false);
       } catch (requestError) {
         setError("NETWORK_ERROR");
@@ -137,10 +164,12 @@ export default function CandidateExamPage() {
       .sort((a, b) => a.position - b.position);
   }, [snapshot, currentModule]);
 
-  const activeItem = moduleItems[0] ?? null;
+  const activeItem = moduleItems[activeIndex] ?? null;
   const questionNumbers = moduleItems.map((_, index) => index + 1);
   const progressValue =
-    moduleItems.length > 0 ? Math.round((1 / moduleItems.length) * 100) : 0;
+    moduleItems.length > 0
+      ? Math.round(((activeIndex + 1) / moduleItems.length) * 100)
+      : 0;
   const timerLabel = currentModule
     ? formatSeconds(currentModule.remainingSeconds)
     : "00:00:00";
@@ -148,6 +177,90 @@ export default function CandidateExamPage() {
     MISSING_CREDENTIALS: "ログイン情報が見つかりません。",
     UNAUTHORIZED: "認証に失敗しました。",
     NETWORK_ERROR: "通信に失敗しました。",
+  };
+
+  const handleSelectOption = (optionId: string) => {
+    if (!activeItem) {
+      return;
+    }
+
+    setAnswers((previous) => ({
+      ...previous,
+      [activeItem.attemptItemId]: optionId,
+    }));
+  };
+
+  const handleSaveAnswer = async () => {
+    if (!activeItem || !ticketCode || !pin) {
+      setError("MISSING_CREDENTIALS");
+      return false;
+    }
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/candidate/answer", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ticketCode,
+          pin,
+          attemptItemId: activeItem.attemptItemId,
+          selectedOptionId: answers[activeItem.attemptItemId] ?? null,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string };
+        setError(payload.error ?? "UNAUTHORIZED");
+        return false;
+      }
+
+      const payload = (await response.json()) as {
+        attemptItemId: string;
+        selectedOptionId: string | null;
+      };
+
+      setAnswers((previous) => ({
+        ...previous,
+        [payload.attemptItemId]: payload.selectedOptionId,
+      }));
+      return true;
+    } catch (requestError) {
+      setError("NETWORK_ERROR");
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleNext = async () => {
+    if (!activeItem) {
+      return;
+    }
+
+    const saved = await handleSaveAnswer();
+    if (!saved) {
+      return;
+    }
+
+    setActiveIndex((previous) =>
+      Math.min(previous + 1, moduleItems.length - 1),
+    );
+  };
+
+  const handlePrev = async () => {
+    if (!activeItem) {
+      return;
+    }
+
+    const saved = await handleSaveAnswer();
+    if (!saved) {
+      return;
+    }
+
+    setActiveIndex((previous) => Math.max(previous - 1, 0));
   };
 
   return (
@@ -304,27 +417,38 @@ export default function CandidateExamPage() {
                 gap: 1.5,
               }}
             >
-              {questionNumbers.map((number) => (
-                <Box
-                  key={number}
-                  sx={{
-                    aspectRatio: "1 / 1",
-                    borderRadius: 2,
-                    display: "grid",
-                    placeItems: "center",
-                    fontSize: 14,
-                    cursor: "pointer",
-                    transition: "transform 0.15s ease, box-shadow 0.15s ease",
-                    "&:hover": {
-                      transform: "translateY(-1px)",
-                      boxShadow: "0 4px 10px rgba(15, 23, 42, 0.15)",
-                    },
-                    ...questionStatusStyles(number, 1),
-                  }}
-                >
-                  {number}
-                </Box>
-              ))}
+              {questionNumbers.map((number, index) => {
+                const item = moduleItems[index];
+                const hasAnswer = Boolean(item && answers[item.attemptItemId]);
+
+                return (
+                  <Box
+                    key={number}
+                    data-testid={`candidate-question-index-${number}`}
+                    sx={{
+                      aspectRatio: "1 / 1",
+                      borderRadius: 2,
+                      display: "grid",
+                      placeItems: "center",
+                      fontSize: 14,
+                      cursor: "pointer",
+                      transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                      "&:hover": {
+                        transform: "translateY(-1px)",
+                        boxShadow: "0 4px 10px rgba(15, 23, 42, 0.15)",
+                      },
+                      ...questionStatusStyles(
+                        number,
+                        activeIndex + 1,
+                        hasAnswer,
+                      ),
+                    }}
+                    onClick={() => setActiveIndex(index)}
+                  >
+                    {number}
+                  </Box>
+                );
+              })}
             </Box>
           </Box>
           <Divider />
@@ -411,8 +535,12 @@ export default function CandidateExamPage() {
                     justifyContent="space-between"
                   >
                     <Stack direction="row" spacing={1} alignItems="baseline">
-                      <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                        問 1
+                      <Typography
+                        variant="h5"
+                        sx={{ fontWeight: 700 }}
+                        data-testid="candidate-current-question"
+                      >
+                        問 {activeIndex + 1}
                       </Typography>
                       <Typography variant="body2" sx={{ color: "#64748b" }}>
                         / {moduleItems.length}
@@ -446,7 +574,11 @@ export default function CandidateExamPage() {
                   }}
                 >
                   <Stack spacing={3}>
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 700 }}
+                      data-testid="candidate-question-stem"
+                    >
                       {activeItem.question.stem}
                     </Typography>
                     <Paper
@@ -476,37 +608,49 @@ export default function CandidateExamPage() {
                     <Typography variant="caption" sx={{ color: "#64748b" }}>
                       選択肢
                     </Typography>
-                    {activeItem.question.options.map((option) => (
-                      <Paper
-                        key={option.id}
-                        variant="outlined"
-                        sx={{
-                          p: 2.5,
-                          borderRadius: 2,
-                          borderColor: "#e2e8f0",
-                          bgcolor: "#fff",
-                          display: "flex",
-                          gap: 2,
-                          alignItems: "flex-start",
-                        }}
-                      >
-                        <Box
+                    {activeItem.question.options.map((option) => {
+                      const isSelected =
+                        answers[activeItem.attemptItemId] === option.id;
+
+                      return (
+                        <Paper
+                          key={option.id}
+                          variant="outlined"
                           sx={{
-                            width: 20,
-                            height: 20,
-                            borderRadius: "50%",
-                            border: "2px solid",
-                            borderColor: "#cbd5f5",
-                            display: "grid",
-                            placeItems: "center",
-                            mt: 0.3,
+                            p: 2.5,
+                            borderRadius: 2,
+                            borderColor: isSelected ? "#137fec" : "#e2e8f0",
+                            bgcolor: isSelected
+                              ? "rgba(19, 127, 236, 0.08)"
+                              : "#fff",
+                            display: "flex",
+                            gap: 2,
+                            alignItems: "flex-start",
+                            cursor: "pointer",
                           }}
-                        />
-                        <Typography sx={{ color: "#1f2937", lineHeight: 1.7 }}>
-                          {option.optionText}
-                        </Typography>
-                      </Paper>
-                    ))}
+                          data-testid={`candidate-option-${option.position}`}
+                          onClick={() => handleSelectOption(option.id)}
+                        >
+                          <Box
+                            sx={{
+                              width: 20,
+                              height: 20,
+                              borderRadius: "50%",
+                              border: "2px solid",
+                              borderColor: isSelected ? "#137fec" : "#cbd5f5",
+                              display: "grid",
+                              placeItems: "center",
+                              mt: 0.3,
+                            }}
+                          />
+                          <Typography
+                            sx={{ color: "#1f2937", lineHeight: 1.7 }}
+                          >
+                            {option.optionText}
+                          </Typography>
+                        </Paper>
+                      );
+                    })}
                   </Stack>
                 </Paper>
 
@@ -522,6 +666,9 @@ export default function CandidateExamPage() {
                         borderColor: "#93c5fd",
                       },
                     }}
+                    data-testid="candidate-prev-question"
+                    onClick={handlePrev}
+                    disabled={isSaving || activeIndex === 0}
                   >
                     前の問題
                   </Button>
@@ -536,6 +683,9 @@ export default function CandidateExamPage() {
                         boxShadow: "none",
                       },
                     }}
+                    data-testid="candidate-next-question"
+                    onClick={handleNext}
+                    disabled={isSaving || activeIndex >= moduleItems.length - 1}
                   >
                     次の問題へ
                   </Button>

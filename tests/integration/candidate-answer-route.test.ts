@@ -3,7 +3,7 @@ import { afterAll, describe, expect, test } from "vitest";
 
 import { disconnectPrisma, prisma } from "@/shared/db/prisma";
 import { hashPin } from "@/shared/utils/pin-hash";
-import { POST as fetchAttempt } from "../../app/api/candidate/attempt/route";
+import { POST as submitAnswer } from "../../app/api/candidate/answer/route";
 import { POST as startAttempt } from "../../app/api/candidate/start/route";
 
 const createExamVersionBundle = async () => {
@@ -11,7 +11,7 @@ const createExamVersionBundle = async () => {
     data: {
       id: randomUUID(),
       name: `Exam ${randomUUID()}`,
-      description: "Candidate attempt fetch exam",
+      description: "Candidate answer test exam",
     },
   });
   const examVersion = await prisma.examVersion.create({
@@ -44,7 +44,7 @@ const createExamVersionBundle = async () => {
   const question = await prisma.question.create({
     data: {
       id: randomUUID(),
-      stem: "Attempt fetch question",
+      stem: "Answer submit question",
       explanation: "Test",
       isActive: true,
       options: {
@@ -76,7 +76,7 @@ const createExamVersionBundle = async () => {
     },
   });
 
-  return { examVersion, examModule };
+  return { examVersion };
 };
 
 const createCandidate = async () =>
@@ -107,19 +107,19 @@ const createRequest = (url: string, body: unknown) =>
     body: JSON.stringify(body),
   });
 
-describe("candidate attempt route (integration)", () => {
+describe("candidate answer route (integration)", () => {
   afterAll(async () => {
     await disconnectPrisma();
   });
 
-  test("returns modules and questions for an active attempt", async () => {
+  test("stores answer for attempt item", async () => {
     const candidate = await createCandidate();
     const visitSlot = await createVisitSlot();
-    const { examVersion, examModule } = await createExamVersionBundle();
+    const { examVersion } = await createExamVersionBundle();
     const pin = "19990101";
     const ticketCode = `TICKET-${randomUUID()}`;
 
-    await prisma.ticket.create({
+    const ticket = await prisma.ticket.create({
       data: {
         id: randomUUID(),
         ticketCode,
@@ -138,60 +138,45 @@ describe("candidate attempt route (integration)", () => {
       }),
     );
     expect(startResponse.status).toBe(200);
-    const startPayload = (await startResponse.json()) as { attemptId: string };
+
+    const attempt = await prisma.attempt.findUnique({
+      where: { ticketId: ticket.id },
+      select: { id: true },
+    });
+    expect(attempt).not.toBeNull();
 
     const attemptItem = await prisma.attemptItem.findFirst({
-      where: { attemptId: startPayload.attemptId },
+      where: { attemptId: attempt!.id },
       select: { id: true, questionId: true },
     });
     expect(attemptItem).not.toBeNull();
 
     const option = await prisma.questionOption.findFirst({
-      where: { questionId: attemptItem?.questionId ?? "" },
+      where: { questionId: attemptItem!.questionId },
       select: { id: true },
     });
     expect(option).not.toBeNull();
 
-    await prisma.attemptAnswer.create({
-      data: {
-        id: randomUUID(),
-        attemptItemId: attemptItem!.id,
-        selectedOptionId: option!.id,
-        answeredAt: new Date(),
-      },
-    });
-
-    const response = await fetchAttempt(
-      createRequest("http://localhost/api/candidate/attempt", {
+    const response = await submitAnswer(
+      createRequest("http://localhost/api/candidate/answer", {
         ticketCode,
         pin,
+        attemptItemId: attemptItem!.id,
+        selectedOptionId: option!.id,
       }),
     );
 
     expect(response.status).toBe(200);
     const payload = (await response.json()) as {
-      attemptId: string;
-      status: string;
-      modules: Array<{
-        moduleId: string;
-        code: string;
-        name: string;
-      }>;
-      items: Array<{
-        moduleId: string;
-        selectedOptionId: string | null;
-        question: { options: unknown[] };
-      }>;
+      attemptItemId: string;
+      selectedOptionId: string | null;
     };
+    expect(payload.attemptItemId).toBe(attemptItem!.id);
+    expect(payload.selectedOptionId).toBe(option!.id);
 
-    expect(payload.attemptId).toBe(startPayload.attemptId);
-    expect(payload.status).toBe("IN_PROGRESS");
-    expect(payload.modules).toHaveLength(1);
-    expect(payload.modules[0].moduleId).toBe(examModule.id);
-    expect(payload.modules[0].code).toBe("VERBAL");
-    expect(payload.items).toHaveLength(1);
-    expect(payload.items[0].moduleId).toBe(examModule.id);
-    expect(payload.items[0].question.options).toHaveLength(2);
-    expect(payload.items[0].selectedOptionId).toBe(option?.id ?? null);
+    const storedAnswer = await prisma.attemptAnswer.findUnique({
+      where: { attemptItemId: attemptItem!.id },
+    });
+    expect(storedAnswer?.selectedOptionId).toBe(option!.id);
   });
 });

@@ -27,6 +27,7 @@ type AttemptItemSnapshot = {
   moduleId: string;
   position: number;
   points: number;
+  selectedOptionId: string | null;
   question: AttemptQuestionSnapshot;
 };
 
@@ -123,7 +124,23 @@ const getAttemptSnapshot = async (
     },
   });
 
-  const questionMap = new Map(questions.map((question) => [question.id, question]));
+  const questionMap = new Map(
+    questions.map((question) => [question.id, question]),
+  );
+
+  const attemptAnswers = await prisma.attemptAnswer.findMany({
+    where: { attemptItemId: { in: items.map((item) => item.id) } },
+    select: {
+      attemptItemId: true,
+      selectedOptionId: true,
+    },
+  });
+  const answerMap = new Map(
+    attemptAnswers.map((answer) => [
+      answer.attemptItemId,
+      answer.selectedOptionId,
+    ]),
+  );
 
   const sortedItems = [...items].sort((a, b) => {
     const modulePositionA = modulePositionMap.get(a.moduleId) ?? 0;
@@ -150,6 +167,7 @@ const getAttemptSnapshot = async (
       moduleId: item.moduleId,
       position: item.position,
       points: item.points,
+      selectedOptionId: answerMap.get(item.id) ?? null,
       question,
     });
   }
