@@ -695,6 +695,11 @@ export default function CandidateExamPage() {
                   onClose={() => setSaveMessage(null)}
                   message={saveMessage}
                 />
+                {isLocked && (
+                  <Alert severity="warning" sx={{ mb: 2 }}>
+                    {errorMessageMap.LOCKED}
+                  </Alert>
+                )}
                 <Box>
                   <Stack
                     direction="row"

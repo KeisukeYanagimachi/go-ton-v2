@@ -1,5 +1,4 @@
 import { StaffRoleCode } from "@/features/auth/domain/staff-auth";
-import { auth } from "@/features/auth/infra/auth";
 import {
   DEV_STAFF_SESSION_COOKIE,
   parseDevStaffSessionToken,
@@ -32,6 +31,7 @@ const resolveFromDevSession = (request: Request) => {
 };
 
 const requireStaffRole = async (requiredRoles: StaffRoleCode[]) => {
+  const { auth } = await import("@/features/auth/infra/auth");
   const session = await auth();
   const email = session?.user?.email;
 
