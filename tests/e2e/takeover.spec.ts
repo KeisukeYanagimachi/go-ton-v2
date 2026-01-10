@@ -2,6 +2,20 @@ import { expect, test } from "@playwright/test";
 
 test("staff can lock and resume an attempt", async ({ page }) => {
   await page.goto("/staff-dev-login");
+  await expect(page.getByTestId("staff-dev-login-form")).toBeVisible({
+    timeout: 30000,
+  });
+  await expect
+    .poll(
+      async () => {
+        const value = await page
+          .getByTestId("staff-dev-login-form")
+          .getAttribute("data-hydrated");
+        return value;
+      },
+      { timeout: 30000 },
+    )
+    .toBe("true");
   await page.getByTestId("staff-dev-email").fill("admin@example.com");
   await page.getByTestId("staff-dev-login-submit").click();
   await expect(page).toHaveURL(/\/staff/);
@@ -24,7 +38,9 @@ test("staff can lock and resume an attempt", async ({ page }) => {
   });
 
   await page.goto("/exam");
-  await expect(page.getByTestId("candidate-exam-page")).toBeVisible();
+  await expect(page.getByTestId("candidate-exam-page")).toBeVisible({
+    timeout: 15000,
+  });
   await expect(page.getByTestId("candidate-locked-alert")).toBeVisible();
 
   const resumeResponse = await page.request.post("/api/staff/attempts/resume", {

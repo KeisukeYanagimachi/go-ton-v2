@@ -68,65 +68,12 @@ export default function StaffDevLoginPage() {
       </Box>
 
       <Container maxWidth="lg" sx={{ py: { xs: 6, lg: 10 } }}>
-        <Box
-          sx={{
-            display: "grid",
-            gap: { xs: 4, lg: 8 },
-            gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
-            alignItems: "center",
-          }}
-        >
-          <Box
-            sx={{
-              position: "relative",
-              borderRadius: 3,
-              overflow: "hidden",
-              minHeight: 320,
-              boxShadow: "0 12px 30px rgba(15, 23, 42, 0.2)",
-            }}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "linear-gradient(135deg, rgba(9,30,66,0.2), rgba(19,127,236,0.85))",
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                inset: 0,
-                backgroundImage:
-                  "radial-gradient(circle at top, rgba(255,255,255,0.35), transparent 60%)",
-              }}
-            />
-            <Box
-              sx={{
-                position: "relative",
-                height: "100%",
-                p: { xs: 3, md: 5 },
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "flex-end",
-                color: "#ffffff",
-              }}
-            >
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                安全性と効率性
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: "rgba(255,255,255,0.85)" }}
-              >
-                誠実さと正確さで、運用と評価を支えるための管理者環境です。
-              </Typography>
-            </Box>
-          </Box>
-
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Paper
             elevation={0}
             sx={{
+              width: "100%",
+              maxWidth: 560,
               p: { xs: 3, sm: 4 },
               borderRadius: 3,
               bgcolor: "#ffffff",

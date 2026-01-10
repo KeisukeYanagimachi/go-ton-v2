@@ -2,13 +2,18 @@
 
 import { Alert, Box, Button, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function StaffDevLoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -75,6 +80,7 @@ export default function StaffDevLoginForm() {
         onSubmit={handleSubmit}
         sx={{ display: "grid", gap: 2 }}
         data-testid="staff-dev-login-form"
+        data-hydrated={isHydrated ? "true" : "false"}
       >
         <TextField
           label="メールアドレス"
