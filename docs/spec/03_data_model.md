@@ -4,6 +4,7 @@
 
 - 2026-01-10: schema.sql の内容に合わせてモデル属性と制約を詳細化
 - 2026-01-10: Attempt 作成タイミングと session 取り扱いの補足を追記
+- 2026-01-10: Ticket に exam_version_id を紐づけ、Attempt の選定基準を明文化
 
 ## データモデル仕様（論理設計・不変条件）
 
@@ -147,6 +148,7 @@
 - id
 - ticket_code（UNIQUE）
 - candidate_id
+- exam_version_id
 - visit_slot_id（NULL 可）
 - pin_hash
 - status（ACTIVE / REVOKED / USED）
@@ -159,6 +161,11 @@
 - REVOKED / USED の ticket は利用不可
 - 再発行時、旧 ticket は必ず REVOKED
 - REVOKED / USED から ACTIVE へ戻さない
+
+**運用ルール（補足）**
+
+- Ticket は **1つの exam_version に紐づく**
+- Candidate が試験開始する際は、Ticket に紐づく exam_version を使用する
 
 ---
 
