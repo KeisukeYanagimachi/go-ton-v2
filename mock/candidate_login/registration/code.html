@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>受験者ログイン - SPI採用ポータル</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=Noto+Sans+JP:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {--color-primary: #137fec;
+            --color-primary-hover: #0f6bd0;
+            --color-bg-body: #f6f7f8;
+            --color-surface: #ffffff;
+            --color-text-main: #111418;
+            --color-text-secondary: #617589;
+            --color-text-inverse: #ffffff;
+            --color-border: #e2e8f0;
+            --color-input-bg: #ffffff;
+            --color-input-border: #cbd5e1;--font-main: 'Inter', 'Noto Sans JP', sans-serif;--space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;--radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-full: 9999px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --transition-base: all 0.2s ease-in-out;
+        }* {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--color-bg-body);
+            color: var(--color-text-main);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+        button, input {
+            font-family: inherit;
+        }.container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }.site-header {
+            background-color: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: var(--space-sm) var(--space-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 65px;
+        }
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        .brand-logo .icon-box {
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .brand-logo h1 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--color-text-main);
+        }
+        .btn-support {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            background-color: #f1f5f9;
+            color: var(--color-text-main);
+            border: none;
+            padding: 0 var(--space-md);
+            height: 40px;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-base);
+        }
+        .btn-support:hover {
+            background-color: #e2e8f0;
+        }.main-content {
+            flex: 1;
+            display: flex;
+            width: 100%;
+            min-height: calc(100vh - 65px);
+        }.visual-column {
+            display: none;flex: 1;
+            position: relative;
+            background-color: var(--color-primary);
+            overflow: hidden;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: var(--space-2xl);
+            color: var(--color-text-inverse);
+        }
+        @media (min-width: 1024px) {
+            .visual-column {
+                display: flex;
+                width: 50%;
+            }
+        }
+        .bg-image {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            mix-blend-mode: overlay;
+            opacity: 0.4;
+            transition: transform 0.7s ease-out;
+        }
+        .visual-column:hover .bg-image {
+            transform: scale(1.05);
+        }
+        .bg-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(19, 127, 236, 0.5), transparent);
+        }
+        .visual-content {
+            position: relative;
+            z-index: 10;
+            max-width: 500px;
+        }
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-lg);
+        }
+        .visual-title {
+            font-size: 2.25rem;
+            font-weight: 900;
+            margin-bottom: var(--space-md);
+            line-height: 1.2;
+        }
+        .visual-desc {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            margin-bottom: var(--space-xl);
+        }
+        .visual-badges {
+            display: flex;
+            gap: var(--space-md);
+        }
+        .badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }.form-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+            background-color: var(--color-bg-body);
+        }
+        @media (min-width: 640px) {
+            .form-column {
+                padding: var(--space-2xl);
+            }
+        }
+        @media (min-width: 1024px) {
+            .form-column {
+                width: 50%;
+                padding: 96px;
+            }
+        }
+        .form-container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+        .form-header {
+            text-align: center;
+        }
+        @media (min-width: 1024px) {
+            .form-header {
+                text-align: left;
+            }
+        }
+        .form-header h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: var(--space-xs);
+        }
+        .form-header p {
+            color: var(--color-text-secondary);
+            font-size: 1rem;
+        }.login-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .form-input {
+            width: 100%;
+            height: 48px;
+            padding: 0 var(--space-md);
+            padding-right: 40px;border: 1px solid var(--color-input-border);
+            border-radius: var(--radius-md);
+            background-color: var(--color-input-bg);
+            font-size: 1rem;
+            color: var(--color-text-main);
+            transition: var(--transition-base);
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(19, 127, 236, 0.15);
+        }
+        .input-icon {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            pointer-events: none;
+        }
+        .input-icon.clickable {
+            pointer-events: auto;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .input-icon.clickable:hover {
+            color: var(--color-text-secondary);
+        }
+        .form-row-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .link-primary {
+            color: var(--color-primary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .link-primary:hover {
+            text-decoration: underline;
+            color: var(--color-primary-hover);
+        }
+        .btn-primary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            width: 100%;
+            height: 48px;
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition-base);
+        }
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+            box-shadow: var(--shadow-md);
+        }.divider {
+            position: relative;
+            text-align: center;
+            margin: var(--space-md) 0;
+        }
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 1px;
+            background-color: var(--color-border);
+        }
+        .divider-text {
+            position: relative;
+            background-color: var(--color-bg-body);
+            padding: 0 var(--space-sm);
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }.registration-area {
+            text-align: center;
+        }
+        .registration-text {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-md);
+        }
+        .btn-secondary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 48px;
+            background-color: var(--color-surface);
+            color: var(--color-text-main);
+            border: 1px solid var(--color-input-border);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-base);
+        }
+        .btn-secondary:hover {
+            background-color: #f8fafc;
+            border-color: #94a3b8;
+        }.auth-footer {
+            padding-top: var(--space-lg);
+            border-top: 1px solid var(--color-border);
+            margin-top: auto;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-lg);
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-md);
+        }
+        .footer-links a:hover {
+            color: var(--color-primary);
+        }
+        .copyright {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }@media (max-width: 640px) {
+            .btn-support span:not(.material-symbols-outlined) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+<header class="site-header">
+<div class="brand-logo">
+<div class="icon-box">
+<span class="material-symbols-outlined" style="font-size: 32px;">token</span>
+</div>
+<h2>SPI採用ポータル</h2>
+</div>
+<button class="btn-support">
+<span class="material-symbols-outlined">headset_mic</span>
+<span>お問い合わせ</span>
+</button>
+</header>
+<main class="main-content">
+<section class="visual-column">
+<div class="bg-image" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBqkVw21s39rSrfMitNHWSqvakQSs8wI_0htU_UybTdwwolJuDnlwfMuIb1UNUrI9Cim-Qpj4GpE6f174hY1abMX1iuTXKZnJgvDMspuvLbI_APtcBhzzi-JoY0HEqvt6v2Ir8fE8b5zS3gI2jjWUG46XY9BasCRM3ll9BrvuRxp7V3yhC_QQDUCRwszu6gCag1KFHWtlfTqQ49iCTwkMXg_0Rog5LWMNoAKOr1G0BQhNVjWBu_QGEGeKaIOx1A27N1fpi9WRI7vfg');"></div>
+<div class="bg-overlay"></div>
+<div class="visual-content">
+<div class="feature-icon">
+<span class="material-symbols-outlined" style="font-size: 24px;">verified_user</span>
+</div>
+<h1 class="visual-title">安全でプロフェッショナルな<br/>試験環境</h1>
+<p class="visual-desc">
+                        SPI採用試験プラットフォームへようこそ。<br/>
+                        公正かつ正確な能力評価のための、安全な受験環境を提供します。
+                    </p>
+<div class="visual-badges">
+<div class="badge">
+<span class="material-symbols-outlined">check_circle</span>
+<span>ブラウザ動作確認済</span>
+</div>
+<div class="badge">
+<span class="material-symbols-outlined">timer</span>
+<span>時間制限あり</span>
+</div>
+</div>
+</div>
+</section>
+<section class="form-column">
+<div class="form-container">
+<div class="form-header">
+<h2>受験者ログイン</h2>
+<p>受験IDまたは登録したメールアドレスを入力してください。</p>
+</div>
+<form action="#" class="login-form" onsubmit="event.preventDefault();">
+<div class="form-group">
+<label class="form-label" for="email">メールアドレス / 受験ID</label>
+<div class="input-wrapper">
+<input class="form-input" id="email" placeholder="例: candidate@example.com" type="text"/>
+<div class="input-icon">
+<span class="material-symbols-outlined">mail</span>
+</div>
+</div>
+</div>
+<div class="form-group">
+<div class="form-row-between">
+<label class="form-label" for="password">パスワード</label>
+<a class="link-primary" href="#">パスワードをお忘れですか？</a>
+</div>
+<div class="input-wrapper">
+<input class="form-input" id="password" placeholder="パスワードを入力" type="password"/>
+<button class="input-icon clickable" type="button">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+</div>
+</div>
+<button class="btn-primary" type="submit">
+                            ログイン
+                            <span class="material-symbols-outlined">login</span>
+</button>
+</form>
+<div class="divider">
+<span class="divider-text">初めての方はこちら</span>
+</div>
+<div class="registration-area">
+<p class="registration-text">アカウントをお持ちでない場合は、招待メールに記載されたコードを使用して登録してください。</p>
+<button class="btn-secondary">
+                            新規アカウント登録
+                        </button>
+</div>
+<div class="auth-footer">
+<div class="footer-links">
+<a href="#">プライバシーポリシー</a>
+<a href="#">利用規約</a>
+<a href="#">推奨環境</a>
+</div>
+<p class="copyright">© 2023 SPI Assessment Systems. All rights reserved.</p>
+</div>
+</div>
+</section>
+</main>
+</div>
+
+</body></html>

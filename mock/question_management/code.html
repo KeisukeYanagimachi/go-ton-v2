@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>問題管理 - SPI管理者画面</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>:root {
+            --color-primary: #137fec;
+            --color-primary-hover: #1068c2;
+            --color-primary-light: rgba(19, 127, 236, 0.1);
+            --color-text-main: #111827;
+            --color-text-secondary: #6b7280;
+            --color-text-light: #9ca3af;
+            --color-border: #e5e7eb;
+            --color-bg-body: #f3f4f6;
+            --color-bg-card: #ffffff;
+            --color-bg-hover: #f9fafb;
+            --color-bg-sidebar: #ffffff;
+            --color-danger: #ef4444;
+            --color-danger-bg: #fef2f2;
+            --color-success: #10b981;
+            --color-success-bg: #ecfdf5;
+            --font-main: 'Inter', 'Noto Sans JP', sans-serif;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --radius-sm: 4px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+            --radius-full: 9999px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }* {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--color-bg-body);
+            color: var(--color-text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        a { text-decoration: none; color: inherit; }
+        button { border: none; background: none; cursor: pointer; font-family: inherit; }
+        input, select, textarea { font-family: inherit; }.app-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }.sidebar {
+            width: 260px;
+            background-color: var(--color-bg-sidebar);
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            padding: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            background-color: #e5e7eb;
+            background-size: cover;
+            background-position: center;
+        }
+        .user-info h1 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--color-text-main);
+        }
+        .user-info p {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+        }
+        .sidebar-nav {
+            flex: 1;
+            padding: 0 var(--spacing-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow-y: auto;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 10px var(--spacing-md);
+            border-radius: var(--radius-md);
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-item:hover {
+            background-color: var(--color-bg-hover);
+            color: var(--color-text-main);
+        }
+        .nav-item.active {
+            background-color: var(--color-primary-light);
+            color: var(--color-primary);
+        }
+        .nav-item .material-symbols-outlined {
+            font-size: 20px;
+        }
+        .nav-item.active .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+        }
+        .sidebar-footer {
+            padding: var(--spacing-md);
+            border-top: 1px solid var(--color-border);
+        }.main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }.top-bar {
+            background-color: var(--color-bg-card);
+            border-bottom: 1px solid var(--color-border);
+            padding: var(--spacing-md) var(--spacing-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+        .breadcrumbs {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            color: var(--color-text-secondary);
+            font-size: 13px;
+        }
+        .breadcrumbs a:hover {
+            color: var(--color-primary);
+        }
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .page-title h2 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .page-title p {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+        }
+        .btn-secondary {
+            background-color: white;
+            border: 1px solid var(--color-border);
+            color: var(--color-text-main);
+        }
+        .btn-secondary:hover {
+            background-color: var(--color-bg-hover);
+        }.content-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }.list-panel {
+            flex: 1;
+            background-color: var(--color-bg-card);
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .filter-section {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--color-border);
+        }
+        .search-box {
+            position: relative;
+            margin-bottom: var(--spacing-sm);
+        }
+        .search-box .material-symbols-outlined {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-light);
+            pointer-events: none;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 10px 10px 36px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            background-color: var(--color-bg-hover);
+            font-size: 14px;
+            outline: none;
+        }
+        .search-input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px var(--color-primary-light);
+            background-color: white;
+        }
+        .chip-group {
+            display: flex;
+            gap: var(--spacing-sm);
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .chip-group::-webkit-scrollbar {
+            display: none;
+        }
+        .chip {
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            border: 1px solid var(--color-border);
+            background-color: white;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chip:hover {
+            background-color: var(--color-bg-hover);
+        }
+        .chip.active {
+            background-color: var(--color-text-main);
+            color: white;
+            border-color: var(--color-text-main);
+        }
+        .question-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .list-item {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--color-bg-body);
+            display: flex;
+            gap: var(--spacing-md);
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-left: 4px solid transparent;
+        }
+        .list-item:hover {
+            background-color: var(--color-bg-hover);
+        }
+        .list-item.active {
+            background-color: #f0f7ff;
+            border-left-color: var(--color-primary);
+        }
+        .list-item-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .list-item-meta {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: 4px;
+        }
+        .badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-cat-logic { background: #f3e8ff; color: #7e22ce; }
+        .badge-cat-lang { background: #dbeafe; color: #1d4ed8; }
+        .badge-cat-nonverbal { background: #ffedd5; color: #c2410c; }
+        .badge-id { background: #f3f4f6; color: #4b5563; }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .status-active { background: var(--color-success-bg); color: var(--color-success); }
+        .status-draft { background: #f3f4f6; color: #6b7280; }
+        .list-item-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            color: var(--color-text-main);
+        }
+        .list-item-time {
+            font-size: 12px;
+            color: var(--color-text-light);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .list-item-actions {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .action-group {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .list-item:hover .action-group {
+            opacity: 1;
+        }
+        .icon-btn {
+            padding: 4px;
+            border-radius: 4px;
+            color: var(--color-text-light);
+        }
+        .icon-btn:hover {
+            background-color: #e5e7eb;
+            color: var(--color-text-main);
+        }.editor-panel {
+            width: 60%;
+            background-color: var(--color-bg-card);
+            border-left: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.03);
+            z-index: 10;
+        }
+        .editor-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+        .editor-title h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .editor-title p {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+        .editor-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        .editor-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-lg) var(--spacing-xl);
+        }
+        .form-section {
+            margin-bottom: var(--spacing-xl);
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            margin-bottom: 6px;
+        }
+        .form-select-wrapper {
+            position: relative;
+        }
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            appearance: none;
+            background-color: var(--color-bg-hover);
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .form-select-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--color-text-light);
+        }
+        .rich-text-toolbar {
+            display: flex;
+            gap: 2px;
+            padding: 4px;
+            background-color: var(--color-bg-hover);
+            border: 1px solid var(--color-border);
+            border-bottom: none;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+        .toolbar-btn {
+            padding: 4px;
+            border-radius: 4px;
+            color: var(--color-text-secondary);
+        }
+        .toolbar-btn:hover {
+            background-color: white;
+            color: var(--color-text-main);
+        }
+        .toolbar-separator {
+            width: 1px;
+            background-color: var(--color-border);
+            margin: 0 4px;
+        }
+        .form-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            font-size: 15px;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+        }
+        .form-textarea:focus, .form-select:focus, .form-input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px var(--color-primary-light);
+        }
+        .file-dropzone {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .file-dropzone:hover {
+            background-color: var(--color-bg-hover);
+            border-color: var(--color-primary);
+        }
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+            padding: 4px 0;
+        }
+        .option-radio {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--color-primary);
+        }
+        .option-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        .option-label {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--color-text-light);
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px 12px 10px 32px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            font-size: 14px;
+            outline: none;
+        }
+        .option-item.correct .form-input {
+            border-color: var(--color-primary);
+            background-color: rgba(19, 127, 236, 0.05);
+            font-weight: 500;
+        }
+        .option-item.correct .option-label {
+            color: var(--color-primary);
+        }
+        .remove-option-btn {
+            color: var(--color-text-light);
+            padding: 6px;
+            border-radius: var(--radius-full);
+            opacity: 0;
+            transition: all 0.2s;
+        }
+        .option-item:hover .remove-option-btn {
+            opacity: 1;
+        }
+        .remove-option-btn:hover {
+            color: var(--color-danger);
+            background-color: var(--color-danger-bg);
+        }
+        .add-option-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--color-primary);
+            font-weight: 500;
+            font-size: 13px;
+            padding: 8px 0;
+        }
+        .add-option-btn:hover {
+            text-decoration: underline;
+        }
+        .explanation-box {
+            border-radius: var(--radius-lg);border-top: none;
+        }
+        .explanation-textarea {
+            border-radius: var(--radius-lg);
+            min-height: 80px;
+        }
+        .editor-footer {
+            padding: var(--spacing-lg);
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--color-bg-card);
+        }::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+<aside class="sidebar">
+<div class="sidebar-header">
+<div class="user-avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA0lm4PUHSJDpmKq0o9DXfmUzkPo4K08bMYKuUSRF9bkLdDXHj7D-oxXWuLXMb129heQPTtoFwgc0j0ORv2VyUg7LXJgxG9NefJbiWX3bSsq0M5Ir5EMbAv32gM4EkVcVRqXO8uyhDPb7Xf6r-2UmYtTo2ANP3StZOLUyd-BWUQZFuhI2AlGAPnUHnEtdu-ViT1KEDA1VYuPQmF1RnyB40yb6HuwsRwZTDYKm6s_dItoMPto3QiCODq68hunU4n7mNiOoL0qHbyoVM");'></div>
+<div class="user-info">
+<h1>SPI 管理画面</h1>
+<p>管理者アカウント</p>
+</div>
+</div>
+<nav class="sidebar-nav">
+<a class="nav-item" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>ダッシュボード</span>
+</a>
+<a class="nav-item" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+<span>試験設定</span>
+</a>
+<a class="nav-item active" href="#">
+<span class="material-symbols-outlined">quiz</span>
+<span>問題管理</span>
+</a>
+<a class="nav-item" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span>受験者一覧</span>
+</a>
+<a class="nav-item" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span>成績レポート</span>
+</a>
+</nav>
+<div class="sidebar-footer">
+<a class="nav-item" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>システム設定</span>
+</a>
+</div>
+</aside>
+<main class="main-content">
+<header class="top-bar">
+<div class="breadcrumbs">
+<a href="#">ホーム</a>
+<span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
+<a href="#">試験設定</a>
+<span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
+<span style="color: var(--color-text-main); font-weight: 500;">問題管理</span>
+</div>
+<div class="header-actions">
+<div class="page-title">
+<h2>問題管理</h2>
+<p>SPI試験の問題を追加、編集、削除します</p>
+</div>
+<div style="display: flex; gap: 12px;">
+<button class="btn btn-secondary">
+<span class="material-symbols-outlined">file_upload</span>
+                        CSVインポート
+                    </button>
+<button class="btn btn-primary">
+<span class="material-symbols-outlined">add</span>
+                        新規問題作成
+                    </button>
+</div>
+</div>
+</header>
+<div class="content-area">
+<div class="list-panel">
+<div class="filter-section">
+<div class="search-box">
+<span class="material-symbols-outlined">search</span>
+<input class="search-input" placeholder="キーワードまたはIDで検索..." type="text"/>
+</div>
+<div class="chip-group">
+<button class="chip active">すべて</button>
+<button class="chip">言語分野</button>
+<button class="chip">非言語分野</button>
+<button class="chip">性格適性</button>
+<button class="chip">英語</button>
+</div>
+</div>
+<div class="question-list">
+<div class="list-item active">
+<div class="list-item-content">
+<div class="list-item-meta">
+<span class="badge badge-cat-nonverbal">非言語</span>
+<span class="badge badge-id">ID: 1024</span>
+</div>
+<h3 class="list-item-title">
+                                列車が時速120kmで走行し、450kmの距離を移動する必要があります...
+                            </h3>
+<p class="list-item-time">
+<span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                                最終更新: 今日 10:00
+                            </p>
+</div>
+<div class="list-item-actions">
+<div class="action-group" style="opacity: 1;">
+<button class="icon-btn"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+</div>
+<span class="status-badge status-active">
+<span class="material-symbols-outlined" style="font-size: 12px;">check_circle</span>
+                                公開中
+                            </span>
+</div>
+</div>
+<div class="list-item">
+<div class="list-item-content">
+<div class="list-item-meta">
+<span class="badge badge-cat-lang">言語</span>
+<span class="badge badge-id">ID: 1023</span>
+</div>
+<h3 class="list-item-title">
+                                「曖昧」の対義語として最も適切なものを選びなさい。
+                            </h3>
+<p class="list-item-time">
+<span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                                昨日
+                            </p>
+</div>
+<div class="list-item-actions">
+<div class="action-group">
+<button class="icon-btn"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="icon-btn" style="color: var(--color-danger);"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+</div>
+</div>
+<div class="list-item">
+<div class="list-item-content">
+<div class="list-item-meta">
+<span class="badge badge-cat-nonverbal">非言語</span>
+<span class="badge badge-id">ID: 1022</span>
+</div>
+<h3 class="list-item-title">
+                                次の数列の法則に従って、空欄に入る数字を答えよ: 2, 5, 11, 23, ?
+                            </h3>
+<p class="list-item-time">
+<span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                                2日前
+                            </p>
+</div>
+<div class="list-item-actions">
+<div class="action-group">
+<button class="icon-btn"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="icon-btn" style="color: var(--color-danger);"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+<span class="status-badge status-draft">下書き</span>
+</div>
+</div>
+<div class="list-item">
+<div class="list-item-content">
+<div class="list-item-meta">
+<span class="badge badge-cat-logic">論理</span>
+<span class="badge badge-id">ID: 1021</span>
+</div>
+<h3 class="list-item-title">
+                                AはBより背が高く、CはAより背が高い。DはBより背が低い。最も背が高いのは...
+                            </h3>
+<p class="list-item-time">
+<span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                                3日前
+                            </p>
+</div>
+<div class="list-item-actions">
+<div class="action-group">
+<button class="icon-btn"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="icon-btn" style="color: var(--color-danger);"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="editor-panel">
+<div class="editor-header">
+<div class="editor-title">
+<h3>問題編集 #1024</h3>
+<p>問題の詳細設定と正解の管理</p>
+</div>
+<div class="editor-actions">
+<button class="icon-btn" title="削除"><span class="material-symbols-outlined">delete</span></button>
+<button class="icon-btn" title="複製"><span class="material-symbols-outlined">content_copy</span></button>
+<button class="icon-btn" title="プレビュー"><span class="material-symbols-outlined">visibility</span></button>
+</div>
+</div>
+<div class="editor-scroll">
+<div class="grid-2">
+<div class="form-group">
+<label class="form-label">カテゴリ</label>
+<div class="form-select-wrapper">
+<select class="form-select">
+<option>非言語分野</option>
+<option>言語分野</option>
+<option>性格適性</option>
+<option>英語</option>
+</select>
+<span class="material-symbols-outlined form-select-icon">expand_more</span>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label">難易度</label>
+<div class="form-select-wrapper">
+<select class="form-select">
+<option>中 (Medium)</option>
+<option>低 (Low)</option>
+<option>高 (High)</option>
+</select>
+<span class="material-symbols-outlined form-select-icon">signal_cellular_alt</span>
+</div>
+</div>
+</div>
+<div class="form-section">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px;">
+<label class="form-label" style="margin-bottom: 0;">質問文</label>
+</div>
+<div class="rich-text-toolbar">
+<button class="toolbar-btn"><span class="material-symbols-outlined" style="font-size: 18px;">format_bold</span></button>
+<button class="toolbar-btn"><span class="material-symbols-outlined" style="font-size: 18px;">format_italic</span></button>
+<button class="toolbar-btn"><span class="material-symbols-outlined" style="font-size: 18px;">functions</span></button>
+<div class="toolbar-separator"></div>
+<button class="toolbar-btn"><span class="material-symbols-outlined" style="font-size: 18px;">image</span></button>
+</div>
+<textarea class="form-textarea" placeholder="ここに質問文を入力してください...">列車が時速120kmで走行し、450kmの距離を移動する必要があります。所要時間は何分ですか？</textarea>
+</div>
+<div class="form-section">
+<label class="form-label">添付ファイル（図表・画像）</label>
+<div class="file-dropzone">
+<span class="material-symbols-outlined" style="font-size: 32px; color: var(--color-text-light);">add_photo_alternate</span>
+<p style="font-size: 13px; color: var(--color-text-secondary); margin-top: 8px;">
+                                ドラッグ＆ドロップ または <span style="color: var(--color-primary); font-weight: 500;">ファイルを選択</span>
+</p>
+</div>
+</div>
+<div class="form-section">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px;">
+<label class="form-label" style="margin-bottom: 0;">回答オプション</label>
+<span style="font-size: 12px; color: var(--color-text-light);">正解の選択肢のラジオボタンを選択してください</span>
+</div>
+<div class="option-item">
+<input class="option-radio" name="correct_answer" type="radio"/>
+<div class="option-input-wrapper">
+<span class="option-label">A</span>
+<input class="form-input" type="text" value="200分"/>
+</div>
+<button class="remove-option-btn"><span class="material-symbols-outlined" style="font-size: 18px;">close</span></button>
+</div>
+<div class="option-item correct">
+<input checked="" class="option-radio" name="correct_answer" type="radio"/>
+<div class="option-input-wrapper">
+<span class="option-label">B</span>
+<input class="form-input" type="text" value="225分"/>
+</div>
+<button class="remove-option-btn"><span class="material-symbols-outlined" style="font-size: 18px;">close</span></button>
+</div>
+<div class="option-item">
+<input class="option-radio" name="correct_answer" type="radio"/>
+<div class="option-input-wrapper">
+<span class="option-label">C</span>
+<input class="form-input" type="text" value="240分"/>
+</div>
+<button class="remove-option-btn"><span class="material-symbols-outlined" style="font-size: 18px;">close</span></button>
+</div>
+<div class="option-item">
+<input class="option-radio" name="correct_answer" type="radio"/>
+<div class="option-input-wrapper">
+<span class="option-label">D</span>
+<input class="form-input" type="text" value="300分"/>
+</div>
+<button class="remove-option-btn"><span class="material-symbols-outlined" style="font-size: 18px;">close</span></button>
+</div>
+<button class="add-option-btn">
+<span class="material-symbols-outlined" style="font-size: 18px;">add_circle</span>
+                            選択肢を追加
+                        </button>
+</div>
+<div class="form-section" style="padding-top: 16px; border-top: 1px solid var(--color-bg-body);">
+<label class="form-label">解説 (任意)</label>
+<textarea class="form-textarea explanation-textarea" placeholder="正解の理由を入力してください...">時間 = 距離 ÷ 速さ。 450km ÷ 120km/h = 3.75時間。 3.75 × 60分 = 225分。</textarea>
+</div>
+<div style="height: 60px;"></div> 
+</div>
+<div class="editor-footer">
+<div style="display: flex; align-items: center; gap: 6px;">
+<span class="status-badge status-active" style="padding: 4px 8px;">
+<span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span>
+                            保存済み
+                        </span>
+<span style="font-size: 12px; color: var(--color-text-light);">最終保存: 数秒前</span>
+</div>
+<div style="display: flex; gap: 12px;">
+<button class="btn btn-secondary">キャンセル</button>
+<button class="btn btn-primary">
+<span class="material-symbols-outlined" style="font-size: 18px;">save</span>
+                            変更を保存
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>管理者ダッシュボード - SPI管理システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {
+            --primary-color: #137fec;
+            --primary-hover: #0b6ad0;
+            --primary-light: #e7f2fd;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --success-bg: #ecfdf5;
+            --warning-color: #f59e0b;
+            --warning-bg: #fffbeb;
+            --danger-color: #ef4444;
+            --background-light: #f8fafc;
+            --surface-white: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --text-light: #94a3b8;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --sidebar-width: 260px;
+            --header-height: 70px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--background-light);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }.layout-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }.sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--surface-white);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-color);
+            border-radius: var(--radius-md);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-text h1 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+        }
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--text-sub);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .nav-item:hover {
+            background-color: var(--background-light);
+            color: var(--text-main);
+        }
+        .nav-item.active {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+        .nav-item .material-symbols-outlined {
+            font-size: 1.375rem;
+        }
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: #cbd5e1;
+            position: relative;
+        }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .status-dot {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background-color: var(--success-color);
+            border: 2px solid var(--surface-white);
+            border-radius: 50%;
+        }
+        .user-info p {
+            margin: 0;
+        }
+        .user-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+        }.main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }.top-header {
+            height: var(--header-height);
+            background-color: var(--surface-white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .page-title h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .page-title p {
+            font-size: 0.875rem;
+            color: var(--text-sub);
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: var(--background-light);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            width: 300px;
+        }
+        .search-bar input {
+            border: none;
+            background: transparent;
+            margin-left: 0.5rem;
+            outline: none;
+            width: 100%;
+            color: var(--text-main);
+        }
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+        .icon-btn:hover {
+            color: var(--primary-color);
+            background-color: var(--background-light);
+        }
+        .badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            background-color: var(--danger-color);
+            border-radius: 50%;
+        }.dashboard-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }.stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+        .stat-card {
+            background-color: var(--surface-white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 160px;
+        }
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-trend {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .stat-value {
+            margin-top: auto;
+        }
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-sub);
+            margin-bottom: 0.5rem;
+        }
+        .stat-number {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }.stat-primary .stat-icon { background-color: var(--primary-light); color: var(--primary-color); }
+        .stat-purple .stat-icon { background-color: #f3e8ff; color: #9333ea; }
+        .stat-orange .stat-icon { background-color: #ffedd5; color: #ea580c; }
+        .stat-green .stat-icon { background-color: #dcfce7; color: #16a34a; }
+        .trend-up { background-color: var(--success-bg); color: var(--success-color); }
+        .trend-neutral { background-color: var(--background-light); color: var(--text-sub); }.content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .card {
+            background-color: var(--surface-white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .card-link {
+            font-size: 0.875rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .card-link:hover { text-decoration: underline; }.table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+        th {
+            background-color: var(--background-light);
+            color: var(--text-sub);
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+            white-space: nowrap;
+        }
+        td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-live { background-color: var(--success-bg); color: var(--success-color); }
+        .status-draft { background-color: var(--background-light); color: var(--text-sub); }
+        .status-review { background-color: var(--primary-light); color: var(--primary-color); }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: var(--border-color);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 999px;
+        }.quick-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1.25rem;
+            background-color: var(--background-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .action-btn:hover {
+            background-color: var(--surface-white);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        .action-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .action-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }.activity-feed {
+            padding: 1.5rem;
+        }
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding-bottom: 1.5rem;
+            position: relative;
+        }
+        .activity-item:last-child {
+            padding-bottom: 0;
+        }
+        .activity-item::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 24px;
+            bottom: 0;
+            width: 1px;
+            background-color: var(--border-color);
+        }
+        .activity-item:last-child::before {
+            display: none;
+        }
+        .activity-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: var(--surface-white);
+            border: 2px solid;
+            flex-shrink: 0;
+            z-index: 1;
+        }
+        .activity-content h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .activity-content p {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            margin-bottom: 0.25rem;
+        }
+        .activity-time {
+            font-size: 0.7rem;
+            color: var(--text-light);
+        }.chart-container {
+            padding: 1.5rem;
+        }
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 200px;
+            gap: 8px;
+        }
+        .bar-wrapper {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        .bar {
+            background-color: var(--primary-light);
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s ease, background-color 0.2s;
+            position: relative;
+        }
+        .bar:hover {
+            background-color: var(--primary-color);
+        }
+        .bar.active {
+            background-color: var(--primary-color);
+        }
+        .chart-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            color: var(--text-light);
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+<div class="layout-container">
+<aside class="sidebar">
+<div class="sidebar-header">
+<div class="logo-icon">
+<span class="material-symbols-outlined">badge</span>
+</div>
+<div class="logo-text">
+<h1>SPI Admin</h1>
+<p>採用試験管理システム</p>
+</div>
+</div>
+<nav class="sidebar-nav">
+<a class="nav-item active" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>ダッシュボード</span>
+</a>
+<a class="nav-item" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>受験者管理</span>
+</a>
+<a class="nav-item" href="#">
+<span class="material-symbols-outlined">library_books</span>
+<span>問題管理</span>
+</a>
+<a class="nav-item" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span>試験設定</span>
+</a>
+<a class="nav-item" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span>成績レポート</span>
+</a>
+<div style="margin: 0.5rem 0; border-top: 1px solid var(--border-color);"></div>
+<a class="nav-item" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>システム設定</span>
+</a>
+<a class="nav-item" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>サポート</span>
+</a>
+</nav>
+<div class="sidebar-footer">
+<div class="user-profile">
+<div class="avatar">
+<img alt="Admin Profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxlHpA50OFGkgnqfWePdg9K5k2Z_ef4H2pT0PYg0X1MWOtt4anyroBBiP7bisFVWLtCDsjMnOka_tL8PeWhqxA8JdBhvyxy-q6ZlFAYDPIxX4ywOZZO1FGmIhx1qtj-60W5dMc32dWGSPEvlE7KLEd9H3aj8KBjrAS-w3MJ6F76sz5AnjO1G9EeijGmzM25CPwjNnhtydcdD77xgrUN3RBkGCxuLsS6USQ2bkJ5F7o2unit7X-OZ3bN1HtwoVi-SotoBn23V9nMYw"/>
+<div class="status-dot"></div>
+</div>
+<div class="user-info">
+<p class="user-name">山田 太郎</p>
+<p class="user-role">人事部 管理者</p>
+</div>
+</div>
+</div>
+</aside>
+<main class="main-content">
+<header class="top-header">
+<div class="page-title">
+<h2>管理者ダッシュボード</h2>
+<p>本日の採用活動状況と主要指標の概要</p>
+</div>
+<div class="header-actions">
+<div class="search-bar">
+<span class="material-symbols-outlined" style="color: var(--text-light);">search</span>
+<input placeholder="受験者、試験名で検索..." type="text"/>
+</div>
+<button class="icon-btn">
+<span class="material-symbols-outlined">notifications</span>
+<div class="badge"></div>
+</button>
+<button class="icon-btn">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</header>
+<div class="dashboard-scroll">
+<div class="container">
+<div class="stats-grid">
+<div class="stat-card stat-primary">
+<div class="stat-header">
+<div class="stat-icon">
+<span class="material-symbols-outlined">assignment</span>
+</div>
+<div class="stat-trend trend-up">
+<span class="material-symbols-outlined" style="font-size: 14px;">trending_up</span>
+<span>+2</span>
+</div>
+</div>
+<div class="stat-value">
+<p class="stat-label">アクティブな試験</p>
+<h3 class="stat-number">12</h3>
+</div>
+</div>
+<div class="stat-card stat-purple">
+<div class="stat-header">
+<div class="stat-icon">
+<span class="material-symbols-outlined">group</span>
+</div>
+<div class="stat-trend trend-up">
+<span class="material-symbols-outlined" style="font-size: 14px;">trending_up</span>
+<span>+12%</span>
+</div>
+</div>
+<div class="stat-value">
+<p class="stat-label">総受験者数</p>
+<h3 class="stat-number">1,240</h3>
+</div>
+</div>
+<div class="stat-card stat-orange">
+<div class="stat-header">
+<div class="stat-icon">
+<span class="material-symbols-outlined">pending_actions</span>
+</div>
+<div class="stat-trend trend-neutral">
+<span>残り 5件</span>
+</div>
+</div>
+<div class="stat-value">
+<p class="stat-label">未処理のレビュー</p>
+<h3 class="stat-number">45</h3>
+</div>
+</div>
+<div class="stat-card stat-green">
+<div class="stat-header">
+<div class="stat-icon">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div class="stat-trend trend-up">
+<span class="material-symbols-outlined" style="font-size: 14px;">trending_up</span>
+<span>+1.2%</span>
+</div>
+</div>
+<div class="stat-value">
+<p class="stat-label">平均合格率</p>
+<h3 class="stat-number">85%</h3>
+</div>
+</div>
+</div>
+<div class="content-grid">
+<div style="display: flex; flex-direction: column; gap: 2rem;">
+<div class="card">
+<div class="card-header">
+<h3 class="card-title">実施中の採用試験</h3>
+<a class="card-link" href="#">すべて表示</a>
+</div>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>試験名称</th>
+<th>作成日</th>
+<th>受験者数</th>
+<th>ステータス</th>
+<th>進捗</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="font-weight: 500;">フロントエンドエンジニア SPI</td>
+<td style="color: var(--text-sub);">2023/10/24</td>
+<td>44名</td>
+<td><span class="status-badge status-live">実施中</span></td>
+<td style="width: 120px;">
+<div class="progress-bar">
+<div class="progress-fill" style="width: 65%;"></div>
+</div>
+</td>
+</tr>
+<tr>
+<td style="font-weight: 500;">バックエンドエンジニア 上級</td>
+<td style="color: var(--text-sub);">2023/10/20</td>
+<td>17名</td>
+<td><span class="status-badge status-live">実施中</span></td>
+<td style="width: 120px;">
+<div class="progress-bar">
+<div class="progress-fill" style="width: 80%;"></div>
+</div>
+</td>
+</tr>
+<tr>
+<td style="font-weight: 500;">25卒 インターン適性検査</td>
+<td style="color: var(--text-sub);">2023/11/01</td>
+<td style="color: var(--text-light); font-style: italic;">未登録</td>
+<td><span class="status-badge status-draft">下書き</span></td>
+<td style="width: 120px;">
+<div class="progress-bar">
+<div class="progress-fill" style="width: 10%; background-color: var(--text-light);"></div>
+</div>
+</td>
+</tr>
+<tr>
+<td style="font-weight: 500;">PMケーススタディ</td>
+<td style="color: var(--text-sub);">2023/10/15</td>
+<td>2名</td>
+<td><span class="status-badge status-review">確認中</span></td>
+<td style="width: 120px;">
+<div class="progress-bar">
+<div class="progress-fill" style="width: 100%; background-color: var(--success-color);"></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="card">
+<div class="card-header">
+<h3 class="card-title">受験者数推移 (直近30日)</h3>
+</div>
+<div class="chart-container">
+<div class="chart-bars">
+<div class="bar-wrapper"><div class="bar" style="height: 40%"></div></div>
+<div class="bar-wrapper"><div class="bar" style="height: 65%"></div></div>
+<div class="bar-wrapper"><div class="bar" style="height: 45%"></div></div>
+<div class="bar-wrapper"><div class="bar" style="height: 80%"></div></div>
+<div class="bar-wrapper"><div class="bar" style="height: 30%"></div></div>
+<div class="bar-wrapper"><div class="bar" style="height: 55%"></div></div>
+<div class="bar-wrapper"><div class="bar" style="height: 70%"></div></div>
+<div class="bar-wrapper"><div class="bar" style="height: 90%"></div></div>
+<div class="bar-wrapper"><div class="bar" style="height: 60%"></div></div>
+<div class="bar-wrapper"><div class="bar" style="height: 75%"></div></div>
+<div class="bar-wrapper"><div class="bar active" style="height: 85%"></div></div>
+</div>
+<div class="chart-labels">
+<span>10月01日</span>
+<span>10月15日</span>
+<span>今日</span>
+</div>
+</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2rem;">
+<div class="card">
+<div class="card-header">
+<h3 class="card-title">クイックアクション</h3>
+</div>
+<div class="quick-actions-grid">
+<a class="action-btn" href="#">
+<div class="action-icon" style="background-color: var(--primary-light); color: var(--primary-color);">
+<span class="material-symbols-outlined">add_circle</span>
+</div>
+<span class="action-label">新規試験作成</span>
+</a>
+<a class="action-btn" href="#">
+<div class="action-icon" style="background-color: #f3e8ff; color: #9333ea;">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<span class="action-label">受験者追加</span>
+</a>
+<a class="action-btn" href="#">
+<div class="action-icon" style="background-color: #dcfce7; color: #16a34a;">
+<span class="material-symbols-outlined">upload_file</span>
+</div>
+<span class="action-label">CSVインポート</span>
+</a>
+<a class="action-btn" href="#">
+<div class="action-icon" style="background-color: #ffedd5; color: #ea580c;">
+<span class="material-symbols-outlined">download</span>
+</div>
+<span class="action-label">レポート出力</span>
+</a>
+</div>
+</div>
+<div class="card" style="flex: 1;">
+<div class="card-header">
+<h3 class="card-title">最近のアクティビティ</h3>
+<button class="icon-btn" style="padding: 0.25rem;">
+<span class="material-symbols-outlined">refresh</span>
+</button>
+</div>
+<div class="activity-feed">
+<div class="activity-item">
+<div class="activity-icon" style="border-color: #3b82f6;"></div>
+<div class="activity-content">
+<h4>試験完了: フロントエンド開発</h4>
+<p>田中 一郎 - スコア: 88%</p>
+<span class="activity-time">2分前</span>
+</div>
+</div>
+<div class="activity-item">
+<div class="activity-icon" style="border-color: #a855f7;"></div>
+<div class="activity-content">
+<h4>新規受験者登録</h4>
+<p>佐藤 花子 (公開ポータル経由)</p>
+<span class="activity-time">15分前</span>
+</div>
+</div>
+<div class="activity-item">
+<div class="activity-icon" style="border-color: #eab308;"></div>
+<div class="activity-content">
+<h4>システム通知</h4>
+<p>明日AM2:00より定期メンテナンス</p>
+<span class="activity-time">1時間前</span>
+</div>
+</div>
+<div class="activity-item">
+<div class="activity-icon" style="border-color: #94a3b8;"></div>
+<div class="activity-content">
+<h4>レポート自動生成</h4>
+<p>第3四半期 採用サマリー.pdf</p>
+<span class="activity-time">3時間前</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

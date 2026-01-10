@@ -1,0 +1,517 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ExamVersionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AttemptStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  LOCKED
+  SUBMITTED
+  SCORED
+  ABORTED
+}
+
+enum TicketStatus {
+  ACTIVE
+  REVOKED
+  USED
+}
+
+enum AttemptSessionStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum ExamModuleCode {
+  VERBAL
+  NONVERBAL
+  ENGLISH
+  STRUCTURAL
+  PERSONALITY
+}
+
+enum StaffRoleCode {
+  ADMIN
+  AUTHOR
+  PROCTOR
+  REPORT_VIEWER
+}
+
+enum TelemetryEventType {
+  VIEW
+  HIDE
+  ANSWER_SELECT
+  IDLE_START
+  IDLE_END
+  VISIBILITY_HIDDEN
+  VISIBILITY_VISIBLE
+  HEARTBEAT
+}
+
+model StaffUser {
+  id          String   @id @default(uuid()) @db.Uuid @map("id")
+  email       String   @unique @map("email")
+  displayName String?  @map("display_name")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  roles                 StaffUserRole[]
+  createdTickets        Ticket[]        @relation("TicketCreatedBy")
+  createdAttemptSessions AttemptSession[] @relation("AttemptSessionCreatedBy")
+  auditLogs             AuditLog[]
+
+  @@map("staff_users")
+}
+
+model StaffRole {
+  id        String         @id @default(uuid()) @db.Uuid @map("id")
+  code      StaffRoleCode  @unique @map("code")
+  name      String?        @map("name")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  userRoles StaffUserRole[]
+
+  @@map("staff_roles")
+}
+
+model StaffUserRole {
+  staffUserId String   @db.Uuid @map("staff_user_id")
+  staffRoleId String   @db.Uuid @map("staff_role_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  staffUser StaffUser @relation(fields: [staffUserId], references: [id])
+  staffRole StaffRole @relation(fields: [staffRoleId], references: [id])
+
+  @@id([staffUserId, staffRoleId])
+  @@index([staffRoleId], map: "idx_staff_user_roles_role")
+  @@map("staff_user_roles")
+}
+
+model Candidate {
+  id        String   @id @default(uuid()) @db.Uuid @map("id")
+  fullName  String   @map("full_name")
+  birthDate DateTime @db.Date @map("birth_date")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tickets Ticket[]
+  slots   CandidateSlotAssignment[]
+  attempts Attempt[]
+
+  @@map("candidates")
+}
+
+model VisitSlot {
+  id        String   @id @default(uuid()) @db.Uuid @map("id")
+  startsAt  DateTime @map("starts_at")
+  endsAt    DateTime @map("ends_at")
+  capacity  Int      @default(0) @map("capacity")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  assignments CandidateSlotAssignment[]
+  tickets     Ticket[]
+
+  @@index([startsAt], map: "idx_visit_slots_starts_at")
+  @@map("visit_slots")
+}
+
+model CandidateSlotAssignment {
+  id          String   @id @default(uuid()) @db.Uuid @map("id")
+  candidateId String   @db.Uuid @map("candidate_id")
+  visitSlotId String   @db.Uuid @map("visit_slot_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+  visitSlot VisitSlot @relation(fields: [visitSlotId], references: [id])
+
+  @@unique([candidateId, visitSlotId])
+  @@index([visitSlotId], map: "idx_candidate_slot_assignments_slot")
+  @@map("candidate_slot_assignments")
+}
+
+model Ticket {
+  id                   String       @id @default(uuid()) @db.Uuid @map("id")
+  ticketCode           String       @unique @map("ticket_code")
+  candidateId          String       @db.Uuid @map("candidate_id")
+  visitSlotId          String?      @db.Uuid @map("visit_slot_id")
+  pinHash              String       @map("pin_hash")
+  status               TicketStatus @default(ACTIVE) @map("status")
+  replacedByTicketId   String?      @db.Uuid @map("replaced_by_ticket_id")
+  createdByStaffUserId String?      @db.Uuid @map("created_by_staff_user_id")
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+
+  candidate       Candidate  @relation(fields: [candidateId], references: [id])
+  visitSlot       VisitSlot? @relation(fields: [visitSlotId], references: [id])
+  replacedByTicket Ticket?   @relation("TicketReplacement", fields: [replacedByTicketId], references: [id])
+  replacesTickets  Ticket[]  @relation("TicketReplacement")
+  createdByStaffUser StaffUser? @relation("TicketCreatedBy", fields: [createdByStaffUserId], references: [id])
+  attempts        Attempt[]
+
+  @@index([candidateId], map: "idx_tickets_candidate")
+  @@index([status], map: "idx_tickets_status")
+  @@map("tickets")
+}
+
+model Exam {
+  id          String   @id @default(uuid()) @db.Uuid @map("id")
+  name        String   @map("name")
+  description String?  @map("description")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  versions ExamVersion[]
+
+  @@map("exams")
+}
+
+model ExamVersion {
+  id            String            @id @default(uuid()) @db.Uuid @map("id")
+  examId        String            @db.Uuid @map("exam_id")
+  versionNumber Int               @map("version_number")
+  status        ExamVersionStatus @default(DRAFT) @map("status")
+  publishedAt   DateTime?         @map("published_at")
+  archivedAt    DateTime?         @map("archived_at")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  exam             Exam                @relation(fields: [examId], references: [id])
+  modules          ExamVersionModule[]
+  questions        ExamVersionQuestion[]
+  attempts         Attempt[]
+
+  @@unique([examId, versionNumber])
+  @@index([examId], map: "idx_exam_versions_exam")
+  @@index([status], map: "idx_exam_versions_status")
+  @@map("exam_versions")
+}
+
+model ExamModule {
+  id        String         @id @default(uuid()) @db.Uuid @map("id")
+  code      ExamModuleCode @unique @map("code")
+  name      String         @map("name")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  examVersionModules ExamVersionModule[]
+  examVersionQuestions ExamVersionQuestion[]
+  attemptItems        AttemptItem[]
+  attemptModuleScores AttemptModuleScore[]
+  attemptModuleTimers AttemptModuleTimer[]
+
+  @@map("exam_modules")
+}
+
+model ExamVersionModule {
+  id             String   @id @default(uuid()) @db.Uuid @map("id")
+  examVersionId  String   @db.Uuid @map("exam_version_id")
+  moduleId       String   @db.Uuid @map("module_id")
+  durationSeconds Int     @map("duration_seconds")
+  position       Int      @map("position")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  examVersion ExamVersion @relation(fields: [examVersionId], references: [id])
+  module      ExamModule  @relation(fields: [moduleId], references: [id])
+
+  @@unique([examVersionId, moduleId])
+  @@unique([examVersionId, position])
+  @@index([examVersionId], map: "idx_exam_version_modules_version")
+  @@map("exam_version_modules")
+}
+
+model QuestionCategory {
+  id        String   @id @default(uuid()) @db.Uuid @map("id")
+  name      String   @map("name")
+  parentId  String?  @db.Uuid @map("parent_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  parent   QuestionCategory?  @relation("QuestionCategoryParent", fields: [parentId], references: [id])
+  children QuestionCategory[] @relation("QuestionCategoryParent")
+  questionAssignments QuestionCategoryAssignment[]
+
+  @@index([parentId], map: "idx_question_categories_parent")
+  @@map("question_categories")
+}
+
+model Question {
+  id          String   @id @default(uuid()) @db.Uuid @map("id")
+  stem        String   @map("stem")
+  explanation String?  @map("explanation")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  options         QuestionOption[]
+  categories      QuestionCategoryAssignment[]
+  examVersions    ExamVersionQuestion[]
+  attemptItems    AttemptItem[]
+
+  @@map("questions")
+}
+
+model QuestionOption {
+  id        String   @id @default(uuid()) @db.Uuid @map("id")
+  questionId String @db.Uuid @map("question_id")
+  optionText String @map("option_text")
+  isCorrect  Boolean @default(false) @map("is_correct")
+  position   Int     @map("position")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  question Question @relation(fields: [questionId], references: [id])
+  answers  AttemptAnswer[]
+
+  @@unique([questionId, position])
+  @@index([questionId], map: "idx_question_options_question")
+  @@map("question_options")
+}
+
+model QuestionCategoryAssignment {
+  questionId String   @db.Uuid @map("question_id")
+  categoryId String   @db.Uuid @map("category_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  question Question @relation(fields: [questionId], references: [id])
+  category QuestionCategory @relation(fields: [categoryId], references: [id])
+
+  @@id([questionId, categoryId])
+  @@index([categoryId], map: "idx_question_category_assignments_cat")
+  @@map("question_category_assignments")
+}
+
+model ExamVersionQuestion {
+  id            String   @id @default(uuid()) @db.Uuid @map("id")
+  examVersionId String   @db.Uuid @map("exam_version_id")
+  moduleId      String   @db.Uuid @map("module_id")
+  questionId    String   @db.Uuid @map("question_id")
+  position      Int      @map("position")
+  points        Int      @map("points")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  examVersion ExamVersion @relation(fields: [examVersionId], references: [id])
+  module      ExamModule  @relation(fields: [moduleId], references: [id])
+  question    Question    @relation(fields: [questionId], references: [id])
+
+  @@unique([examVersionId, questionId])
+  @@unique([examVersionId, moduleId, position])
+  @@index([examVersionId, moduleId], map: "idx_evq_version_module")
+  @@index([questionId], map: "idx_evq_question")
+  @@map("exam_version_questions")
+}
+
+model Device {
+  id          String   @id @default(uuid()) @db.Uuid @map("id")
+  deviceCode  String   @unique @map("device_code")
+  description String?  @map("description")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  attemptSessions AttemptSession[]
+
+  @@map("devices")
+}
+
+model Attempt {
+  id            String        @id @default(uuid()) @db.Uuid @map("id")
+  candidateId   String        @db.Uuid @map("candidate_id")
+  examVersionId String        @db.Uuid @map("exam_version_id")
+  ticketId      String        @db.Uuid @map("ticket_id")
+  status        AttemptStatus @default(NOT_STARTED) @map("status")
+  startedAt     DateTime?     @map("started_at")
+  submittedAt   DateTime?     @map("submitted_at")
+  finishedAt    DateTime?     @map("finished_at")
+  lockedAt      DateTime?     @map("locked_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  candidate         Candidate           @relation(fields: [candidateId], references: [id])
+  examVersion       ExamVersion         @relation(fields: [examVersionId], references: [id])
+  ticket            Ticket              @relation(fields: [ticketId], references: [id])
+  sessions          AttemptSession[]
+  moduleTimers      AttemptModuleTimer[]
+  items             AttemptItem[]
+  moduleScores      AttemptModuleScore[]
+  score             AttemptScore?
+  itemEvents        AttemptItemEvent[]
+
+  @@unique([ticketId])
+  @@index([candidateId], map: "idx_attempts_candidate")
+  @@index([examVersionId], map: "idx_attempts_version")
+  @@index([status], map: "idx_attempts_status")
+  @@map("attempts")
+}
+
+model AttemptSession {
+  id                   String               @id @default(uuid()) @db.Uuid @map("id")
+  attemptId            String               @db.Uuid @map("attempt_id")
+  deviceId             String?              @db.Uuid @map("device_id")
+  status               AttemptSessionStatus @default(ACTIVE) @map("status")
+  startedAt            DateTime             @default(now()) @map("started_at")
+  endedAt              DateTime?            @map("ended_at")
+  revokedAt            DateTime?            @map("revoked_at")
+  createdByStaffUserId String?              @db.Uuid @map("created_by_staff_user_id")
+  createdAt            DateTime             @default(now()) @map("created_at")
+
+  attempt           Attempt   @relation(fields: [attemptId], references: [id])
+  device            Device?   @relation(fields: [deviceId], references: [id])
+  createdByStaffUser StaffUser? @relation("AttemptSessionCreatedBy", fields: [createdByStaffUserId], references: [id])
+
+  @@index([attemptId], map: "idx_attempt_sessions_attempt")
+  @@index([status], map: "idx_attempt_sessions_status")
+  @@map("attempt_sessions")
+}
+
+model AttemptModuleTimer {
+  id               String   @id @default(uuid()) @db.Uuid @map("id")
+  attemptId        String   @db.Uuid @map("attempt_id")
+  moduleId         String   @db.Uuid @map("module_id")
+  timeLimitSeconds Int      @map("time_limit_seconds")
+  remainingSeconds Int      @map("remaining_seconds")
+  startedAt        DateTime? @map("started_at")
+  endedAt          DateTime? @map("ended_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  attempt Attempt   @relation(fields: [attemptId], references: [id])
+  module  ExamModule @relation(fields: [moduleId], references: [id])
+
+  @@unique([attemptId, moduleId])
+  @@index([attemptId], map: "idx_attempt_module_timers_attempt")
+  @@map("attempt_module_timers")
+}
+
+model AttemptItem {
+  id        String   @id @default(uuid()) @db.Uuid @map("id")
+  attemptId String   @db.Uuid @map("attempt_id")
+  moduleId  String   @db.Uuid @map("module_id")
+  questionId String  @db.Uuid @map("question_id")
+  position  Int      @map("position")
+  points    Int      @map("points")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  attempt  Attempt   @relation(fields: [attemptId], references: [id])
+  module   ExamModule @relation(fields: [moduleId], references: [id])
+  question Question  @relation(fields: [questionId], references: [id])
+  answer   AttemptAnswer?
+  answerScore AttemptAnswerScore?
+  metrics  AttemptItemMetric?
+  events   AttemptItemEvent[]
+
+  @@unique([attemptId, moduleId, position])
+  @@index([attemptId], map: "idx_attempt_items_attempt")
+  @@index([questionId], map: "idx_attempt_items_question")
+  @@map("attempt_items")
+}
+
+model AttemptAnswer {
+  id               String   @id @default(uuid()) @db.Uuid @map("id")
+  attemptItemId    String   @unique @db.Uuid @map("attempt_item_id")
+  selectedOptionId String?  @db.Uuid @map("selected_option_id")
+  answeredAt       DateTime? @map("answered_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  attemptItem    AttemptItem   @relation(fields: [attemptItemId], references: [id])
+  selectedOption QuestionOption? @relation(fields: [selectedOptionId], references: [id])
+
+  @@index([selectedOptionId], map: "idx_attempt_answers_selected_option")
+  @@map("attempt_answers")
+}
+
+model AttemptAnswerScore {
+  id            String   @id @default(uuid()) @db.Uuid @map("id")
+  attemptItemId String   @unique @db.Uuid @map("attempt_item_id")
+  isCorrect     Boolean  @map("is_correct")
+  pointsAwarded Int      @map("points_awarded")
+  scoredAt      DateTime @default(now()) @map("scored_at")
+
+  attemptItem AttemptItem @relation(fields: [attemptItemId], references: [id])
+
+  @@map("attempt_answer_scores")
+}
+
+model AttemptModuleScore {
+  id        String   @id @default(uuid()) @db.Uuid @map("id")
+  attemptId String   @db.Uuid @map("attempt_id")
+  moduleId  String   @db.Uuid @map("module_id")
+  rawScore  Int      @map("raw_score")
+  maxScore  Int      @map("max_score")
+  scoredAt  DateTime @default(now()) @map("scored_at")
+
+  attempt Attempt @relation(fields: [attemptId], references: [id])
+  module  ExamModule @relation(fields: [moduleId], references: [id])
+
+  @@unique([attemptId, moduleId])
+  @@map("attempt_module_scores")
+}
+
+model AttemptScore {
+  id        String   @id @default(uuid()) @db.Uuid @map("id")
+  attemptId String   @unique @db.Uuid @map("attempt_id")
+  rawScore  Int      @map("raw_score")
+  maxScore  Int      @map("max_score")
+  scoredAt  DateTime @default(now()) @map("scored_at")
+
+  attempt Attempt @relation(fields: [attemptId], references: [id])
+
+  @@map("attempt_scores")
+}
+
+model AttemptItemEvent {
+  id            String            @id @default(uuid()) @db.Uuid @map("id")
+  attemptId     String            @db.Uuid @map("attempt_id")
+  attemptItemId String?           @db.Uuid @map("attempt_item_id")
+  eventType     TelemetryEventType @map("event_type")
+  serverTime    DateTime          @default(now()) @map("server_time")
+  clientTime    DateTime?         @map("client_time")
+  metadataJson  Json              @default("{}") @map("metadata_json") @db.JsonB
+
+  attempt     Attempt    @relation(fields: [attemptId], references: [id])
+  attemptItem AttemptItem? @relation(fields: [attemptItemId], references: [id])
+
+  @@index([attemptId], map: "idx_aie_attempt")
+  @@index([attemptItemId], map: "idx_aie_item")
+  @@index([eventType, serverTime], map: "idx_aie_type_time")
+  @@map("attempt_item_events")
+}
+
+model AttemptItemMetric {
+  id                String   @id @default(uuid()) @db.Uuid @map("id")
+  attemptItemId     String   @unique @db.Uuid @map("attempt_item_id")
+  observedSeconds   Int      @default(0) @map("observed_seconds")
+  activeSeconds     Int      @default(0) @map("active_seconds")
+  viewCount         Int      @default(0) @map("view_count")
+  answerChangeCount Int      @default(0) @map("answer_change_count")
+  computedAt        DateTime @default(now()) @map("computed_at")
+
+  attemptItem AttemptItem @relation(fields: [attemptItemId], references: [id])
+
+  @@map("attempt_item_metrics")
+}
+
+model AuditLog {
+  id                String   @id @default(uuid()) @db.Uuid @map("id")
+  actorStaffUserId  String?  @db.Uuid @map("actor_staff_user_id")
+  action            String   @map("action")
+  entityType        String?  @map("entity_type")
+  entityId          String?  @db.Uuid @map("entity_id")
+  serverTime        DateTime @default(now()) @map("server_time")
+  metadataJson      Json     @default("{}") @map("metadata_json") @db.JsonB
+
+  actorStaffUser StaffUser? @relation(fields: [actorStaffUserId], references: [id])
+
+  @@index([actorStaffUserId, serverTime], map: "idx_audit_logs_actor_time")
+  @@index([action, serverTime], map: "idx_audit_logs_action_time")
+  @@map("audit_logs")
+}

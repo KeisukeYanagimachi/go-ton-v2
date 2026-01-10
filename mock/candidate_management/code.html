@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html class="light" lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SPI採用管理 - 受験者管理</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&amp;family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1A2633",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "Noto Sans JP", "sans-serif"],
+                        "sans": ["Inter", "Noto Sans JP", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }body {
+            font-feature-settings: "palt";
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col overflow-x-hidden text-[#111418] dark:text-white transition-colors duration-200">
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-[#f0f2f4] dark:border-gray-800 bg-white dark:bg-surface-dark px-6 py-3 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="size-8 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">school</span>
+</div>
+<h2 class="text-[#111418] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">SPI 採用管理</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8 items-center">
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-[#617589] dark:text-gray-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">ダッシュボード</a>
+<a class="text-primary text-sm font-bold leading-normal relative after:content-[''] after:absolute after:left-0 after:-bottom-5 after:w-full after:h-0.5 after:bg-primary" href="#">受験者管理</a>
+<a class="text-[#617589] dark:text-gray-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">試験管理</a>
+<a class="text-[#617589] dark:text-gray-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">設定</a>
+</nav>
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center rounded-full size-10 hover:bg-[#f0f2f4] dark:hover:bg-gray-800 text-[#111418] dark:text-white transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-surface-dark"></span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 ring-2 ring-white dark:ring-gray-700" data-alt="User profile picture placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCM1iRLxaI1aJDePuAPqy8r1xMmc5dbpLsgWdFKNnflWTpwTEVLg_SYAlEPs204W83fSme5AFDyNfa9ezHXwyLNComSxP02LBtzJorjowq4Wa3B23yRHVNhXS4cwz-k_5AH3GJsA3er1m92LFWBYkkxWIpuJfFon8OHDAJCTdT7AO-K1SY3jFZXs7dHj1Bd1jXIl3GbiDAUAFb3KXhsd0cWyiSAcpUOfBAWHFkomETU5NlnNW7Ek729qnzBVboCfNIn0rcHccgMy1s");'>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 w-full max-w-[1280px] mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-2 text-sm">
+<a class="text-[#617589] dark:text-gray-400 font-medium hover:underline" href="#">ホーム</a>
+<span class="material-symbols-outlined text-[#617589] dark:text-gray-500 text-sm">chevron_right</span>
+<span class="text-[#111418] dark:text-white font-medium">受験者一覧</span>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+<div class="flex flex-col gap-2">
+<h1 class="text-[#111418] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">受験者管理</h1>
+<p class="text-[#617589] dark:text-gray-400 text-base font-normal">受験者のアカウント管理、試験ステータスの確認、および試験の割り当てを行います。</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-surface-dark text-[#111418] dark:text-white text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-xl">download</span>
+                        CSV出力
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-bold hover:bg-blue-600 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-xl">person_add</span>
+                        受験者を追加
+                    </button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="flex flex-col gap-1 rounded-xl p-5 border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-surface-dark shadow-sm">
+<div class="flex items-center gap-2 mb-2">
+<div class="p-1.5 rounded-md bg-blue-50 dark:bg-blue-900/30 text-primary">
+<span class="material-symbols-outlined text-xl">groups</span>
+</div>
+<p class="text-[#617589] dark:text-gray-400 text-sm font-medium">受験者総数</p>
+</div>
+<p class="text-[#111418] dark:text-white text-3xl font-bold leading-tight">1,240</p>
+<div class="flex items-center gap-1 text-xs text-green-600 font-medium mt-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>先月比 +12%</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 rounded-xl p-5 border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-surface-dark shadow-sm">
+<div class="flex items-center gap-2 mb-2">
+<div class="p-1.5 rounded-md bg-orange-50 dark:bg-orange-900/30 text-orange-600">
+<span class="material-symbols-outlined text-xl">pending_actions</span>
+</div>
+<p class="text-[#617589] dark:text-gray-400 text-sm font-medium">未完了・対応待ち</p>
+</div>
+<p class="text-[#111418] dark:text-white text-3xl font-bold leading-tight">45</p>
+<p class="text-xs text-[#617589] dark:text-gray-500 mt-1">期限切れ間近の試験があります</p>
+</div>
+<div class="flex flex-col gap-1 rounded-xl p-5 border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-surface-dark shadow-sm">
+<div class="flex items-center gap-2 mb-2">
+<div class="p-1.5 rounded-md bg-green-50 dark:bg-green-900/30 text-green-600">
+<span class="material-symbols-outlined text-xl">check_circle</span>
+</div>
+<p class="text-[#617589] dark:text-gray-400 text-sm font-medium">本日の受験完了</p>
+</div>
+<p class="text-[#111418] dark:text-white text-3xl font-bold leading-tight">12</p>
+<p class="text-xs text-[#617589] dark:text-gray-500 mt-1">スコアレビュー準備完了</p>
+</div>
+</div>
+<div class="flex flex-col lg:flex-row gap-4 justify-between items-center bg-white dark:bg-surface-dark p-4 rounded-xl border border-[#dbe0e6] dark:border-gray-700 shadow-sm">
+<div class="w-full lg:w-auto flex-1 flex flex-col md:flex-row gap-3">
+<div class="relative w-full md:max-w-md">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-[#617589] dark:text-gray-500">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2.5 border border-[#dbe0e6] dark:border-gray-600 rounded-lg leading-5 bg-[#f0f2f4] dark:bg-gray-800 text-[#111418] dark:text-white placeholder-[#617589] dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-shadow" placeholder="名前、メールアドレス、部署で検索..." type="text"/>
+</div>
+<div class="flex gap-3 overflow-x-auto pb-1 md:pb-0 w-full md:w-auto">
+<select class="form-select block w-full md:w-40 pl-3 pr-10 py-2.5 text-base border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-gray-800 text-[#111418] dark:text-white focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-lg">
+<option>全部署</option>
+<option>開発部</option>
+<option>営業部</option>
+<option>マーケティング部</option>
+<option>人事部</option>
+</select>
+<select class="form-select block w-full md:w-40 pl-3 pr-10 py-2.5 text-base border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-gray-800 text-[#111418] dark:text-white focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-lg">
+<option>全てのステータス</option>
+<option>受験済み</option>
+<option>未完了</option>
+<option>未着手</option>
+</select>
+</div>
+</div>
+<div class="hidden lg:flex items-center gap-2 text-sm text-[#617589] dark:text-gray-400">
+<span class="material-symbols-outlined text-lg">filter_list</span>
+<span>並び替え: 追加日（新しい順）</span>
+</div>
+</div>
+<div class="w-full overflow-hidden rounded-xl border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-surface-dark shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#f9fafb] dark:bg-gray-800/50 border-b border-[#dbe0e6] dark:border-gray-700">
+<th class="p-4 w-12">
+<input class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 bg-white dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+</th>
+<th class="p-4 text-xs font-semibold tracking-wide text-[#617589] dark:text-gray-400 uppercase">受験者</th>
+<th class="p-4 text-xs font-semibold tracking-wide text-[#617589] dark:text-gray-400 uppercase hidden md:table-cell">部署</th>
+<th class="p-4 text-xs font-semibold tracking-wide text-[#617589] dark:text-gray-400 uppercase">SPIステータス</th>
+<th class="p-4 text-xs font-semibold tracking-wide text-[#617589] dark:text-gray-400 uppercase hidden sm:table-cell">スコア</th>
+<th class="p-4 text-xs font-semibold tracking-wide text-[#617589] dark:text-gray-400 uppercase hidden lg:table-cell">最終アクセス</th>
+<th class="p-4 text-xs font-semibold tracking-wide text-[#617589] dark:text-gray-400 uppercase text-right">操作</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#dbe0e6] dark:divide-gray-700">
+<tr class="group hover:bg-[#f0f2f4] dark:hover:bg-gray-800/50 transition-colors">
+<td class="p-4">
+<input class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 bg-white dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="Candidate portrait of Taro Yamada" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAJF94mewv5XDpRcLH6o4BjqrpwInRFiXOvYbUMgNCnfexzWL74pUrhDfjlxGP55aj4kw_k5Zh1nBeHDzoYJg-lI87yuwhMUUyO55tr3D0ebWkoQ25jB4tmdifrz7OPR8IWyiliVXv1s6G035Q6MBuLiVEK_d4-R2Q69NiCgqzSi1oPWi2zaZhvh1tHNmrlkLBMlKbu50FQPrIjHHTrNbGv2Ly86hAALuSX-H8i9h23dVmU-xXKzq28SZ3I05bYDtonfUjAHmodJfE");'></div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-[#111418] dark:text-white">山田 太郎</span>
+<span class="text-xs text-[#617589] dark:text-gray-400">taro.y@example.com</span>
+</div>
+</div>
+</td>
+<td class="p-4 hidden md:table-cell">
+<span class="text-sm text-[#111418] dark:text-gray-300">開発部</span>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                    受験済み
+                                </span>
+</td>
+<td class="p-4 hidden sm:table-cell">
+<span class="text-sm font-bold text-[#111418] dark:text-white">84/100</span>
+</td>
+<td class="p-4 hidden lg:table-cell">
+<span class="text-sm text-[#617589] dark:text-gray-400">2時間前</span>
+</td>
+<td class="p-4 text-right">
+<button class="text-[#617589] dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-[#f0f2f4] dark:hover:bg-gray-800/50 transition-colors bg-blue-50/30 dark:bg-blue-900/10">
+<td class="p-4">
+<input checked="" class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 bg-white dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="Candidate portrait of Hanako Suzuki" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDKwt2d0zm_flJOp6shzm_-6pomefsik01MgUV7wtCsrgpz2CtmaRddD7Njm1jgKDD7o_1jQOLQlg02sr8orgfE4QgJ_x6oZp055UqFFtuByJ4IWNHSgIeBcbtAj2gwj74DXQ69dMxmxgD0EF6WVn2CA02FsSTPKefLLvRfnvWF7a6CzQb3b1Xtb7xK_X1cgWWJjSmUJhYtzajvCMlqB0bU6SblyjUhjVKdTEJLbtgyYdl9WbN7bwmVMpYNlvkCoFWucb3aZXgsJ-g");'></div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-[#111418] dark:text-white">鈴木 花子</span>
+<span class="text-xs text-[#617589] dark:text-gray-400">hanako.s@example.com</span>
+</div>
+</div>
+</td>
+<td class="p-4 hidden md:table-cell">
+<span class="text-sm text-[#111418] dark:text-gray-300">営業部</span>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800">
+<span class="size-1.5 rounded-full bg-orange-500"></span>
+                                    未完了
+                                </span>
+</td>
+<td class="p-4 hidden sm:table-cell">
+<span class="text-sm text-[#617589] dark:text-gray-500 italic">--</span>
+</td>
+<td class="p-4 hidden lg:table-cell">
+<span class="text-sm text-[#617589] dark:text-gray-400">1日前</span>
+</td>
+<td class="p-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="text-xs font-semibold text-primary hover:underline hidden group-hover:block whitespace-nowrap">リマインド</button>
+<button class="text-[#617589] dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="group hover:bg-[#f0f2f4] dark:hover:bg-gray-800/50 transition-colors">
+<td class="p-4">
+<input class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 bg-white dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="Candidate portrait of Kenji Sato" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuACHAkD2tTFyfoleKbJseBDUWINIvigMwu1Cs_mT2_XVRffBWjyKRFnCTt9aHcwtDGvM5Ng3PkxvhgDERAcx09uxDziZbQnrVad-sdHqfRGrdVns6a7GMD3NB8wkHirU_Pu09GMbOnrc8l790YPO0fLDIg-hqdS4PpfuNf8dEZ-AeFZsFtw3rPg7G-aavnvfd9gIOsoOIxzWvK5lpOsyyAud9FhlytuDjit1ZzxTSK4KbVTLHhYo_zydjftNS-kSS14GZboItLFyKI");'></div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-[#111418] dark:text-white">佐藤 健二</span>
+<span class="text-xs text-[#617589] dark:text-gray-400">kenji.sato@example.com</span>
+</div>
+</div>
+</td>
+<td class="p-4 hidden md:table-cell">
+<span class="text-sm text-[#111418] dark:text-gray-300">マーケティング部</span>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+<span class="size-1.5 rounded-full bg-gray-400"></span>
+                                    未着手
+                                </span>
+</td>
+<td class="p-4 hidden sm:table-cell">
+<span class="text-sm text-[#617589] dark:text-gray-500 italic">--</span>
+</td>
+<td class="p-4 hidden lg:table-cell">
+<span class="text-sm text-[#617589] dark:text-gray-400">3日前</span>
+</td>
+<td class="p-4 text-right">
+<button class="text-[#617589] dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-[#f0f2f4] dark:hover:bg-gray-800/50 transition-colors">
+<td class="p-4">
+<input class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 bg-white dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="Candidate portrait of Yuki Tanaka" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC_QOXvv3PU-J3baBQNdjNaEt4TqU2-A-Z4fz7EwJvPpqXJBCt8Z4XhkH_2TPG-Rztz_gh2-_7Y_4LfsKCZBvLiZeOgjJyFkHXit0Ozax15bRoj7IFYRk1YGx3cAH0oghAXHqGeBcZv0VRQoacnQieYUW6OFtS-RRzztgdO81Y4nQ8yXrkvSoXSPt0fSZf3yClIdugXb7VmNm5Jt0F83mltaeASARZHtUiNOAnxSVMO3i9_Hzwu9rx2GN9jslGC-PWkwzwSh56khzU");'></div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-[#111418] dark:text-white">田中 由紀</span>
+<span class="text-xs text-[#617589] dark:text-gray-400">yuki.tanaka@example.com</span>
+</div>
+</div>
+</td>
+<td class="p-4 hidden md:table-cell">
+<span class="text-sm text-[#111418] dark:text-gray-300">開発部</span>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                    受験済み
+                                </span>
+</td>
+<td class="p-4 hidden sm:table-cell">
+<span class="text-sm font-bold text-[#111418] dark:text-white">92/100</span>
+</td>
+<td class="p-4 hidden lg:table-cell">
+<span class="text-sm text-[#617589] dark:text-gray-400">5時間前</span>
+</td>
+<td class="p-4 text-right">
+<button class="text-[#617589] dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-[#f0f2f4] dark:hover:bg-gray-800/50 transition-colors">
+<td class="p-4">
+<input class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 bg-white dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full flex items-center justify-center bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 font-bold text-sm">
+                                        MJ
+                                    </div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-[#111418] dark:text-white">Mike Johnson</span>
+<span class="text-xs text-[#617589] dark:text-gray-400">mike.j@example.com</span>
+</div>
+</div>
+</td>
+<td class="p-4 hidden md:table-cell">
+<span class="text-sm text-[#111418] dark:text-gray-300">営業部</span>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800">
+<span class="size-1.5 rounded-full bg-orange-500"></span>
+                                    未完了
+                                </span>
+</td>
+<td class="p-4 hidden sm:table-cell">
+<span class="text-sm text-[#617589] dark:text-gray-500 italic">--</span>
+</td>
+<td class="p-4 hidden lg:table-cell">
+<span class="text-sm text-[#617589] dark:text-gray-400">1週間前</span>
+</td>
+<td class="p-4 text-right">
+<button class="text-[#617589] dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex flex-col sm:flex-row items-center justify-between p-4 border-t border-[#dbe0e6] dark:border-gray-700 gap-4 bg-[#f9fafb] dark:bg-gray-800/50">
+<p class="text-sm text-[#617589] dark:text-gray-400">
+<span class="font-bold text-[#111418] dark:text-white">1,240</span> 件中 <span class="font-bold text-[#111418] dark:text-white">1 - 10</span> 件を表示
+                </p>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-gray-800 text-[#111418] dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50" disabled="">
+                        前へ
+                    </button>
+<button class="px-3 py-1.5 rounded-lg border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-gray-800 text-[#111418] dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">
+                        次へ
+                    </button>
+</div>
+</div>
+</div>
+</main>
+
+</body></html>

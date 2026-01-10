@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SPI採用ポータル - 管理者ログイン</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&amp;family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {--color-primary: #137fec;
+            --color-primary-hover: #106ec9;
+            --color-bg-light: #f6f7f8;
+            --color-bg-dark: #101922;
+            --color-surface-light: #ffffff;
+            --color-surface-dark: #1a2632;
+            --color-text-main: #111418;
+            --color-text-secondary: #617589;
+            --color-text-inverse: #ffffff;
+            --color-border: #dbe0e6;
+            --color-border-dark: #374151;--space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-xxl: 3rem;--radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-full: 9999px;--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--font-family: 'Inter', 'Noto Sans JP', sans-serif;
+        }* {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--color-bg-light);
+            color: var(--color-text-main);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }.container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-md);
+        }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-sm { gap: var(--space-sm); }
+        .gap-md { gap: var(--space-md); }
+        .gap-lg { gap: var(--space-lg); }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }.app-header {
+            background-color: var(--color-surface-light);
+            border-bottom: 1px solid var(--color-border);
+            padding: var(--space-md) var(--space-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            color: var(--color-primary);
+        }
+        .app-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--color-text-main);
+        }
+        .header-actions {
+            display: flex;
+            gap: var(--space-md);
+        }.btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 var(--space-md);
+            height: 36px;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: none;
+            white-space: nowrap;
+        }
+        .btn-ghost {
+            background-color: #f0f2f4;
+            color: var(--color-text-main);
+        }
+        .btn-ghost:hover {
+            background-color: #e2e4e6;
+        }
+        .btn-outline-primary {
+            background-color: rgba(19, 127, 236, 0.1);
+            color: var(--color-primary);
+            border: 1px solid rgba(19, 127, 236, 0.2);
+        }
+        .btn-outline-primary:hover {
+            background-color: rgba(19, 127, 236, 0.2);
+        }
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: var(--color-text-inverse);
+            height: 48px;font-size: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(19, 127, 236, 0.2);
+        }
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+            transform: translateY(-1px);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }.main-layout {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: var(--space-xl) 0;
+        }
+        .login-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--space-xl);
+            width: 100%;
+        }
+        @media (min-width: 992px) {
+            .login-grid {
+                grid-template-columns: 1fr 1fr;
+                align-items: center;
+                gap: 5rem;
+            }
+        }.hero-image-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        @media (min-width: 992px) {
+            .hero-image-container {
+                aspect-ratio: 1/1;
+                max-height: 600px;
+            }
+        }
+        .hero-bg {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: transform 0.7s ease;
+        }
+        .hero-image-container:hover .hero-bg {
+            transform: scale(1.05);
+        }
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: var(--space-xl);
+        }
+        .hero-text-title {
+            color: var(--color-text-inverse);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: var(--space-sm);
+        }
+        .hero-text-desc {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.875rem;
+        }.login-form-container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .form-header {
+            margin-bottom: var(--space-xl);
+        }
+        .form-icon {
+            color: var(--color-primary);
+            font-size: 2rem;
+            margin-bottom: var(--space-sm);
+        }
+        .form-title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--color-text-main);
+            margin-bottom: var(--space-sm);
+            line-height: 1.2;
+        }
+        .form-subtitle {
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            line-height: 1.5;
+        }
+        .form-group {
+            margin-bottom: var(--space-lg);
+        }
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: var(--space-sm);
+            color: var(--color-text-main);
+        }
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: var(--color-surface-light);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-wrapper:focus-within {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(19, 127, 236, 0.1);
+        }
+        .input-icon {
+            padding: 0 var(--space-md);
+            color: var(--color-text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .form-input {
+            flex: 1;
+            height: 48px;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            color: var(--color-text-main);
+            background: transparent;
+            width: 100%;
+        }
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+        .password-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0 var(--space-md);
+            color: var(--color-text-secondary);
+            display: flex;
+            align-items: center;
+        }
+        .password-toggle:hover {
+            color: var(--color-primary);
+        }
+        .form-row-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+        .link {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            cursor: pointer;
+        }
+        .checkbox-input {
+            width: 1.25rem;
+            height: 1.25rem;
+            accent-color: var(--color-primary);
+            cursor: pointer;
+        }
+        .checkbox-label {
+            font-size: 0.875rem;
+            color: var(--color-text-main);
+        }
+        .security-notice {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            margin-top: var(--space-md);
+            line-height: 1.4;
+        }.app-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--color-border);
+            padding: var(--space-lg) 0;
+            text-align: center;
+            background-color: var(--color-surface-light);
+        }
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-md);
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+        @media (min-width: 768px) {
+            .footer-content {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+        .footer-links {
+            display: flex;
+            gap: var(--space-lg);
+        }
+        .footer-dot {
+            display: none;
+            width: 4px;
+            height: 4px;
+            background-color: #cbd5e1;
+            border-radius: 50%;
+        }
+        @media (min-width: 768px) {
+            .footer-dot { display: block; }
+        }@media (prefers-color-scheme: dark) {
+            :root {
+                --color-bg-light: #101922;
+                --color-surface-light: #1a2632;
+                --color-text-main: #ffffff;
+                --color-text-secondary: #9ca3af;
+                --color-border: #374151;
+            }
+            .btn-ghost {
+                background-color: #1f2937;
+                color: #ffffff;
+            }
+            .btn-ghost:hover {
+                background-color: #374151;
+            }
+            .input-wrapper {
+                background-color: #1a2632;
+            }
+            .app-header, .app-footer {
+                background-color: #101922;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="app-header">
+<div class="logo-section">
+<div class="logo-icon">
+<svg fill="none" height="100%" viewBox="0 0 48 48" width="100%" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="app-title">SPI採用ポータル</h2>
+</div>
+<div class="header-actions">
+<button class="btn btn-ghost">ヘルプセンター</button>
+<button class="btn btn-outline-primary">受験者ログイン</button>
+</div>
+</header>
+<div class="main-layout">
+<div class="container">
+<div class="login-grid">
+<div class="hero-image-container">
+<div class="hero-bg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBrpejvJ_0UBymIfiFb-vHgdI0k5DqX1G6hbjts4nMyyqw0A0XyG67QP-4ZukstDbueZvsRHEBxhLGztcKWUlaDiqHkT8hosdD9JHXn9WnDDpeRMOS9yYd-n-DXD6dWQ5qt6JGnlX2FeHnjJ8m9LlLGqOFv5lIGqo2N6J0q1FiIMo4O4BWzb2MqpnUFrBhLRZA0TudKOMN4piaJyUzT-1Qa4oVN5XhJPOG-nL524pg1BpVem9a-zghDIcfeHQayfLoJaR2486_P3Fg");'></div>
+<div class="hero-overlay">
+<h3 class="hero-text-title">安全性と効率性</h3>
+<p class="hero-text-desc">誠実さと正確さで、未来のワークフォースを管理します。</p>
+</div>
+</div>
+<div class="login-form-container">
+<div class="form-header">
+<div class="form-icon">
+<span class="material-symbols-outlined" style="font-size: 36px;">admin_panel_settings</span>
+</div>
+<h1 class="form-title">管理者ログイン</h1>
+<h2 class="form-subtitle">採用試験および受験者データの管理を行うには、認証情報を入力してください。</h2>
+</div>
+<form action="#" method="POST" onsubmit="event.preventDefault();">
+<div class="form-group">
+<label class="form-label" for="email">メールアドレス または ユーザー名</label>
+<div class="input-wrapper">
+<div class="input-icon">
+<span class="material-symbols-outlined">person</span>
+</div>
+<input class="form-input" id="email" placeholder="staff@company.com" required="" type="text"/>
+</div>
+</div>
+<div class="form-group">
+<div class="form-row-between">
+<label class="form-label" for="password" style="margin-bottom:0;">パスワード</label>
+<a class="link" href="#">パスワードをお忘れですか？</a>
+</div>
+<div class="input-wrapper">
+<div class="input-icon">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<input class="form-input" id="password" placeholder="パスワードを入力" required="" type="password"/>
+<button aria-label="Toggle password visibility" class="password-toggle" type="button">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+</div>
+</div>
+<div class="form-group">
+<label class="checkbox-wrapper">
+<input class="checkbox-input" type="checkbox"/>
+<span class="checkbox-label">ログイン状態を保持する</span>
+</label>
+</div>
+<button class="btn btn-primary w-full" type="submit">ログイン</button>
+<p class="security-notice">
+                            エンタープライズグレードのセキュリティで保護されています。<br/>
+                            許可のないアクセスは禁止されています。
+                        </p>
+</form>
+</div>
+</div>
+</div>
+</div>
+<footer class="app-footer">
+<div class="footer-content">
+<span>© 2023 SPI採用ポータル. All rights reserved.</span>
+<div class="footer-dot"></div>
+<div class="footer-links">
+<a class="link" href="#" style="color: inherit;">プライバシーポリシー</a>
+<a class="link" href="#" style="color: inherit;">利用規約</a>
+</div>
+</div>
+</footer>
+
+</body></html>

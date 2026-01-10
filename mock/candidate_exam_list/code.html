@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Candidate Exam List - SPI Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {--primary: #137fec;
+            --primary-hover: #1068c2;
+            --primary-light: rgba(19, 127, 236, 0.1);
+            --text-main: #111418;
+            --text-secondary: #617589;
+            --text-light: #ffffff;
+            --text-placeholder: #9ca3af;
+            --bg-body: #f6f7f8;
+            --bg-surface: #ffffff;
+            --bg-surface-alt: #f9fafb;
+            --border-color: #e5e7eb;--status-new-bg: #eff6ff;
+            --status-new-text: #1d4ed8;
+            --status-progress-bg: #fff7ed;
+            --status-progress-text: #c2410c;
+            --status-completed-bg: #f0fdf4;
+            --status-completed-text: #15803d;
+            --status-locked-bg: #f3f4f6;
+            --status-locked-text: #4b5563;--container-width: 1200px;
+            --header-height: 64px;
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-full: 9999px;--font-family: 'Inter', sans-serif;
+        }* {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { text-decoration: none; color: inherit; }
+        button { cursor: pointer; border: none; background: none; font-family: inherit; }
+        input { font-family: inherit; }.flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .w-full { width: 100%; }.app-header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logo-icon {
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .header-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .header-nav {
+            display: none;
+        }
+        @media(min-width: 768px) {
+            .header-nav {
+                display: flex;
+                align-items: center;
+                gap: 2.25rem;
+            }
+        }
+        .nav-link {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: var(--primary);
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .btn-logout {
+            background-color: var(--primary);
+            color: var(--text-light);
+            font-size: 0.875rem;
+            font-weight: 700;
+            padding: 0 1rem;
+            height: 36px;
+            border-radius: var(--radius-md);
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+        .btn-logout:hover {
+            background-color: var(--primary-hover);
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            background-color: #eee;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid var(--bg-surface);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }.main-container {
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - var(--header-height));
+            padding: 2rem 1.5rem;
+        }
+        @media(min-width: 768px) {
+            .main-container { padding: 2rem 5rem; }
+        }
+        @media(min-width: 1024px) {
+            .main-container { padding: 2rem 10rem; }
+        }
+        .content-wrapper {
+            max-width: var(--container-width);
+            margin: 0 auto;
+            width: 100%;
+        }.hero-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+        }
+        @media(min-width: 768px) {
+            .hero-section {
+                flex-direction: row;
+                align-items: flex-end;
+                justify-content: space-between;
+            }
+        }
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 900;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.033em;
+        }
+        @media(min-width: 768px) {
+            .page-title { font-size: 2.25rem; }
+        }
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.5;
+            max-width: 40rem;
+        }
+        .stats-group {
+            display: flex;
+            gap: 1rem;
+        }
+        .stat-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 0.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .stat-value.highlight { color: var(--primary); }.controls-bar {
+            margin-bottom: 1.5rem;
+            padding: 0.5rem 1rem;
+        }
+        .controls-flex {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        @media(min-width: 768px) {
+            .controls-flex {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            height: 40px;
+            width: 100%;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+        @media(min-width: 768px) {
+            .search-wrapper { width: 320px; }
+        }
+        .search-wrapper:focus-within {
+            box-shadow: 0 0 0 2px rgba(19, 127, 236, 0.5);
+        }
+        .search-icon {
+            padding-left: 1rem;
+            padding-right: 0.5rem;
+            color: var(--text-secondary);
+            display: flex;
+        }
+        .search-input {
+            border: none;
+            outline: none;
+            width: 100%;
+            height: 100%;
+            font-size: 0.875rem;
+            color: var(--text-main);
+        }
+        .search-input::placeholder {
+            color: var(--text-placeholder);
+        }
+        .filter-chips {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+        @media(min-width: 768px) {
+            .filter-chips { padding-bottom: 0; }
+        }.filter-chips::-webkit-scrollbar { display: none; }
+        .filter-chips { -ms-overflow-style: none; scrollbar-width: none; }
+        .chip {
+            height: 36px;
+            padding: 0 1rem;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .chip.active {
+            background-color: var(--text-main);
+            color: var(--text-light);
+        }
+        .chip.default {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+        .chip.default:hover {
+            background-color: var(--bg-surface-alt);
+        }.exam-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+        @media(min-width: 768px) {
+            .exam-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media(min-width: 1024px) {
+            .exam-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        .exam-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            min-height: 320px;
+        }
+        .exam-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-color: rgba(19, 127, 236, 0.5);
+        }
+        .exam-card.locked {
+            opacity: 0.7;
+            background-color: var(--bg-surface-alt);
+        }
+        .exam-card.locked:hover {
+            transform: none;
+            box-shadow: none;
+            opacity: 0.9;
+            border-color: var(--border-color);
+        }
+        .exam-card.active-border {
+            border: 2px solid var(--primary);
+            padding: calc(1.5rem - 1px);}
+        .progress-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: #f3f4f6;
+            overflow: hidden;
+            border-top-left-radius: var(--radius-lg);
+            border-top-right-radius: var(--radius-lg);
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 45%;}
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .icon-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }.icon-purple { background-color: #faf5ff; color: #9333ea; }
+        .icon-green { background-color: #f0fdf4; color: #16a34a; }
+        .icon-orange { background-color: #fff7ed; color: #ea580c; }
+        .icon-gray { background-color: #e5e7eb; color: #6b7280; }
+        .badge {
+            padding: 2px 10px;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+        }
+        .badge-new { background-color: var(--status-new-bg); color: var(--status-new-text); }
+        .badge-progress { background-color: var(--status-progress-bg); color: var(--status-progress-text); }
+        .badge-completed { background-color: var(--status-completed-bg); color: var(--status-completed-text); }
+        .badge-locked { background-color: var(--status-locked-bg); color: var(--status-locked-text); }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+        .card-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .card-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }.btn-card {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--text-light);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+        .btn-disabled {
+            background-color: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        .btn-locked {
+            border: 1px solid #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }.help-container {
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+        .help-box {
+            background-color: var(--primary-light);
+            border: 1px solid rgba(19, 127, 236, 0.2);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        @media(min-width: 768px) {
+            .help-box {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+        .help-content h3 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .help-content p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            max-width: 32rem;
+        }
+        .btn-support {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--bg-surface);
+            color: var(--primary);
+            border: 1px solid rgba(19, 127, 236, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+        .btn-support:hover {
+            background-color: var(--bg-surface-alt);
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+<header class="app-header">
+<div class="header-brand">
+<div class="logo-icon">
+<span class="material-symbols-outlined" style="font-size: 32px;">school</span>
+</div>
+<h2 class="header-title">SPI Portal</h2>
+</div>
+<div class="flex items-center" style="gap: 2rem;">
+<nav class="header-nav">
+<a class="nav-link" href="#">Home</a>
+<a class="nav-link" href="#">My Results</a>
+<a class="nav-link" href="#">Support</a>
+</nav>
+<div class="header-actions">
+<button class="btn-logout">
+<span>Log Out</span>
+</button>
+<div class="user-avatar" data-alt="User profile picture placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC7LjPmE6EVejW729xKMk62h4rir1Jg9czdlZxxjsgmH1KYlJdiAH_Kx_5D3Urg27yQ12zCVal3SbMxqUqMQF-fv09HJI6bkW7_ID85a8wROj9oOVv1KBgqOOU1gynySpUEHvuSRpYel2fhCGZZRhxRp95GWZdelqIFDzl-_A7qF3I23zpMI3FrHzrEIhiuiYV484jnVAPsISoXAFCGEUYS5TG8frJ-ebWzz2g8oImAHBMeXpxkLPRmMRIcTzYZ0byhQfjVtUldd_Y");'></div>
+</div>
+</div>
+</header>
+<div class="main-container">
+<div class="content-wrapper">
+<div class="hero-section">
+<div class="flex-col gap-2">
+<h1 class="page-title">Available Exams</h1>
+<p class="page-subtitle">
+                            Hello, Alexander. Here are your assigned assessments. Please complete them within the designated timeframe to proceed with your application.
+                        </p>
+</div>
+<div class="stats-group">
+<div class="stat-card">
+<span class="stat-label">Pending</span>
+<span class="stat-value highlight">3</span>
+</div>
+<div class="stat-card">
+<span class="stat-label">Days Left</span>
+<span class="stat-value">4</span>
+</div>
+</div>
+</div>
+<div class="controls-bar">
+<div class="controls-flex">
+<label class="search-wrapper">
+<div class="search-icon">
+<span class="material-symbols-outlined" style="font-size: 20px;">search</span>
+</div>
+<input class="search-input" placeholder="Search for an assessment..."/>
+</label>
+<div class="filter-chips">
+<button class="chip active">
+                                All
+                            </button>
+<button class="chip default">
+                                Not Started
+                            </button>
+<button class="chip default">
+                                In Progress
+                            </button>
+<button class="chip default">
+                                Completed
+                            </button>
+</div>
+</div>
+</div>
+<div class="exam-grid">
+<div class="exam-card">
+<div>
+<div class="card-header">
+<div class="icon-circle icon-purple">
+<span class="material-symbols-outlined" style="font-size: 28px;">psychology</span>
+</div>
+<span class="badge badge-new">New</span>
+</div>
+<h3 class="card-title">Personality Assessment</h3>
+<div class="card-meta">
+<span class="meta-item"><span class="material-symbols-outlined" style="font-size: 16px;">schedule</span> 35 mins</span>
+<span class="meta-item"><span class="material-symbols-outlined" style="font-size: 16px;">list_alt</span> 120 Questions</span>
+</div>
+<p class="card-desc">
+                                This section measures personality traits relevant to workplace behavior. There are no right or wrong answers, please answer honestly.
+                            </p>
+</div>
+<button class="btn-card btn-primary">
+                            Start Exam
+                            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+</button>
+</div>
+<div class="exam-card">
+<div>
+<div class="card-header">
+<div class="icon-circle icon-green">
+<span class="material-symbols-outlined" style="font-size: 28px;">translate</span>
+</div>
+<span class="badge badge-new">New</span>
+</div>
+<h3 class="card-title">Ability Test: Verbal</h3>
+<div class="card-meta">
+<span class="meta-item"><span class="material-symbols-outlined" style="font-size: 16px;">schedule</span> 20 mins</span>
+<span class="meta-item"><span class="material-symbols-outlined" style="font-size: 16px;">list_alt</span> 40 Questions</span>
+</div>
+<p class="card-desc">
+                                Tests reading comprehension, vocabulary, and verbal reasoning skills. You will analyze short passages and answer related questions.
+                            </p>
+</div>
+<button class="btn-card btn-primary">
+                            Start Exam
+                            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+</button>
+</div>
+<div class="exam-card active-border">
+<div class="progress-indicator">
+<div class="progress-fill"></div>
+</div>
+<div>
+<div class="card-header" style="margin-top: 0.5rem;">
+<div class="icon-circle icon-orange">
+<span class="material-symbols-outlined" style="font-size: 28px;">extension</span>
+</div>
+<span class="badge badge-progress">In Progress</span>
+</div>
+<h3 class="card-title">Ability Test: Non-Verbal</h3>
+<div class="card-meta">
+<span class="meta-item"><span class="material-symbols-outlined" style="font-size: 16px;">schedule</span> 25 mins</span>
+<span class="meta-item"><span class="material-symbols-outlined" style="font-size: 16px;">list_alt</span> 30 Questions</span>
+</div>
+<p class="card-desc">
+                                Evaluates logic and pattern recognition capabilities using visual sequences. Identify the next shape in the series.
+                            </p>
+</div>
+<button class="btn-card btn-primary">
+                            Resume Exam
+                            <span class="material-symbols-outlined" style="font-size: 18px;">play_arrow</span>
+</button>
+</div>
+<div class="exam-card locked">
+<div>
+<div class="card-header">
+<div class="icon-circle icon-gray">
+<span class="material-symbols-outlined" style="font-size: 28px;">calculate</span>
+</div>
+<span class="badge badge-completed">Completed</span>
+</div>
+<h3 class="card-title">Numerical Reasoning</h3>
+<div class="card-meta">
+<span class="meta-item"><span class="material-symbols-outlined" style="font-size: 16px;">schedule</span> 30 mins</span>
+<span class="meta-item"><span class="material-symbols-outlined" style="font-size: 16px;">list_alt</span> 25 Questions</span>
+</div>
+<p class="card-desc">
+                                Assessment of data interpretation and basic arithmetic problem solving.
+                            </p>
+</div>
+<button class="btn-card btn-disabled" disabled="">
+                            Submitted
+                            <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+</button>
+</div>
+<div class="exam-card locked">
+<div>
+<div class="card-header">
+<div class="icon-circle icon-gray">
+<span class="material-symbols-outlined" style="font-size: 28px;">lightbulb</span>
+</div>
+<span class="badge badge-locked">Locked</span>
+</div>
+<h3 class="card-title">Advanced Logical Reasoning</h3>
+<div class="card-meta">
+<span class="meta-item"><span class="material-symbols-outlined" style="font-size: 16px;">schedule</span> 45 mins</span>
+<span class="meta-item"><span class="material-symbols-outlined" style="font-size: 16px;">list_alt</span> 50 Questions</span>
+</div>
+<p class="card-desc">
+                                Advanced puzzles to test critical thinking. This module unlocks after completion of the Personality Assessment.
+                            </p>
+</div>
+<button class="btn-card btn-locked" disabled="">
+                            Locked
+                            <span class="material-symbols-outlined" style="font-size: 18px;">lock</span>
+</button>
+</div>
+</div>
+<div class="help-container">
+<div class="help-box">
+<div class="help-content">
+<h3>Need assistance?</h3>
+<p>
+                                If you experience any technical difficulties or have questions about the assessment process, please contact our support team immediately.
+                            </p>
+</div>
+<a class="btn-support" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">support_agent</span>
+                            Contact Support
+                        </a>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>

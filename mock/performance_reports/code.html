@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SPI Recruitment Portal - Performance Reports</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {--color-primary: #137fec;
+            --color-primary-hover: #0f6bd0;
+            --color-primary-light: rgba(19, 127, 236, 0.1);
+            --color-bg-body: #f6f7f8;
+            --color-bg-surface: #ffffff;
+            --color-text-main: #111418;
+            --color-text-muted: #617589;
+            --color-border: #dbe0e6;--color-success: #15803d;
+            --color-success-bg: #dcfce7;
+            --color-warning: #854d0e;
+            --color-warning-bg: #fef9c3;
+            --color-danger: #b91c1c;
+            --color-danger-bg: #fee2e2;--space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --container-width: 1200px;
+            --header-height: 64px;--radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-full: 9999px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);--font-family: 'Inter', sans-serif;
+        }* {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--color-bg-body);
+            color: var(--color-text-main);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }.layout-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-content {
+            flex: 1;
+            width: 100%;
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: var(--space-lg) var(--space-md);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }.app-header {
+            background-color: var(--color-bg-surface);
+            border-bottom: 1px solid var(--color-border);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--space-xl);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            color: var(--color-primary);
+        }
+        .brand-name {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--color-text-main);
+            margin: 0;
+        }
+        .nav-section {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+        .nav-link {
+            text-decoration: none;
+            color: var(--color-text-muted);
+            font-weight: 500;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--color-primary);
+        }
+        .nav-link.active {
+            font-weight: 700;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .user-avatar:hover {
+            border-color: var(--color-primary);
+        }.page-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: var(--space-md);
+            flex-wrap: wrap;
+            gap: var(--space-md);
+        }
+        .title-group h1 {
+            font-size: 32px;
+            font-weight: 900;
+            margin: 0 0 var(--space-sm) 0;
+            letter-spacing: -0.02em;
+        }
+        .title-group p {
+            color: var(--color-text-muted);
+            margin: 0;
+            font-size: 16px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            padding: 0 var(--space-lg);
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            gap: 8px;
+            font-family: var(--font-family);
+        }
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+        }.stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: var(--space-md);
+            padding: 0 var(--space-md);
+        }
+        .card {
+            background-color: var(--color-bg-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.2s;
+        }
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .stat-label {
+            color: var(--color-text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-sm);
+        }
+        .stat-content {
+            display: flex;
+            align-items: baseline;
+            gap: var(--space-sm);
+        }
+        .stat-value {
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--color-text-main);
+            margin: 0;
+        }
+        .trend-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .trend-positive {
+            background-color: var(--color-success-bg);
+            color: var(--color-success);
+        }
+        .trend-neutral {
+            background-color: #f3f4f6;
+            color: #374151;
+        }.filters-container {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            padding: 0 var(--space-md);
+        }
+        .filters-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-text-main);
+        }
+        .filter-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 36px;
+            padding: 0 12px 0 16px;
+            background-color: var(--color-bg-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-full);
+            color: var(--color-text-main);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-chip:hover {
+            border-color: var(--color-primary);
+            background-color: #f0f7ff;
+            color: var(--color-primary);
+        }
+        .filter-chip span.material-symbols-outlined {
+            font-size: 20px;
+        }
+        .clear-filters {
+            font-size: 14px;
+            color: var(--color-primary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: auto;
+        }
+        .clear-filters:hover {
+            text-decoration: underline;
+        }.charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: var(--space-lg);
+            padding: 0 var(--space-md);
+        }
+        @media (max-width: 768px) {
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .chart-card {
+            background-color: var(--color-bg-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .chart-title h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .chart-title p {
+            margin: 4px 0 0;
+            font-size: 14px;
+            color: var(--color-text-muted);
+        }
+        .chart-icon-wrapper {
+            background-color: var(--color-primary-light);
+            color: var(--color-primary);
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+        }.histogram {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-md);
+            align-items: end;
+            height: 200px;
+            margin-top: var(--space-md);
+            padding: 0 8px;
+        }
+        .bar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+            position: relative;
+            cursor: pointer;
+        }
+        .bar {
+            width: 100%;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .bar-default {
+            background-color: rgba(19, 127, 236, 0.2);
+        }
+        .bar-medium {
+             background-color: rgba(19, 127, 236, 0.4);
+        }
+        .bar-primary {
+            background-color: var(--color-primary);
+            box-shadow: 0 0 10px rgba(19, 127, 236, 0.3);
+        }
+        .bar-high {
+            background-color: rgba(19, 127, 236, 0.6);
+        }
+        .bar-container:hover .bar {
+            background-color: var(--color-primary-hover);
+            transform: scaleY(1.05);
+            transform-origin: bottom;
+        }
+        .bar-value-tooltip {
+            position: absolute;
+            top: -30px;
+            background-color: #1f2937;
+            color: white;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .bar-container:hover .bar-value-tooltip {
+            opacity: 1;
+        }
+        .bar-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            margin-top: 8px;
+        }.radar-container {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: var(--space-xl);
+            padding: var(--space-md) 0;
+        }
+        .radar-labels {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 8px;
+        }
+        .radar-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            text-align: center;
+            width: 20%;
+        }.table-section {
+            padding: 0 var(--space-md) 40px;
+        }
+        .table-card {
+            background-color: var(--color-bg-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .table-controls {
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .table-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+        }
+        .control-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .search-wrapper {
+            position: relative;
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 20px;
+        }
+        .search-input {
+            height: 40px;
+            width: 260px;
+            padding-left: 40px;
+            padding-right: 16px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            background-color: var(--color-bg-body);
+            font-family: var(--font-family);
+            font-size: 14px;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+        .filter-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--color-bg-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .filter-btn:hover {
+            background-color: var(--color-bg-body);
+        }
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        thead {
+            background-color: #f9fafb;
+            border-bottom: 1px solid var(--color-border);
+        }
+        th {
+            padding: 16px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            white-space: nowrap;
+        }
+        th.sortable {
+            cursor: pointer;
+        }
+        th.sortable:hover {
+            color: var(--color-primary);
+        }
+        td {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 14px;
+            color: var(--color-text-main);
+            vertical-align: middle;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background-color: #f9fafb;
+        }.candidate-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .candidate-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid var(--color-border);
+        }
+        .candidate-info p {
+            margin: 0;
+            line-height: 1.4;
+        }
+        .candidate-name {
+            font-weight: 600;
+        }
+        .candidate-dept {
+            font-size: 12px;
+            color: var(--color-text-muted);
+        }
+        .text-muted {
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+        .score-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .score-val {
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .score-rank {
+            font-size: 12px;
+            font-weight: 500;
+            color: #16a34a;
+        }
+        .progress-bg {
+            height: 6px;
+            width: 100px;
+            background-color: var(--color-bg-body);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: var(--radius-full);
+        }
+        .fill-green { background-color: #22c55e; }
+        .fill-yellow { background-color: #eab308; }
+        .fill-red { background-color: #ef4444; }
+        .tag-list {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+        .tag-blue { background-color: #eff6ff; color: #1d4ed8; border-color: rgba(29, 78, 216, 0.1); }
+        .tag-purple { background-color: #faf5ff; color: #7e22ce; border-color: rgba(126, 34, 206, 0.1); }
+        .tag-orange { background-color: #fff7ed; color: #c2410c; border-color: rgba(194, 65, 12, 0.1); }
+        .tag-pink { background-color: #fdf2f8; color: #be185d; border-color: rgba(190, 24, 93, 0.1); }
+        .tag-gray { background-color: #f3f4f6; color: #374151; border-color: rgba(55, 65, 81, 0.1); }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .status-qualified {
+            background-color: var(--color-success-bg);
+            color: var(--color-success);
+        }
+        .status-qualified .status-dot { background-color: var(--color-success); }
+        .status-review {
+            background-color: var(--color-warning-bg);
+            color: var(--color-warning);
+        }
+        .status-review .status-dot { background-color: #ca8a04; }
+        .status-disqualified {
+            background-color: var(--color-danger-bg);
+            color: var(--color-danger);
+        }
+        .status-disqualified .status-dot { background-color: #dc2626; }
+        .row-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        tr:hover .row-actions {
+            opacity: 1;
+        }
+        .icon-btn-sm {
+            padding: 4px;
+            border-radius: 4px;
+            background: transparent;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-btn-sm:hover {
+            background-color: #e5e7eb;
+            color: var(--color-text-main);
+        }.pagination-container {
+            border-top: 1px solid var(--color-border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .pagination-info {
+            font-size: 14px;
+            color: var(--color-text-muted);
+        }
+        .pagination-info b {
+            color: var(--color-text-main);
+            font-weight: 500;
+        }
+        .pagination-nav {
+            display: flex;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+        .page-item {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            background-color: var(--color-bg-surface);
+            border: 1px solid var(--color-border);
+            margin-left: -1px;
+            text-decoration: none;
+            color: var(--color-text-main);
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .page-item:first-child {
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+            padding: 8px 8px;
+        }
+        .page-item:last-child {
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+            padding: 8px 8px;
+        }
+        .page-item:hover:not(.active):not(.disabled) {
+            background-color: #f9fafb;
+        }
+        .page-item.active {
+            background-color: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+            z-index: 1;
+        }
+        .page-item.disabled {
+            color: #d1d5db;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<div class="layout-container">
+<header class="app-header">
+<div class="brand-section">
+<div class="brand-logo">
+<svg class="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="brand-name">SPI Recruitment Portal</h2>
+</div>
+<div class="nav-section">
+<nav class="nav-links" style="display: flex; gap: 32px;">
+<a class="nav-link" href="#">Dashboard</a>
+<a class="nav-link" href="#">Candidates</a>
+<a class="nav-link" href="#">Exams</a>
+<a class="nav-link active" href="#">Reports</a>
+<a class="nav-link" href="#">Settings</a>
+</nav>
+<div class="user-profile">
+<button class="user-avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBG93-tSzQi2_QVqWxSr3UWb8O6BAYyzcsApKV4ejUXS63jIlrdW8d-gxCZf1roQORUGf2jqLxL4_-4vRHxwM5M0HiRPZO6TTFsgYv8dF1FTk8X4bht7lz0jczVKNcSdRx60A3noGf6SHjpYVqlzIp0YtDofuqeZu54q47uvIQVZPRl1QnkzVTVS8Wzl2565Ab4LGvGvtbGbIvApURNNvGwAhnW5LPP6zSkOZEB23e7epMuPl8CmGghbNIkZY9Jopoj90INKcF_SR0");' title="User Profile"></button>
+</div>
+</div>
+</header>
+<main class="main-content">
+<div class="page-heading">
+<div class="title-group">
+<h1>Performance Reports</h1>
+<p>Detailed analytics and scoring breakdown for the Q3 Recruitment Drive.</p>
+</div>
+<button class="btn btn-primary">
+<span class="material-symbols-outlined">download</span>
+                    Export Report
+                </button>
+</div>
+<div class="stats-grid">
+<div class="card">
+<p class="stat-label">Total Candidates</p>
+<div class="stat-content">
+<p class="stat-value">342</p>
+<span class="trend-badge trend-positive">+12%</span>
+</div>
+</div>
+<div class="card">
+<p class="stat-label">Average Score</p>
+<div class="stat-content">
+<p class="stat-value">76/100</p>
+<span class="trend-badge trend-positive">+2%</span>
+</div>
+</div>
+<div class="card">
+<p class="stat-label">Qualified (&gt;70%)</p>
+<div class="stat-content">
+<p class="stat-value">82</p>
+<span class="trend-badge trend-positive">+5%</span>
+</div>
+</div>
+<div class="card">
+<p class="stat-label">Top Percentile</p>
+<div class="stat-content">
+<p class="stat-value">Top 10%</p>
+<span class="trend-badge trend-neutral">0%</span>
+</div>
+</div>
+</div>
+<div class="filters-container">
+<span class="filters-label">Filters:</span>
+<button class="filter-chip">
+                    Date: Last 30 Days
+                    <span class="material-symbols-outlined">arrow_drop_down</span>
+</button>
+<button class="filter-chip">
+                    Department: Engineering
+                    <span class="material-symbols-outlined">arrow_drop_down</span>
+</button>
+<button class="filter-chip">
+                    Exam Type: SPI-3
+                    <span class="material-symbols-outlined">arrow_drop_down</span>
+</button>
+<button class="filter-chip">
+                    Score: &gt;70%
+                    <span class="material-symbols-outlined">arrow_drop_down</span>
+</button>
+<button class="clear-filters">Clear all</button>
+</div>
+<div class="charts-row">
+<div class="chart-card">
+<div class="chart-header">
+<div class="chart-title">
+<h3>Score Distribution</h3>
+<p>Histogram of applicant scores</p>
+</div>
+<div class="chart-icon-wrapper">
+<span class="material-symbols-outlined">bar_chart</span>
+</div>
+</div>
+<div class="histogram">
+<div class="bar-container">
+<div class="bar-value-tooltip">12</div>
+<div class="bar bar-default" style="height: 15%;"></div>
+<span class="bar-label">0-20</span>
+</div>
+<div class="bar-container">
+<div class="bar-value-tooltip">45</div>
+<div class="bar bar-default" style="height: 35%;"></div>
+<span class="bar-label">21-40</span>
+</div>
+<div class="bar-container">
+<div class="bar-value-tooltip">120</div>
+<div class="bar bar-medium" style="height: 60%;"></div>
+<span class="bar-label">41-60</span>
+</div>
+<div class="bar-container">
+<div class="bar-value-tooltip">142</div>
+<div class="bar bar-primary" style="height: 85%;"></div>
+<span class="bar-label">61-80</span>
+</div>
+<div class="bar-container">
+<div class="bar-value-tooltip">23</div>
+<div class="bar bar-high" style="height: 25%;"></div>
+<span class="bar-label">81-100</span>
+</div>
+</div>
+</div>
+<div class="chart-card">
+<div class="chart-header">
+<div class="chart-title">
+<h3>Aptitude Breakdown</h3>
+<p>Category averages across all candidates</p>
+</div>
+<div class="chart-icon-wrapper">
+<span class="material-symbols-outlined">radar</span>
+</div>
+</div>
+<div class="radar-container">
+<div style="position: relative; width: 100%; height: 100%;">
+<svg class="overflow-visible" fill="none" height="148" preserveAspectRatio="none" style="overflow: visible;" viewBox="-3 0 478 150" width="100%" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H326.769H0V109Z" fill="url(#paint0_linear_1131_5935)"></path>
+<path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25" stroke="#137fec" stroke-linecap="round" stroke-width="3"></path>
+<circle cx="36" cy="21" fill="#137fec" r="4"></circle>
+<circle cx="145" cy="33" fill="#137fec" r="4"></circle>
+<circle cx="254" cy="45" fill="#137fec" r="4"></circle>
+<circle cx="363" cy="1" fill="#137fec" r="4"></circle>
+<defs>
+<linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_1131_5935" x1="236" x2="236" y1="1" y2="149">
+<stop stop-color="#137fec" stop-opacity="0.2"></stop>
+<stop offset="1" stop-color="#137fec" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+</svg>
+</div>
+<div class="radar-labels">
+<span class="radar-label">Verbal</span>
+<span class="radar-label">Non-Verbal</span>
+<span class="radar-label">Logic</span>
+<span class="radar-label">Personality</span>
+<span class="radar-label">Math</span>
+</div>
+</div>
+</div>
+</div>
+<div class="table-section">
+<div class="table-card">
+<div class="table-controls">
+<h3 class="table-title">Candidate Results</h3>
+<div class="control-group">
+<div class="search-wrapper">
+<span class="material-symbols-outlined search-icon">search</span>
+<input class="search-input" placeholder="Search by name..." type="text"/>
+</div>
+<button class="filter-btn">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<div class="table-responsive">
+<table>
+<thead>
+<tr>
+<th class="sortable">Candidate Name <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 16px; opacity: 0.5;">unfold_more</span></th>
+<th class="sortable">Exam ID</th>
+<th class="sortable">Date</th>
+<th class="sortable">Total Score</th>
+<th>Aptitude Profile</th>
+<th>Status</th>
+<th style="text-align: right;">Actions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<div class="candidate-cell">
+<div class="candidate-img" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCDrrfibSJWGHWEaaxQiKUam9bkpMESG5nO-gMxZ19DtVMGUWCblUY6JUa0aZGxI4iBUodTSg57nkar-twPj2qLWyrn7VimdDufzNEnh6ujUJT9IdLLDYkjw10APVDp-aOHgyXI0Jdk4MBlMxzfIFvRutnA1g8YphwVN6sNBLVdFWx3V0wQjNl893hFzI2vGLkgnWrAOPh5cjJBaqO7z_x9x7YIheqfMhGRfjAMK0Re0258z9iC12pHXatQq7w3LLGK_72OZ4wuh6U");'></div>
+<div class="candidate-info">
+<p class="candidate-name">Sarah Jenkins</p>
+<p class="candidate-dept">Engineering Dept</p>
+</div>
+</div>
+</td>
+<td class="text-muted">#SPI-2901</td>
+<td class="text-muted">Oct 24, 2023</td>
+<td>
+<div class="score-wrapper">
+<span class="score-val">88</span>
+<span class="score-rank">Top 5%</span>
+</div>
+<div class="progress-bg">
+<div class="progress-fill fill-green" style="width: 88%;"></div>
+</div>
+</td>
+<td>
+<div class="tag-list">
+<span class="tag tag-blue">Analytic</span>
+<span class="tag tag-purple">Logic</span>
+</div>
+</td>
+<td>
+<div class="status-badge status-qualified">
+<span class="status-dot"></span>
+                                            Qualified
+                                        </div>
+</td>
+<td>
+<div class="row-actions">
+<button class="icon-btn-sm" title="View Details">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+</button>
+<button class="icon-btn-sm" title="Download Report">
+<span class="material-symbols-outlined" style="font-size: 20px;">download</span>
+</button>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<div class="candidate-cell">
+<div class="candidate-img" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCV7W4TiDhk9uXE9Q4pRj1fidzegZFI7n1oEslsViAc3VnMhQCnVXvhAMwOq-A_0KMLwYw6KGzj9n5Sj8Xa205F1TR_tKn9Dx6i4KinKjlmqdSjzyJZe0tbWCtmuSjwLamMsEUKakIyNBUnI5SwL2qCZXN2MlD5k-KgaEhiXmEr97cITiYXWyCLUUnfN55253rFJe33CLvOjQNFDGSZizr1P26lwTmRiKSxHRrauKFbp6wyoZBJ2aAOZT8fyWoHA2ZC4FvkvXZZ7OU");'></div>
+<div class="candidate-info">
+<p class="candidate-name">Michael Chen</p>
+<p class="candidate-dept">Product Dept</p>
+</div>
+</div>
+</td>
+<td class="text-muted">#SPI-2902</td>
+<td class="text-muted">Oct 23, 2023</td>
+<td>
+<div class="score-wrapper">
+<span class="score-val">72</span>
+</div>
+<div class="progress-bg">
+<div class="progress-fill fill-yellow" style="width: 72%;"></div>
+</div>
+</td>
+<td>
+<div class="tag-list">
+<span class="tag tag-orange">Creative</span>
+</div>
+</td>
+<td>
+<div class="status-badge status-review">
+<span class="status-dot"></span>
+                                            Review
+                                        </div>
+</td>
+<td>
+<div class="row-actions">
+<button class="icon-btn-sm">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+</button>
+<button class="icon-btn-sm">
+<span class="material-symbols-outlined" style="font-size: 20px;">download</span>
+</button>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<div class="candidate-cell">
+<div class="candidate-img" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAVYU2gqN6GWozydxCFLDnF416lS-lETXSBVd5pFcElbYxrqz44mey7DQyGSCXU16TxFdv5wyjccrs5adoUCsPNk_PxEzaO1-GeUtjO07kcavhijg1kNHdkhgx717lQriFuJ594uI7ioUYObD_trPsa7veN-zaYW3KZ7Ih6YW4mAN6A72JLpukHYqvqOrIdKUjU8w56A5nH8F-KWgTbSdkAt0LCSXBNgPkG2aAv3RVwojExWjbPvdRmPy6tKJxk2sboxP4jA_ObxBA");'></div>
+<div class="candidate-info">
+<p class="candidate-name">Emma Wilson</p>
+<p class="candidate-dept">Sales Dept</p>
+</div>
+</div>
+</td>
+<td class="text-muted">#SPI-2895</td>
+<td class="text-muted">Oct 22, 2023</td>
+<td>
+<div class="score-wrapper">
+<span class="score-val">45</span>
+</div>
+<div class="progress-bg">
+<div class="progress-fill fill-red" style="width: 45%;"></div>
+</div>
+</td>
+<td>
+<div class="tag-list">
+<span class="tag tag-gray">Verbal</span>
+</div>
+</td>
+<td>
+<div class="status-badge status-disqualified">
+<span class="status-dot"></span>
+                                            Disqualified
+                                        </div>
+</td>
+<td>
+<div class="row-actions">
+<button class="icon-btn-sm">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+</button>
+<button class="icon-btn-sm">
+<span class="material-symbols-outlined" style="font-size: 20px;">download</span>
+</button>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<div class="candidate-cell">
+<div class="candidate-img" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCW6hFowFH4cI0nWWhaXH2OxH_tl0FVw_ezmxbCOWoJv6pNZRXQ0pqH_2TMrpCj97kOdbfZA7DCrSIEwB9G1ol3Y07rEM-Tg2unR5lvbSNX02p2NXrU3ddVyvu98yjHWaZ8P1R63F-dbHR2RMoz7srdxHO-wKoIbROff2OK3tWQKIvqiSo2tpjTgLSyiYO70Dox3MUgZGVc3El4V9je2oCWxneEXxTso1uB3elMJrsHHIVmdBs_PBWttRowcqP7_0zw8Qo97Flylsg");'></div>
+<div class="candidate-info">
+<p class="candidate-name">David Okonjo</p>
+<p class="candidate-dept">Marketing Dept</p>
+</div>
+</div>
+</td>
+<td class="text-muted">#SPI-2880</td>
+<td class="text-muted">Oct 22, 2023</td>
+<td>
+<div class="score-wrapper">
+<span class="score-val">92</span>
+<span class="score-rank">Top 2%</span>
+</div>
+<div class="progress-bg">
+<div class="progress-fill fill-green" style="width: 92%;"></div>
+</div>
+</td>
+<td>
+<div class="tag-list">
+<span class="tag tag-pink">Social</span>
+<span class="tag tag-blue">Leadership</span>
+</div>
+</td>
+<td>
+<div class="status-badge status-qualified">
+<span class="status-dot"></span>
+                                            Qualified
+                                        </div>
+</td>
+<td>
+<div class="row-actions">
+<button class="icon-btn-sm">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+</button>
+<button class="icon-btn-sm">
+<span class="material-symbols-outlined" style="font-size: 20px;">download</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="pagination-container">
+<div class="pagination-info">
+                            Showing <b>1</b> to <b>4</b> of <b>342</b> results
+                        </div>
+<nav class="pagination-nav">
+<a class="page-item disabled" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">chevron_left</span>
+</a>
+<a class="page-item active" href="#">1</a>
+<a class="page-item" href="#">2</a>
+<a class="page-item" href="#">3</a>
+<span class="page-item disabled">...</span>
+<a class="page-item" href="#">8</a>
+<a class="page-item" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">chevron_right</span>
+</a>
+</nav>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

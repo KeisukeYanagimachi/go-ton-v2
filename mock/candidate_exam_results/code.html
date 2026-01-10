@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>受験者試験結果 - SPI Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>:root {
+            --primary: #137fec;
+            --primary-dark: #0f66bd;
+            --primary-light: #e7f2fd;
+            --primary-soft: rgba(19, 127, 236, 0.1);
+            --bg-body: #f6f7f8;
+            --bg-surface: #ffffff;
+            --text-main: #111418;
+            --text-secondary: #617589;
+            --text-white: #ffffff;
+            --border-color: #e5e7eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --purple: #8b5cf6;
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-full: 9999px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            --font-main: 'Inter', sans-serif;
+            --spacing-container: 1024px;
+        }* {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; border: none; background: none; cursor: pointer; }.container {
+            max-width: var(--spacing-container);
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            width: 100%;
+        }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }.site-header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            color: var(--primary);
+        }
+        .app-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .btn-logout {
+            height: 2.25rem;
+            padding: 0 1rem;
+            background-color: var(--primary-soft);
+            color: var(--primary);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 700;
+            transition: background-color 0.2s;
+        }
+        .btn-logout:hover {
+            background-color: #dbeafe;
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-left: 1rem;
+            border-left: 1px solid var(--border-color);
+        }
+        .user-info { text-align: right; }
+        .user-name { font-size: 0.875rem; font-weight: 600; line-height: 1; }
+        .user-id { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: var(--radius-full);
+            background-color: #e2e8f0;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 0 0 2px var(--primary-soft);
+        }.main-wrapper {
+            padding: 2.5rem 0;
+            display: flex;
+            justify-content: center;
+        }
+        .content-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            width: 100%;
+        }.card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        @media (min-width: 768px) {
+            .status-header { align-items: center; }
+        }
+        .status-message {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.05em;
+        }
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 900;
+            color: var(--text-main);
+            letter-spacing: -0.025em;
+        }
+        .status-desc {
+            color: var(--text-secondary);
+            max-width: 36rem;
+        }
+        .btn-outline {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            height: 2.5rem;
+            padding: 0 1.25rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-main);
+            background-color: var(--bg-surface);
+            transition: background-color 0.2s;
+        }
+        .btn-outline:hover { background-color: #f9fafb; }.stats-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1rem;
+        }
+        @media (min-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        .stat-card {
+            position: relative;
+            padding: 1.5rem;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-card);
+        }
+        .stat-icon-bg {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 1rem;
+            opacity: 0.1;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .stat-card:hover .stat-icon-bg { opacity: 0.15; }
+        .stat-icon-bg span { font-size: 3.75rem; }
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .stat-sub { font-size: 1.25rem; color: #9ca3af; font-weight: 500; }
+        .stat-bar-bg {
+            width: 100%;
+            height: 0.375rem;
+            background-color: #f3f4f6;
+            border-radius: var(--radius-full);
+            margin-top: 0.75rem;
+        }
+        .stat-bar-fill {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: var(--radius-full);
+        }
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 0.75rem;
+        }
+        .text-green { color: var(--success); }
+        .stat-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            line-height: 1.4;
+        }.dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        @media (min-width: 1024px) {
+            .dashboard-grid { grid-template-columns: 2fr 1fr; }
+        }.chart-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .section-title { font-size: 1.125rem; font-weight: 700; color: var(--text-main); }
+        .section-subtitle { font-size: 0.875rem; color: var(--text-secondary); }
+        .chart-legend {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .legend-item { display: flex; align-items: center; gap: 0.375rem; }
+        .dot { width: 0.75rem; height: 0.75rem; border-radius: 50%; }
+        .dot-primary { background-color: var(--primary); }
+        .dot-gray { background-color: #cbd5e1; }
+        .chart-area {
+            position: relative;
+            height: 240px;
+            padding-top: 2rem;
+            padding-bottom: 0.5rem;background-image: linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+            background-size: 100% 25%;}
+        .bars-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 100%;
+            position: relative;
+            z-index: 10;
+        }
+        .bar-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            width: 15%;
+        }
+        .bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
+            height: 200px;
+            width: 100%;
+        }
+        .bar {
+            width: 1.5rem;
+            border-top-left-radius: 2px;
+            border-top-right-radius: 2px;
+            position: relative;
+            transition: height 0.5s ease-out;
+        }
+        @media (max-width: 640px) {
+            .bar { width: 0.75rem; }
+        }
+        .bar-avg { background-color: #cbd5e1; }
+        .bar-user { background-color: var(--primary); }
+        .bar-tooltip {
+            position: absolute;
+            top: -2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1e293b;
+            color: #fff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .bar:hover .bar-tooltip { opacity: 1; }
+        .axis-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: center;
+        }.feedback-item {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        .feedback-icon {
+            width: 3rem;
+            height: 3rem;
+            background-color: var(--primary-soft);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+        .tag-list {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .tag {
+            padding: 0.125rem 0.625rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .tag-green { background-color: #dcfce7; color: #166534; }
+        .tag-blue { background-color: #dbeafe; color: #1e40af; }
+        .tag-purple { background-color: #f3e8ff; color: #6b21a8; }.breakdown-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .breakdown-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .breakdown-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+        .breakdown-name { font-weight: 500; }
+        .breakdown-score { font-weight: 700; }
+        .progress-track {
+            width: 100%;
+            height: 0.5rem;
+            background-color: #f3f4f6;
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: var(--radius-full);
+        }
+        .breakdown-note {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        .next-steps {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }.footer-action {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+            margin-bottom: 2.5rem;
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            height: 3rem;
+            padding: 0 2rem;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(19, 127, 236, 0.4);
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover { background-color: var(--primary-dark); }.bg-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, rgba(239, 246, 255, 0.6) 0%, rgba(255, 255, 255, 0) 100%);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<div class="bg-decoration"></div>
+<div class="app-container">
+<header class="site-header">
+<div class="container header-content">
+<div class="logo-section">
+<div class="logo-icon">
+<svg fill="none" height="100%" viewBox="0 0 48 48" width="100%" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M47.2426 24L24 47.2426L0.757355 24L24 0.757355L47.2426 24ZM12.2426 21H35.7574L24 9.24264L12.2426 21Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="app-title">SPI Assessment Platform</h2>
+</div>
+<div class="user-nav">
+<button class="btn-logout">Logout</button>
+<div class="user-profile">
+<div class="user-info">
+<p class="user-name">Alex Morgan</p>
+<p class="user-id">Candidate ID: #99382</p>
+</div>
+<div class="avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDT0nGL73U2D1tl41_xtr5kkPanMSChyBQpOqrFJXhtBOcK65myVZQzapGdW3ZdYUQLg6QDAUFK23W8QYq4r-DU0cFG4eXoNF7yOwj8e0pL1d1VBEfWr4-gV5uSqg5ZN-T99OQpMzyVQ9GJ0ZO-7Rm6I018wHSp6H-mXD28SkUPZBfD4GUd1JhMiUp1Ew5tpKwU8POhliUEixUe381Yc-r3tV_qAnTl20-HOqNH5tdTGe6h3Gyz_DrkHnm3U-O2_CBbuTQPr8kRExo");'></div>
+</div>
+</div>
+</div>
+</header>
+<main class="main-wrapper">
+<div class="container content-stack">
+<div class="card status-header">
+<div class="status-message">
+<div class="status-badge">
+<span class="material-symbols-outlined">check_circle</span>
+<span>Submission Successful</span>
+</div>
+<h1 class="page-title">Assessment Submitted</h1>
+<p class="status-desc">
+                            Thank you, Alex. Your SPI assessment results have been processed successfully. You can review your detailed performance breakdown below.
+                        </p>
+</div>
+<button class="btn-outline">
+<span class="material-symbols-outlined">download</span>
+<span>Download PDF</span>
+</button>
+</div>
+<div class="stats-grid">
+<div class="card stat-card">
+<div class="stat-icon-bg"><span class="material-symbols-outlined" style="color: var(--primary);">fact_check</span></div>
+<p class="stat-label">Total Score</p>
+<p class="stat-value">78<span class="stat-sub">/100</span></p>
+<div class="stat-bar-bg">
+<div class="stat-bar-fill" style="width: 78%"></div>
+</div>
+<p class="stat-trend">
+<span class="material-symbols-outlined text-green" style="font-size: 16px;">trending_up</span>
+<span class="text-green">Good Performance</span>
+</p>
+</div>
+<div class="card stat-card">
+<div class="stat-icon-bg"><span class="material-symbols-outlined" style="color: var(--purple);">leaderboard</span></div>
+<p class="stat-label">Percentile Rank</p>
+<p class="stat-value">Top 15%</p>
+<p class="stat-desc">You scored higher than 85% of candidates.</p>
+</div>
+<div class="card stat-card">
+<div class="stat-icon-bg"><span class="material-symbols-outlined" style="color: var(--warning);">timer</span></div>
+<p class="stat-label">Completion Time</p>
+<p class="stat-value">45m 12s</p>
+<p class="stat-desc">Average completion time is 52m 00s.</p>
+</div>
+</div>
+<div class="dashboard-grid">
+<div class="flex flex-col gap-6">
+<div class="card chart-container">
+<div class="section-header">
+<div>
+<h3 class="section-title">Performance Analysis</h3>
+<p class="section-subtitle">Score vs. Average Passing Threshold</p>
+</div>
+<div class="chart-legend">
+<div class="legend-item">
+<div class="dot dot-primary"></div>
+<span>Your Score</span>
+</div>
+<div class="legend-item">
+<div class="dot dot-gray"></div>
+<span>Average</span>
+</div>
+</div>
+</div>
+<div class="chart-area">
+<div class="bars-container">
+<div class="bar-group">
+<div class="bars">
+<div class="bar bar-avg" style="height: 50%;">
+<div class="bar-tooltip">Avg: 50%</div>
+</div>
+<div class="bar bar-user" style="height: 62%;">
+<div class="bar-tooltip">You: 62%</div>
+</div>
+</div>
+<span class="axis-label">Language</span>
+</div>
+<div class="bar-group">
+<div class="bars">
+<div class="bar bar-avg" style="height: 40%;">
+<div class="bar-tooltip">Avg: 40%</div>
+</div>
+<div class="bar bar-user" style="height: 85%;">
+<div class="bar-tooltip">You: 85%</div>
+</div>
+</div>
+<span class="axis-label">Non-Verbal</span>
+</div>
+<div class="bar-group">
+<div class="bars">
+<div class="bar bar-avg" style="height: 65%;">
+<div class="bar-tooltip">Avg: 65%</div>
+</div>
+<div class="bar bar-user" style="height: 72%;">
+<div class="bar-tooltip">You: 72%</div>
+</div>
+</div>
+<span class="axis-label">Math</span>
+</div>
+<div class="bar-group">
+<div class="bars">
+<div class="bar bar-avg" style="height: 55%;">
+<div class="bar-tooltip">Avg: 55%</div>
+</div>
+<div class="bar bar-user" style="height: 90%;">
+<div class="bar-tooltip">You: 90%</div>
+</div>
+</div>
+<span class="axis-label">Logic</span>
+</div>
+</div>
+</div>
+</div>
+<div class="card">
+<h3 class="section-title" style="margin-bottom: 1rem;">Personality Fit Assessment</h3>
+<div class="feedback-item">
+<div class="feedback-icon">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div>
+<h4 class="section-title" style="font-size: 1rem;">High Adaptability &amp; Problem Solving</h4>
+<p class="stat-desc" style="margin-top: 0.25rem;">
+                                        Your responses indicate a strong ability to adapt to changing environments and a methodical approach to problem-solving. You demonstrate high resilience under pressure.
+                                    </p>
+<div class="tag-list">
+<span class="tag tag-green">Resilient</span>
+<span class="tag tag-blue">Analytical</span>
+<span class="tag tag-purple">Team Player</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-6">
+<div class="card" style="height: 100%;">
+<h3 class="section-title" style="margin-bottom: 1.5rem;">Section Breakdown</h3>
+<div class="breakdown-list">
+<div class="breakdown-item">
+<div class="breakdown-header">
+<span class="breakdown-name">Language Ability</span>
+<span class="breakdown-score">62/100</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill" style="width: 62%"></div>
+</div>
+<p class="breakdown-note">Above average comprehension skills.</p>
+</div>
+<div class="breakdown-item">
+<div class="breakdown-header">
+<span class="breakdown-name">Non-Verbal Ability</span>
+<span class="breakdown-score">85/100</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill" style="width: 85%"></div>
+</div>
+<p class="breakdown-note">Excellent pattern recognition.</p>
+</div>
+<div class="breakdown-item">
+<div class="breakdown-header">
+<span class="breakdown-name">Mathematical Reasoning</span>
+<span class="breakdown-score">72/100</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill" style="width: 72%"></div>
+</div>
+<p class="breakdown-note">Strong quantitative analysis.</p>
+</div>
+<div class="breakdown-item">
+<div class="breakdown-header">
+<span class="breakdown-name">Logical Deduction</span>
+<span class="breakdown-score">90/100</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill" style="width: 90%"></div>
+</div>
+<p class="breakdown-note">Superior critical thinking.</p>
+</div>
+</div>
+<div class="next-steps">
+<h4 class="section-title" style="font-size: 0.875rem; margin-bottom: 0.5rem;">Next Steps</h4>
+<p class="stat-desc">
+                                    HR will review your results and contact you within 3 business days regarding the next interview round.
+                                </p>
+</div>
+</div>
+</div>
+</div>
+<div class="footer-action">
+<button class="btn-primary">Return to Dashboard</button>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>
