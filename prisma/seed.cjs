@@ -67,6 +67,31 @@ const resetSeedAttempts = async () => {
   });
 };
 
+const resetReissueTicket = async () => {
+  const ticket = await prisma.ticket.findUnique({
+    where: { ticketCode: "TICKET-REISSUE-001" },
+    select: { id: true, replacedByTicketId: true },
+  });
+
+  if (!ticket) {
+    return;
+  }
+
+  if (ticket.replacedByTicketId) {
+    await prisma.ticket.delete({
+      where: { id: ticket.replacedByTicketId },
+    });
+  }
+
+  await prisma.ticket.update({
+    where: { id: ticket.id },
+    data: {
+      status: "ACTIVE",
+      replacedByTicketId: null,
+    },
+  });
+};
+
 async function main() {
   await resetSeedAttempts();
   await prisma.staffRole.createMany({
@@ -302,6 +327,8 @@ async function main() {
     ],
     skipDuplicates: true,
   });
+
+  await resetReissueTicket();
 
   await prisma.examVersionModule.createMany({
     data: [
