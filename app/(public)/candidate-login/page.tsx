@@ -57,7 +57,17 @@ export default function CandidateLoginPage() {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f6f7f8", color: "#111418" }}>
+    <Box
+      sx={{
+        height: "100vh",
+        bgcolor: "#f6f7f8",
+        color: "#111418",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        boxSizing: "border-box",
+      }}
+    >
       <Box
         component="header"
         sx={{
@@ -71,9 +81,19 @@ export default function CandidateLoginPage() {
           py: 1.5,
           bgcolor: "#ffffff",
           borderBottom: "1px solid #e2e8f0",
+          width: "100%",
+          boxSizing: "border-box",
+          overflow: "hidden",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            minWidth: 0,
+          }}
+        >
           <Box
             sx={{
               width: 36,
@@ -88,7 +108,10 @@ export default function CandidateLoginPage() {
           >
             SPI
           </Box>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+          <Typography
+            variant="subtitle1"
+            sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
+          >
             SPI採用ポータル
           </Typography>
         </Box>
@@ -109,12 +132,15 @@ export default function CandidateLoginPage() {
       <Box
         component="main"
         sx={{
+          flex: 1,
+          minHeight: 0,
           display: "flex",
-          minHeight: "calc(100vh - 64px)",
           alignItems: "center",
           justifyContent: "center",
           px: { xs: 2, sm: 6 },
-          py: { xs: 6, lg: 10 },
+          py: { xs: 2, sm: 4 },
+          overflow: "hidden",
+          boxSizing: "border-box",
         }}
       >
         <Container maxWidth="sm">

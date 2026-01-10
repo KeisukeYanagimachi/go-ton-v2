@@ -63,6 +63,9 @@ export default function StaffDevLoginForm() {
             placeItems: "center",
             fontWeight: 700,
             mb: 2,
+            fontSize: 12,
+            lineHeight: 1,
+            letterSpacing: 0.6,
           }}
         >
           ADMIN

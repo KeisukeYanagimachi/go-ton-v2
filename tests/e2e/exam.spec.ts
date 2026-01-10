@@ -59,6 +59,11 @@ test("candidate can complete the exam and submit", async ({ page }) => {
   for (let i = 0; i < 2; i += 1) {
     await page.getByTestId("candidate-option-1").click();
     await page.getByTestId("candidate-next-question").click();
+    if (i === 0) {
+      await expect(page.getByTestId("candidate-current-question")).toHaveText(
+        "問 2",
+      );
+    }
   }
   await expect(page.getByTestId("candidate-module-confirm")).toBeVisible();
   await page.getByTestId("candidate-module-confirm-advance").click();
@@ -70,6 +75,11 @@ test("candidate can complete the exam and submit", async ({ page }) => {
   for (let i = 0; i < 2; i += 1) {
     await page.getByTestId("candidate-option-1").click();
     await page.getByTestId("candidate-next-question").click();
+    if (i === 0) {
+      await expect(page.getByTestId("candidate-current-question")).toHaveText(
+        "問 2",
+      );
+    }
   }
   await expect(page.getByTestId("candidate-module-confirm")).toBeVisible();
   await page.getByTestId("candidate-module-confirm-advance").click();
@@ -81,6 +91,11 @@ test("candidate can complete the exam and submit", async ({ page }) => {
   for (let i = 0; i < 2; i += 1) {
     await page.getByTestId("candidate-option-1").click();
     await page.getByTestId("candidate-next-question").click();
+    if (i === 0) {
+      await expect(page.getByTestId("candidate-current-question")).toHaveText(
+        "問 2",
+      );
+    }
   }
   await expect(page.getByTestId("candidate-module-confirm")).toBeVisible();
   await page.getByTestId("candidate-module-confirm-advance").click();

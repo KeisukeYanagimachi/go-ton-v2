@@ -1,9 +1,6 @@
 "use client";
 
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Alert,
   Box,
   Button,
@@ -13,7 +10,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   LinearProgress,
   Paper,
   Snackbar,
@@ -77,48 +73,6 @@ const formatSeconds = (seconds: number) => {
   return `${pad(hours)}:${pad(minutes)}:${pad(remaining)}`;
 };
 
-const questionStatusStyles = (
-  number: number,
-  activeNumber: number,
-  hasAnswer: boolean,
-  showUnanswered: boolean,
-) => {
-  if (number === activeNumber) {
-    return {
-      bgcolor: "#ffffff",
-      color: "#137fec",
-      border: "2px solid #137fec",
-      boxShadow: "0 0 0 4px rgba(19, 127, 236, 0.15)",
-      fontWeight: 700,
-    };
-  }
-
-  if (hasAnswer) {
-    return {
-      bgcolor: "#137fec",
-      color: "#ffffff",
-      border: "1px solid transparent",
-      fontWeight: 700,
-    };
-  }
-
-  if (showUnanswered) {
-    return {
-      bgcolor: "#fff7ed",
-      color: "#9a3412",
-      border: "1px dashed rgba(249, 115, 22, 0.7)",
-      fontWeight: 700,
-    };
-  }
-
-  return {
-    bgcolor: "#e2e8f0",
-    color: "#475569",
-    border: "1px solid transparent",
-    fontWeight: 600,
-  };
-};
-
 export default function CandidateExamPage() {
   const router = useRouter();
   const [snapshot, setSnapshot] = useState<AttemptSnapshot | null>(null);
@@ -134,12 +88,10 @@ export default function CandidateExamPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [hasAttemptedAdvance, setHasAttemptedAdvance] = useState(false);
-  const [showUnanswered, setShowUnanswered] = useState(false);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [timerReady, setTimerReady] = useState(false);
   const [isModuleConfirmOpen, setIsModuleConfirmOpen] = useState(false);
   const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState(false);
-  const [isModulePanelOpen, setIsModulePanelOpen] = useState(true);
   const remainingSecondsRef = useRef<number | null>(null);
   const lastSyncSeconds = useRef<number | null>(null);
   const syncIntervalId = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -202,6 +154,53 @@ export default function CandidateExamPage() {
     fetchSnapshot();
   }, []);
 
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!document.fullscreenEnabled) {
+      return;
+    }
+
+    const attemptFullscreen = async () => {
+      if (document.fullscreenElement) {
+        return;
+      }
+      const target = document.documentElement;
+      if (!target?.requestFullscreen) {
+        return;
+      }
+      try {
+        await target.requestFullscreen();
+      } catch {
+        // Ignore blocked fullscreen requests (e.g. without user gesture).
+      }
+    };
+
+    const handlePointer = () => {
+      void attemptFullscreen();
+    };
+
+    void attemptFullscreen();
+    window.addEventListener("pointerdown", handlePointer, { once: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", handlePointer);
+      if (document.fullscreenElement && document.exitFullscreen) {
+        void document.exitFullscreen();
+      }
+    };
+  }, []);
+
   const modules = snapshot?.modules ?? [];
   const currentModule = modules[moduleIndex] ?? null;
   const moduleItems = useMemo(() => {
@@ -215,7 +214,6 @@ export default function CandidateExamPage() {
   }, [snapshot, currentModule]);
 
   const activeItem = moduleItems[activeIndex] ?? null;
-  const questionNumbers = moduleItems.map((_, index) => index + 1);
   const isLocked = snapshot?.status === "LOCKED";
   const isLastQuestion = activeIndex >= moduleItems.length - 1;
   const isLastModule = moduleIndex >= modules.length - 1;
@@ -275,7 +273,6 @@ export default function CandidateExamPage() {
     setSaveError(null);
     setSaveMessage(null);
     setHasAttemptedAdvance(false);
-    setShowUnanswered(false);
     answersRef.current = {
       ...answersRef.current,
       [activeItem.attemptItemId]: optionId,
@@ -305,7 +302,6 @@ export default function CandidateExamPage() {
 
     if (!selectedOptionId) {
       setSaveError("ANSWER_REQUIRED");
-      setShowUnanswered(true);
       return false;
     }
 
@@ -541,20 +537,17 @@ export default function CandidateExamPage() {
       return;
     }
     setHasAttemptedAdvance(true);
-    setShowUnanswered(true);
     const saved = await handleSaveAnswer();
     if (!saved) {
       return;
     }
-
-    if (isLastQuestion) {
+    const nextIndex = activeIndex + 1;
+    if (nextIndex >= moduleItems.length) {
       setIsModuleConfirmOpen(true);
       return;
     }
 
-    setActiveIndex((previous) =>
-      Math.min(previous + 1, moduleItems.length - 1),
-    );
+    setActiveIndex(Math.min(nextIndex, moduleItems.length - 1));
   };
 
   const handleModuleAdvance = async () => {
@@ -576,7 +569,6 @@ export default function CandidateExamPage() {
       return;
     }
     setHasAttemptedAdvance(true);
-    setShowUnanswered(true);
     const saved = await handleSaveAnswer();
     if (!saved) {
       return;
@@ -597,7 +589,6 @@ export default function CandidateExamPage() {
 
     setIsSubmitConfirmOpen(false);
     setHasAttemptedAdvance(true);
-    setShowUnanswered(true);
     const saved = await handleSaveAnswer();
     if (!saved) {
       return;
@@ -631,7 +622,12 @@ export default function CandidateExamPage() {
   return (
     <Box
       data-testid="candidate-exam-page"
-      sx={{ minHeight: "100vh", bgcolor: "#f6f7f8", color: "#111418" }}
+      sx={{
+        height: "100vh",
+        bgcolor: "#f6f7f8",
+        color: "#111418",
+        overflow: "hidden",
+      }}
     >
       <Box
         component="header"
@@ -639,17 +635,26 @@ export default function CandidateExamPage() {
           position: "sticky",
           top: 0,
           zIndex: 10,
-          display: "flex",
+          display: "grid",
           alignItems: "center",
-          justifyContent: "space-between",
+          gridTemplateColumns: { xs: "1fr", md: "1fr auto 1fr" },
+          columnGap: 2,
           px: { xs: 2, md: 4 },
           py: 1.5,
           bgcolor: "#ffffff",
           borderBottom: "1px solid #e2e8f0",
           boxShadow: "0 1px 2px rgba(15, 23, 42, 0.05)",
+          width: "100%",
+          boxSizing: "border-box",
+          overflow: "hidden",
         }}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="center"
+          sx={{ minWidth: 0 }}
+        >
           <Box
             sx={{
               width: 40,
@@ -665,12 +670,22 @@ export default function CandidateExamPage() {
             SPI
           </Box>
           <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
+            >
               SPI 採用適性検査
             </Typography>
             <Typography
               variant="caption"
-              sx={{ color: "#64748b" }}
+              sx={{
+                color: "#64748b",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: { xs: 220, md: 360 },
+                display: "block",
+              }}
               data-testid="candidate-current-module"
             >
               {currentModule
@@ -684,6 +699,8 @@ export default function CandidateExamPage() {
             display: { xs: "none", md: "flex" },
             alignItems: "center",
             gap: 2,
+            flexShrink: 0,
+            justifySelf: "center",
           }}
         >
           <Paper
@@ -697,14 +714,22 @@ export default function CandidateExamPage() {
               display: "flex",
               alignItems: "center",
               gap: 1,
+              flexShrink: 0,
             }}
           >
-            <Typography variant="body2" sx={{ color: "#64748b" }}>
+            <Typography
+              variant="body2"
+              sx={{ color: "#64748b", whiteSpace: "nowrap" }}
+            >
               残り時間
             </Typography>
             <Typography
               variant="subtitle1"
-              sx={{ fontWeight: 700, letterSpacing: 2 }}
+              sx={{
+                fontWeight: 700,
+                letterSpacing: 1,
+                whiteSpace: "nowrap",
+              }}
             >
               {timerLabel}
             </Typography>
@@ -720,165 +745,26 @@ export default function CandidateExamPage() {
             />
           )}
         </Box>
-        <Stack direction="row" spacing={1.5}>
-          <Button
-            variant="outlined"
-            sx={{
-              borderColor: "#e2e8f0",
-              color: "#0f172a",
-              fontWeight: 700,
-              bgcolor: "#ffffff",
-              "&:hover": {
-                bgcolor: "#f8fafc",
-                borderColor: "#cbd5f5",
-              },
-            }}
-          >
-            一時保存
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              bgcolor: "#111418",
-              fontWeight: 700,
-              boxShadow: "none",
-              "&:hover": {
-                bgcolor: "#1f2937",
-                boxShadow: "none",
-              },
-            }}
-          >
-            設定
-          </Button>
-        </Stack>
+        <Box sx={{ display: { xs: "none", md: "block" } }} />
       </Box>
 
       <Box
         sx={{
-          display: "flex",
-          minHeight: "calc(100vh - 72px)",
-          flexDirection: { xs: "column", lg: "row" },
+          height: "calc(100vh - 72px)",
+          overflow: "hidden",
+          boxSizing: "border-box",
         }}
       >
         <Box
-          component="aside"
-          sx={{
-            display: { xs: "none", lg: "flex" },
-            width: 320,
-            flexDirection: "column",
-            borderRight: "1px solid #e2e8f0",
-            bgcolor: "#ffffff",
-          }}
-        >
-          <Box sx={{ px: 3, py: 2.5, borderBottom: "1px solid #e2e8f0" }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-              質問一覧
-            </Typography>
-            <Typography variant="caption" sx={{ color: "#64748b" }}>
-              回答状況を確認できます
-            </Typography>
-          </Box>
-          <Box sx={{ flex: 1, px: 3, py: 2.5, overflowY: "auto" }}>
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-                gap: 1.5,
-              }}
-            >
-              {questionNumbers.map((number, index) => {
-                const item = moduleItems[index];
-                const hasAnswer = Boolean(item && answers[item.attemptItemId]);
-                const shouldHighlight =
-                  showUnanswered && item && !answers[item.attemptItemId];
-
-                return (
-                  <Box
-                    key={number}
-                    data-testid={`candidate-question-index-${number}`}
-                    sx={{
-                      aspectRatio: "1 / 1",
-                      borderRadius: 2,
-                      display: "grid",
-                      placeItems: "center",
-                      fontSize: 14,
-                      cursor: "default",
-                      opacity: isLocked ? 0.5 : 1,
-                      ...questionStatusStyles(
-                        number,
-                        activeIndex + 1,
-                        hasAnswer,
-                        shouldHighlight,
-                      ),
-                    }}
-                  >
-                    {number}
-                  </Box>
-                );
-              })}
-            </Box>
-          </Box>
-          <Divider />
-          <Box sx={{ px: 3, py: 2.5, bgcolor: "#f8fafc" }}>
-            <Stack spacing={1.5}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Box
-                  sx={{
-                    width: 12,
-                    height: 12,
-                    bgcolor: "#137fec",
-                    border: "1px solid #137fec",
-                  }}
-                />
-                <Typography variant="caption" sx={{ color: "#475569" }}>
-                  回答済み
-                </Typography>
-              </Stack>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Box
-                  sx={{
-                    width: 12,
-                    height: 12,
-                    border: "2px solid #137fec",
-                    bgcolor: "#ffffff",
-                  }}
-                />
-                <Typography variant="caption" sx={{ color: "#475569" }}>
-                  回答中
-                </Typography>
-              </Stack>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Box
-                  sx={{
-                    width: 12,
-                    height: 12,
-                    border: "1px dashed rgba(249, 115, 22, 0.7)",
-                    bgcolor: "#fff7ed",
-                  }}
-                />
-                <Typography variant="caption" sx={{ color: "#475569" }}>
-                  要確認
-                </Typography>
-              </Stack>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Box sx={{ width: 12, height: 12, bgcolor: "#e2e8f0" }} />
-                <Typography variant="caption" sx={{ color: "#475569" }}>
-                  未回答
-                </Typography>
-              </Stack>
-            </Stack>
-          </Box>
-        </Box>
-
-        <Box
           component="main"
           sx={{
-            flex: 1,
             px: { xs: 2, md: 4, lg: 6 },
-            py: { xs: 3, md: 4 },
+            py: { xs: 2, md: 3 },
+            height: "100%",
+            boxSizing: "border-box",
           }}
         >
-          <Stack spacing={3} sx={{ maxWidth: 900, mx: "auto" }}>
+          <Stack spacing={2} sx={{ height: "100%" }}>
             {isLoading && (
               <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
                 <CircularProgress />
@@ -908,37 +794,30 @@ export default function CandidateExamPage() {
                   onClose={() => setSaveMessage(null)}
                   message={saveMessage}
                 />
-                {isLocked && (
-                  <Alert
-                    severity="warning"
-                    sx={{ mb: 2 }}
-                    data-testid="candidate-locked-alert"
-                  >
-                    {errorMessageMap.LOCKED}
-                  </Alert>
-                )}
-                <Paper sx={{ p: 3, borderRadius: 3 }}>
-                  <Accordion
-                    elevation={0}
-                    disableGutters
-                    expanded={isModulePanelOpen}
-                    onChange={(_, expanded) => setIsModulePanelOpen(expanded)}
-                    sx={{
-                      bgcolor: "transparent",
-                      "&::before": { display: "none" },
-                    }}
-                  >
-                    <AccordionSummary
-                      sx={{ px: 0 }}
-                      expandIcon={
-                        <Box
-                          component="span"
-                          sx={{ fontWeight: 700, color: "#475569" }}
-                        >
-                          {isModulePanelOpen ? "v" : ">"}
-                        </Box>
-                      }
-                    >
+                <Snackbar
+                  open={Boolean(hasAttemptedAdvance && saveError)}
+                  autoHideDuration={3000}
+                  onClose={() => setSaveError(null)}
+                  message={
+                    (saveError && answerMessageMap[saveError]) ||
+                    "回答を選択してください。"
+                  }
+                  anchorOrigin={{ vertical: "top", horizontal: "center" }}
+                />
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: {
+                      xs: "1fr",
+                      lg: "320px minmax(0, 1fr)",
+                    },
+                    gap: { xs: 2, lg: 3 },
+                    height: "100%",
+                    minHeight: 0,
+                  }}
+                >
+                  <Paper sx={{ p: 2.5, borderRadius: 3, height: "100%" }}>
+                    <Stack spacing={1}>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Typography
                           variant="subtitle1"
@@ -950,8 +829,6 @@ export default function CandidateExamPage() {
                           全{modules.length}件
                         </Typography>
                       </Stack>
-                    </AccordionSummary>
-                    <AccordionDetails sx={{ px: 0 }}>
                       <Stack spacing={1}>
                         {modules.map((module, index) => {
                           const isCurrent = index === moduleIndex;
@@ -1012,207 +889,228 @@ export default function CandidateExamPage() {
                           );
                         })}
                       </Stack>
-                    </AccordionDetails>
-                  </Accordion>
-                </Paper>
-                <Box>
-                  <Stack
-                    direction="row"
-                    alignItems="baseline"
-                    justifyContent="space-between"
-                  >
-                    <Stack direction="row" spacing={1} alignItems="baseline">
-                      <Typography
-                        variant="h5"
-                        sx={{ fontWeight: 700 }}
-                        data-testid="candidate-current-question"
-                      >
-                        問 {activeIndex + 1}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "#64748b" }}>
-                        / {moduleItems.length}
-                      </Typography>
                     </Stack>
-                    <Typography variant="body2" sx={{ color: "#137fec" }}>
-                      {progressValue}% 完了
-                    </Typography>
-                  </Stack>
-                  <LinearProgress
-                    variant="determinate"
-                    value={progressValue}
+                  </Paper>
+                  <Box
                     sx={{
-                      mt: 1.5,
-                      height: 10,
-                      borderRadius: 999,
-                      bgcolor: "#e2e8f0",
-                      "& .MuiLinearProgress-bar": {
-                        bgcolor: "#137fec",
-                      },
+                      display: "grid",
+                      gridTemplateRows: "auto auto auto 1fr auto",
+                      gap: 2,
+                      minHeight: 0,
                     }}
-                  />
-                </Box>
-
-                <Paper
-                  sx={{
-                    p: { xs: 3, md: 4 },
-                    borderRadius: 3,
-                    border: "1px solid #e2e8f0",
-                    boxShadow: "0 12px 24px rgba(15, 23, 42, 0.08)",
-                  }}
-                >
-                  <Stack spacing={3}>
-                    <Typography
-                      variant="h6"
-                      sx={{ fontWeight: 700 }}
-                      data-testid="candidate-question-stem"
+                  >
+                    <Alert
+                      severity="info"
+                      sx={{ borderRadius: 2 }}
+                      data-testid="candidate-exit-warning"
                     >
-                      {activeItem.question.stem}
-                    </Typography>
+                      試験中は画面を閉じないでください。終了や移動を行うと、回答内容が失われる可能性があります。
+                    </Alert>
+                    {isLocked && (
+                      <Alert
+                        severity="warning"
+                        data-testid="candidate-locked-alert"
+                      >
+                        {errorMessageMap.LOCKED}
+                      </Alert>
+                    )}
+                    <Box>
+                      <Stack
+                        direction="row"
+                        alignItems="baseline"
+                        justifyContent="space-between"
+                      >
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          alignItems="baseline"
+                        >
+                          <Typography
+                            variant="h5"
+                            sx={{ fontWeight: 700 }}
+                            data-testid="candidate-current-question"
+                          >
+                            問 {activeIndex + 1}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: "#64748b" }}>
+                            / {moduleItems.length}
+                          </Typography>
+                        </Stack>
+                        <Typography variant="body2" sx={{ color: "#137fec" }}>
+                          {progressValue}% 完了
+                        </Typography>
+                      </Stack>
+                      <LinearProgress
+                        variant="determinate"
+                        value={progressValue}
+                        sx={{
+                          mt: 1,
+                          height: 8,
+                          borderRadius: 999,
+                          bgcolor: "#e2e8f0",
+                          "& .MuiLinearProgress-bar": {
+                            bgcolor: "#137fec",
+                          },
+                        }}
+                      />
+                    </Box>
+
                     <Paper
-                      variant="outlined"
                       sx={{
                         p: { xs: 2.5, md: 3 },
-                        bgcolor: "#f8fafc",
-                        borderRadius: 2,
-                        borderColor: "#e2e8f0",
+                        borderRadius: 3,
+                        border: "1px solid #e2e8f0",
+                        boxShadow: "0 10px 20px rgba(15, 23, 42, 0.08)",
                       }}
                     >
-                      <Typography sx={{ color: "#475569", lineHeight: 1.8 }}>
-                        問題文を読み、最も適切な選択肢を選んでください。
-                      </Typography>
-                    </Paper>
-                  </Stack>
-                </Paper>
-
-                <Paper
-                  sx={{
-                    p: { xs: 3, md: 4 },
-                    borderRadius: 3,
-                    border: "1px solid #e2e8f0",
-                  }}
-                >
-                  <Stack spacing={2.5}>
-                    <Typography variant="caption" sx={{ color: "#64748b" }}>
-                      選択肢
-                    </Typography>
-                    {hasAttemptedAdvance && saveError && (
-                      <Alert severity="warning" sx={{ mb: 1 }}>
-                        {answerMessageMap[saveError] ??
-                          "回答を選択してください。"}
-                      </Alert>
-                    )}
-                    {saveMessage && (
-                      <Alert severity="success" sx={{ mb: 1 }}>
-                        {saveMessage}
-                      </Alert>
-                    )}
-                    {activeItem.question.options.map((option) => {
-                      const isSelected =
-                        answers[activeItem.attemptItemId] === option.id;
-
-                      return (
-                        <Paper
-                          key={option.id}
-                          variant="outlined"
-                          sx={{
-                            p: 2.5,
-                            borderRadius: 2,
-                            borderColor: isSelected ? "#137fec" : "#e2e8f0",
-                            bgcolor: isSelected
-                              ? "rgba(19, 127, 236, 0.08)"
-                              : "#fff",
-                            display: "flex",
-                            gap: 2,
-                            alignItems: "flex-start",
-                            cursor: isLocked ? "not-allowed" : "pointer",
-                            opacity: isLocked ? 0.6 : 1,
-                          }}
-                          data-testid={`candidate-option-${option.position}`}
-                          onClick={() => handleSelectOption(option.id)}
+                      <Stack spacing={2}>
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 700 }}
+                          data-testid="candidate-question-stem"
                         >
-                          <Box
-                            sx={{
-                              width: 20,
-                              height: 20,
-                              borderRadius: "50%",
-                              border: "2px solid",
-                              borderColor: isSelected ? "#137fec" : "#cbd5f5",
-                              display: "grid",
-                              placeItems: "center",
-                              mt: 0.3,
-                            }}
-                          />
-                          <Typography
-                            sx={{ color: "#1f2937", lineHeight: 1.7 }}
-                          >
-                            {option.optionText}
-                          </Typography>
-                        </Paper>
-                      );
-                    })}
-                  </Stack>
-                </Paper>
+                          {activeItem.question.stem}
+                        </Typography>
+                        <Typography sx={{ color: "#475569", lineHeight: 1.7 }}>
+                          問題文を読み、最も適切な選択肢を選んでください。
+                        </Typography>
+                      </Stack>
+                    </Paper>
 
-                <Stack direction="row" spacing={2} justifyContent="flex-end">
-                  <Button
-                    variant="outlined"
-                    sx={{
-                      borderColor: "#cbd5f5",
-                      color: "#1f2937",
-                      fontWeight: 700,
-                      "&:hover": {
-                        bgcolor: "#eff6ff",
-                        borderColor: "#93c5fd",
-                      },
-                    }}
-                    data-testid="candidate-prev-question"
-                    onClick={handlePrev}
-                    disabled={isSaving || activeIndex === 0 || isLocked}
-                  >
-                    {isSaving ? "保存中..." : "前の問題"}
-                  </Button>
-                  {isLastQuestion && isLastModule ? (
-                    <Button
-                      variant="contained"
+                    <Paper
                       sx={{
-                        bgcolor: "#111418",
-                        fontWeight: 700,
-                        boxShadow: "none",
-                        "&:hover": {
-                          bgcolor: "#1f2937",
-                          boxShadow: "none",
-                        },
+                        p: { xs: 2.5, md: 3 },
+                        borderRadius: 3,
+                        border: "1px solid #e2e8f0",
                       }}
-                      data-testid="candidate-submit-exam"
-                      onClick={() => setIsSubmitConfirmOpen(true)}
-                      disabled={isSaving || isSubmitting || isLocked}
                     >
-                      {isSubmitting ? "提出中..." : "提出する"}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="contained"
-                      sx={{
-                        bgcolor: "#137fec",
-                        fontWeight: 700,
-                        boxShadow: "none",
-                        "&:hover": {
-                          bgcolor: "#1068c2",
-                          boxShadow: "none",
-                        },
-                      }}
-                      data-testid="candidate-next-question"
-                      onClick={handleNext}
-                      disabled={isSaving || isLocked}
+                      <Stack spacing={2}>
+                        <Typography variant="caption" sx={{ color: "#64748b" }}>
+                          選択肢
+                        </Typography>
+                        {hasAttemptedAdvance && saveError && (
+                          <Alert severity="warning">
+                            回答を選択してください。
+                          </Alert>
+                        )}
+                        {saveMessage && (
+                          <Alert severity="success">{saveMessage}</Alert>
+                        )}
+                        {activeItem.question.options.map((option) => {
+                          const isSelected =
+                            answers[activeItem.attemptItemId] === option.id;
+
+                          return (
+                            <Paper
+                              key={option.id}
+                              variant="outlined"
+                              sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                borderColor: isSelected ? "#137fec" : "#e2e8f0",
+                                bgcolor: isSelected
+                                  ? "rgba(19, 127, 236, 0.08)"
+                                  : "#fff",
+                                display: "flex",
+                                gap: 2,
+                                alignItems: "flex-start",
+                                cursor: isLocked ? "not-allowed" : "pointer",
+                                opacity: isLocked ? 0.6 : 1,
+                              }}
+                              data-testid={`candidate-option-${option.position}`}
+                              onClick={() => handleSelectOption(option.id)}
+                            >
+                              <Box
+                                sx={{
+                                  width: 18,
+                                  height: 18,
+                                  borderRadius: "50%",
+                                  border: "2px solid",
+                                  borderColor: isSelected
+                                    ? "#137fec"
+                                    : "#cbd5f5",
+                                  display: "grid",
+                                  placeItems: "center",
+                                  mt: 0.3,
+                                }}
+                              />
+                              <Typography
+                                sx={{ color: "#1f2937", lineHeight: 1.6 }}
+                              >
+                                {option.optionText}
+                              </Typography>
+                            </Paper>
+                          );
+                        })}
+                      </Stack>
+                    </Paper>
+
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      justifyContent="flex-end"
                     >
-                      {isSaving
-                        ? "保存中..."
-                        : isLastQuestion
-                          ? "次のモジュールへ"
-                          : "次の問題へ"}
-                    </Button>
-                  )}
-                </Stack>
+                      <Button
+                        variant="outlined"
+                        sx={{
+                          borderColor: "#cbd5f5",
+                          color: "#1f2937",
+                          fontWeight: 700,
+                          "&:hover": {
+                            bgcolor: "#eff6ff",
+                            borderColor: "#93c5fd",
+                          },
+                        }}
+                        data-testid="candidate-prev-question"
+                        onClick={handlePrev}
+                        disabled={isSaving || activeIndex === 0 || isLocked}
+                      >
+                        {isSaving ? "保存中..." : "前の問題"}
+                      </Button>
+                      {isLastQuestion && isLastModule ? (
+                        <Button
+                          variant="contained"
+                          sx={{
+                            bgcolor: "#111418",
+                            fontWeight: 700,
+                            boxShadow: "none",
+                            "&:hover": {
+                              bgcolor: "#1f2937",
+                              boxShadow: "none",
+                            },
+                          }}
+                          data-testid="candidate-submit-exam"
+                          onClick={() => setIsSubmitConfirmOpen(true)}
+                          disabled={isSaving || isSubmitting || isLocked}
+                        >
+                          {isSubmitting ? "提出中..." : "提出する"}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="contained"
+                          sx={{
+                            bgcolor: "#137fec",
+                            fontWeight: 700,
+                            boxShadow: "none",
+                            "&:hover": {
+                              bgcolor: "#1068c2",
+                              boxShadow: "none",
+                            },
+                          }}
+                          data-testid="candidate-next-question"
+                          onClick={handleNext}
+                          disabled={isSaving || isLocked}
+                        >
+                          {isSaving
+                            ? "保存中..."
+                            : isLastQuestion
+                              ? "次のモジュールへ"
+                              : "次の問題へ"}
+                        </Button>
+                      )}
+                    </Stack>
+                  </Box>
+                </Box>
                 <Dialog
                   open={isModuleConfirmOpen}
                   onClose={() => setIsModuleConfirmOpen(false)}
