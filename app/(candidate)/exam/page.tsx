@@ -53,6 +53,13 @@ type AttemptSnapshot = {
   items: AttemptItemSnapshot[];
 };
 
+type TelemetryEventType =
+  | "VIEW"
+  | "HIDE"
+  | "ANSWER_SELECT"
+  | "IDLE_START"
+  | "IDLE_END";
+
 const formatSeconds = (seconds: number) => {
   const safeSeconds = Math.max(0, seconds);
   const hours = Math.floor(safeSeconds / 3600);
@@ -127,6 +134,10 @@ export default function CandidateExamPage() {
   const lastSyncSeconds = useRef<number | null>(null);
   const syncIntervalId = useRef<ReturnType<typeof setInterval> | null>(null);
   const tickIntervalId = useRef<ReturnType<typeof setInterval> | null>(null);
+  const previousItemId = useRef<string | null>(null);
+  const idleTimeoutId = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isIdleRef = useRef(false);
+  const answersRef = useRef<Record<string, string | null>>({});
 
   useEffect(() => {
     const storedTicketCode = sessionStorage.getItem("candidate.ticketCode");
@@ -165,6 +176,7 @@ export default function CandidateExamPage() {
         payload.items.forEach((item) => {
           initialAnswers[item.attemptItemId] = item.selectedOptionId;
         });
+        answersRef.current = initialAnswers;
         setAnswers(initialAnswers);
         setModuleIndex(0);
         setActiveIndex(0);
@@ -214,6 +226,33 @@ export default function CandidateExamPage() {
     ANSWER_REQUIRED: "回答を選択してから次へ進んでください。",
   };
 
+  const sendTelemetry = async (
+    eventType: TelemetryEventType,
+    attemptItemId?: string | null,
+    metadata?: Record<string, unknown>,
+  ) => {
+    if (!ticketCode || !pin || isLocked) {
+      return;
+    }
+
+    try {
+      await fetch("/api/candidate/telemetry", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ticketCode,
+          pin,
+          eventType,
+          attemptItemId: attemptItemId ?? null,
+          clientTime: new Date().toISOString(),
+          metadata,
+        }),
+      });
+    } catch (requestError) {
+      // Ignore telemetry errors to keep exam flow responsive.
+    }
+  };
+
   const handleSelectOption = (optionId: string) => {
     if (!activeItem) {
       return;
@@ -227,10 +266,17 @@ export default function CandidateExamPage() {
     setSaveMessage(null);
     setHasAttemptedAdvance(false);
     setShowUnanswered(false);
+    answersRef.current = {
+      ...answersRef.current,
+      [activeItem.attemptItemId]: optionId,
+    };
     setAnswers((previous) => ({
       ...previous,
       [activeItem.attemptItemId]: optionId,
     }));
+    void sendTelemetry("ANSWER_SELECT", activeItem.attemptItemId, {
+      selectedOptionId: optionId,
+    });
   };
 
   const handleSaveAnswer = async () => {
@@ -243,7 +289,11 @@ export default function CandidateExamPage() {
       return false;
     }
 
-    if (!answers[activeItem.attemptItemId]) {
+    const selectedOptionId =
+      answersRef.current[activeItem.attemptItemId] ??
+      answers[activeItem.attemptItemId];
+
+    if (!selectedOptionId) {
       setSaveError("ANSWER_REQUIRED");
       setShowUnanswered(true);
       return false;
@@ -262,7 +312,7 @@ export default function CandidateExamPage() {
           ticketCode,
           pin,
           attemptItemId: activeItem.attemptItemId,
-          selectedOptionId: answers[activeItem.attemptItemId] ?? null,
+          selectedOptionId,
         }),
       });
 
@@ -281,6 +331,10 @@ export default function CandidateExamPage() {
         ...previous,
         [payload.attemptItemId]: payload.selectedOptionId,
       }));
+      answersRef.current = {
+        ...answersRef.current,
+        [payload.attemptItemId]: payload.selectedOptionId,
+      };
       setSaveMessage("保存しました。");
       return true;
     } catch (requestError) {
@@ -297,6 +351,76 @@ export default function CandidateExamPage() {
       setTimerReady(true);
     }
   }, [remainingSeconds, timerReady]);
+
+  useEffect(() => {
+    if (!activeItem || isLocked) {
+      return;
+    }
+
+    const currentItemId = activeItem.attemptItemId;
+    const previous = previousItemId.current;
+
+    if (previous && previous !== currentItemId) {
+      void sendTelemetry("HIDE", previous);
+    }
+
+    void sendTelemetry("VIEW", currentItemId);
+    previousItemId.current = currentItemId;
+
+    return () => {
+      if (previousItemId.current === currentItemId) {
+        void sendTelemetry("HIDE", currentItemId);
+      }
+    };
+  }, [activeItem?.attemptItemId, ticketCode, pin, isLocked]);
+
+  useEffect(() => {
+    if (!activeItem || !ticketCode || !pin || isLocked) {
+      return undefined;
+    }
+
+    const clearIdleTimer = () => {
+      if (idleTimeoutId.current) {
+        clearTimeout(idleTimeoutId.current);
+        idleTimeoutId.current = null;
+      }
+    };
+
+    const markIdle = () => {
+      if (isIdleRef.current) {
+        return;
+      }
+      isIdleRef.current = true;
+      void sendTelemetry("IDLE_START", activeItem.attemptItemId);
+    };
+
+    const scheduleIdle = () => {
+      clearIdleTimer();
+      idleTimeoutId.current = setTimeout(markIdle, 15_000);
+    };
+
+    const handleActivity = () => {
+      if (isIdleRef.current) {
+        isIdleRef.current = false;
+        void sendTelemetry("IDLE_END", activeItem.attemptItemId);
+      }
+      scheduleIdle();
+    };
+
+    scheduleIdle();
+
+    const events = ["mousemove", "keydown", "click", "touchstart"];
+    events.forEach((eventName) => {
+      window.addEventListener(eventName, handleActivity);
+    });
+
+    return () => {
+      clearIdleTimer();
+      events.forEach((eventName) => {
+        window.removeEventListener(eventName, handleActivity);
+      });
+    };
+  }, [activeItem?.attemptItemId, ticketCode, pin, isLocked]);
 
   useEffect(() => {
     if (!currentModule) {

@@ -14,6 +14,7 @@ const seedTicketCodes = [
   "TICKET-CAND-003",
   "TICKET-CAND-004",
   "TICKET-CAND-005",
+  "TICKET-CAND-006",
   "TICKET-REISSUE-001",
 ];
 
@@ -340,6 +341,16 @@ async function main() {
       {
         id: "50000000-0000-0000-0000-000000000006",
         ticketCode: "TICKET-CAND-005",
+        candidateId: "40000000-0000-0000-0000-000000000002",
+        examVersionId: "71000000-0000-0000-0000-000000000002",
+        visitSlotId: "30000000-0000-0000-0000-000000000001",
+        pinHash: hashPin("20000202"),
+        status: "ACTIVE",
+        createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
+      },
+      {
+        id: "50000000-0000-0000-0000-000000000007",
+        ticketCode: "TICKET-CAND-006",
         candidateId: "40000000-0000-0000-0000-000000000002",
         examVersionId: "71000000-0000-0000-0000-000000000002",
         visitSlotId: "30000000-0000-0000-0000-000000000001",
