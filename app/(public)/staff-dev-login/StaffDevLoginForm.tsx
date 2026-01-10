@@ -26,9 +26,9 @@ export default function StaffDevLoginForm() {
       const response = await fetch("/api/staff/dev-login", {
         method: "POST",
         headers: {
-          "content-type": "application/json"
+          "content-type": "application/json",
         },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email }),
       });
 
       if (!response.ok) {
@@ -48,12 +48,27 @@ export default function StaffDevLoginForm() {
 
   return (
     <>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" component="h1">
-          Staff Dev Login
+      <Box sx={{ mb: 4 }}>
+        <Box
+          sx={{
+            width: 48,
+            height: 48,
+            borderRadius: 2,
+            bgcolor: "rgba(19, 127, 236, 0.12)",
+            color: "#137fec",
+            display: "grid",
+            placeItems: "center",
+            fontWeight: 700,
+            mb: 2,
+          }}
+        >
+          ADMIN
+        </Box>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 800 }}>
+          管理者ログイン
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Development-only login for staff accounts.
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          開発環境限定のログインです。スタッフのメールアドレスを入力してください。
         </Typography>
       </Box>
 
@@ -64,7 +79,7 @@ export default function StaffDevLoginForm() {
         data-testid="staff-dev-login-form"
       >
         <TextField
-          label="Staff Email"
+          label="メールアドレス"
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
@@ -77,19 +92,28 @@ export default function StaffDevLoginForm() {
           variant="contained"
           disabled={isSubmitting}
           data-testid="staff-dev-login-submit"
+          sx={{ py: 1.4, fontWeight: 700, bgcolor: "#137fec" }}
         >
-          {isSubmitting ? "Signing in..." : "Sign in"}
+          {isSubmitting ? "確認中..." : "ログイン"}
         </Button>
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mt: 3 }} data-testid="staff-dev-login-error">
+        <Alert
+          severity="error"
+          sx={{ mt: 3 }}
+          data-testid="staff-dev-login-error"
+        >
           {error}
         </Alert>
       )}
       {result && (
-        <Alert severity="success" sx={{ mt: 3 }} data-testid="staff-dev-login-success">
-          Signed in. {result.email}
+        <Alert
+          severity="success"
+          sx={{ mt: 3 }}
+          data-testid="staff-dev-login-success"
+        >
+          ログインに成功しました。{result.email}
         </Alert>
       )}
     </>
