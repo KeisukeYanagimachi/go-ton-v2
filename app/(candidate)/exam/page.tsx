@@ -42,6 +42,7 @@ type AttemptItemSnapshot = {
   moduleId: string;
   position: number;
   points: number;
+  selectedOptionId: string | null;
   question: AttemptQuestionSnapshot;
 };
 
@@ -111,9 +112,11 @@ export default function CandidateExamPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [ticketCode, setTicketCode] = useState<string | null>(null);
   const [pin, setPin] = useState<string | null>(null);
+  const [moduleIndex, setModuleIndex] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | null>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [hasAttemptedAdvance, setHasAttemptedAdvance] = useState(false);
@@ -163,6 +166,7 @@ export default function CandidateExamPage() {
           initialAnswers[item.attemptItemId] = item.selectedOptionId;
         });
         setAnswers(initialAnswers);
+        setModuleIndex(0);
         setActiveIndex(0);
         setRemainingSeconds(payload.modules[0]?.remainingSeconds ?? null);
         lastSyncSeconds.current = payload.modules[0]?.remainingSeconds ?? null;
@@ -176,7 +180,8 @@ export default function CandidateExamPage() {
     fetchSnapshot();
   }, []);
 
-  const currentModule = snapshot?.modules[0] ?? null;
+  const modules = snapshot?.modules ?? [];
+  const currentModule = modules[moduleIndex] ?? null;
   const moduleItems = useMemo(() => {
     if (!snapshot || !currentModule) {
       return [];
@@ -190,6 +195,8 @@ export default function CandidateExamPage() {
   const activeItem = moduleItems[activeIndex] ?? null;
   const questionNumbers = moduleItems.map((_, index) => index + 1);
   const isLocked = snapshot?.status === "LOCKED";
+  const isLastQuestion = activeIndex >= moduleItems.length - 1;
+  const isLastModule = moduleIndex >= modules.length - 1;
   const progressValue =
     moduleItems.length > 0
       ? Math.round(((activeIndex + 1) / moduleItems.length) * 100)
@@ -201,6 +208,7 @@ export default function CandidateExamPage() {
     UNAUTHORIZED: "認証に失敗しました。",
     NETWORK_ERROR: "通信に失敗しました。",
     LOCKED: "試験が一時停止されています。スタッフに確認してください。",
+    SUBMIT_FAILED: "試験の提出に失敗しました。",
   };
   const answerMessageMap: Record<string, string> = {
     ANSWER_REQUIRED: "回答を選択してから次へ進んでください。",
@@ -290,6 +298,16 @@ export default function CandidateExamPage() {
     }
   }, [remainingSeconds, timerReady]);
 
+  useEffect(() => {
+    if (!currentModule) {
+      return;
+    }
+
+    setActiveIndex(0);
+    setRemainingSeconds(currentModule.remainingSeconds ?? null);
+    lastSyncSeconds.current = currentModule.remainingSeconds ?? null;
+  }, [currentModule?.moduleId]);
+
   const persistTimer = async (elapsed: number) => {
     if (!ticketCode || !pin || !currentModule || elapsed <= 0) {
       return;
@@ -376,10 +394,18 @@ export default function CandidateExamPage() {
       setError("LOCKED");
       return;
     }
+    if (isLastQuestion && isLastModule) {
+      return;
+    }
     setHasAttemptedAdvance(true);
     setShowUnanswered(true);
     const saved = await handleSaveAnswer();
     if (!saved) {
+      return;
+    }
+
+    if (isLastQuestion) {
+      setModuleIndex((previous) => Math.min(previous + 1, modules.length - 1));
       return;
     }
 
@@ -405,6 +431,48 @@ export default function CandidateExamPage() {
     }
 
     setActiveIndex((previous) => Math.max(previous - 1, 0));
+  };
+
+  const handleSubmit = async () => {
+    if (!ticketCode || !pin) {
+      setError("MISSING_CREDENTIALS");
+      return;
+    }
+    if (isLocked) {
+      setError("LOCKED");
+      return;
+    }
+
+    setHasAttemptedAdvance(true);
+    setShowUnanswered(true);
+    const saved = await handleSaveAnswer();
+    if (!saved) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/candidate/submit", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ticketCode, pin }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string };
+        setError(payload.error ?? "SUBMIT_FAILED");
+        return;
+      }
+
+      await response.json();
+      router.push("/complete");
+    } catch (requestError) {
+      setError("NETWORK_ERROR");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -447,7 +515,11 @@ export default function CandidateExamPage() {
             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
               SPI 採用適性検査
             </Typography>
-            <Typography variant="caption" sx={{ color: "#64748b" }}>
+            <Typography
+              variant="caption"
+              sx={{ color: "#64748b" }}
+              data-testid="candidate-current-module"
+            >
               {currentModule
                 ? `${currentModule.name}・セクション ${currentModule.position} / ${snapshot?.modules.length ?? 0}`
                 : "試験準備中"}
@@ -860,27 +932,47 @@ export default function CandidateExamPage() {
                   >
                     {isSaving ? "保存中..." : "前の問題"}
                   </Button>
-                  <Button
-                    variant="contained"
-                    sx={{
-                      bgcolor: "#137fec",
-                      fontWeight: 700,
-                      boxShadow: "none",
-                      "&:hover": {
-                        bgcolor: "#1068c2",
+                  {isLastQuestion && isLastModule ? (
+                    <Button
+                      variant="contained"
+                      sx={{
+                        bgcolor: "#111418",
+                        fontWeight: 700,
                         boxShadow: "none",
-                      },
-                    }}
-                    data-testid="candidate-next-question"
-                    onClick={handleNext}
-                    disabled={
-                      isSaving ||
-                      activeIndex >= moduleItems.length - 1 ||
-                      isLocked
-                    }
-                  >
-                    {isSaving ? "保存中..." : "次の問題へ"}
-                  </Button>
+                        "&:hover": {
+                          bgcolor: "#1f2937",
+                          boxShadow: "none",
+                        },
+                      }}
+                      data-testid="candidate-submit-exam"
+                      onClick={handleSubmit}
+                      disabled={isSaving || isSubmitting || isLocked}
+                    >
+                      {isSubmitting ? "提出中..." : "提出する"}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      sx={{
+                        bgcolor: "#137fec",
+                        fontWeight: 700,
+                        boxShadow: "none",
+                        "&:hover": {
+                          bgcolor: "#1068c2",
+                          boxShadow: "none",
+                        },
+                      }}
+                      data-testid="candidate-next-question"
+                      onClick={handleNext}
+                      disabled={isSaving || isLocked}
+                    >
+                      {isSaving
+                        ? "保存中..."
+                        : isLastQuestion
+                          ? "次のモジュールへ"
+                          : "次の問題へ"}
+                    </Button>
+                  )}
                 </Stack>
               </>
             )}

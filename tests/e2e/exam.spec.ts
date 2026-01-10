@@ -23,3 +23,52 @@ test("candidate exam page renders", async ({ page }) => {
     "問 2",
   );
 });
+
+test("candidate can complete the exam and submit", async ({ page }) => {
+  await page.goto("/candidate-login");
+  await page.getByTestId("candidate-ticket-code").fill("TICKET-CAND-005");
+  await page.getByTestId("candidate-pin").fill("20000202");
+  await page.getByTestId("candidate-login-submit").click();
+  await expect(page).toHaveURL(/\/start/);
+  await page.getByTestId("candidate-start-submit").click();
+  await expect(page).toHaveURL(/\/exam/);
+
+  await expect(page.getByTestId("candidate-current-module")).toContainText(
+    "Verbal",
+  );
+
+  for (let i = 0; i < 2; i += 1) {
+    await page.getByTestId("candidate-option-1").click();
+    await page.getByTestId("candidate-next-question").click();
+  }
+
+  await expect(page.getByTestId("candidate-current-module")).toContainText(
+    "Nonverbal",
+  );
+
+  for (let i = 0; i < 2; i += 1) {
+    await page.getByTestId("candidate-option-1").click();
+    await page.getByTestId("candidate-next-question").click();
+  }
+
+  await expect(page.getByTestId("candidate-current-module")).toContainText(
+    "English",
+  );
+
+  for (let i = 0; i < 2; i += 1) {
+    await page.getByTestId("candidate-option-1").click();
+    await page.getByTestId("candidate-next-question").click();
+  }
+
+  await expect(page.getByTestId("candidate-current-module")).toContainText(
+    "Structural",
+  );
+
+  await page.getByTestId("candidate-option-1").click();
+  await page.getByTestId("candidate-next-question").click();
+  await page.getByTestId("candidate-option-1").click();
+  await page.getByTestId("candidate-submit-exam").click();
+
+  await expect(page).toHaveURL(/\/complete/);
+  await expect(page.getByTestId("candidate-complete-page")).toBeVisible();
+});
