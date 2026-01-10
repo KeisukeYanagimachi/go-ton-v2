@@ -696,7 +696,11 @@ export default function CandidateExamPage() {
                   message={saveMessage}
                 />
                 {isLocked && (
-                  <Alert severity="warning" sx={{ mb: 2 }}>
+                  <Alert
+                    severity="warning"
+                    sx={{ mb: 2 }}
+                    data-testid="candidate-locked-alert"
+                  >
                     {errorMessageMap.LOCKED}
                   </Alert>
                 )}
