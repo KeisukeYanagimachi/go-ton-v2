@@ -6,6 +6,7 @@
 - 2026-01-10: UIコンポーネント（MUI）とスタイリング方針（MUI System + theme）を明記
 - 2026-01-10: MUIの導入範囲（Core/Icon/X系の扱い）を詳細化
 - 2026-01-10: Auth.js（Google SSO）の実装方針とセッション設計を明文化
+- 2026-01-10: Auth.js 本番SSOの環境変数を明記
 
 ## 技術仕様（アーキテクチャ・技術方針）
 
@@ -165,6 +166,15 @@
 
 - development では Google SSO を動かすが、開発用ログイン UI / API は別経路として保持する
 - production ビルドには dev/test ログイン経路を含めない
+
+### 6.5 Auth.js 環境変数（production）
+
+本番環境では以下を必須とする。
+
+- `AUTH_SECRET`
+- `AUTH_URL`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
 
 ## 7. API / 処理方式
 

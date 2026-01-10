@@ -25,6 +25,15 @@ Docker Compose で設定しています。
 - `E2E_BASE_URL` (e2e): `http://app:3000`
 - `NODE_ENV` (e2e): `test`
 
+### Auth.js (Google SSO)
+
+本番相当の SSO を動かす場合は以下を設定します（`.env.example` を参照）。
+
+- `AUTH_SECRET`: セッション署名用の秘密鍵
+- `AUTH_URL`: `https://<your-domain>`（本番ドメイン）
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+
 ## Seed Data
 
 `make migrate` または `make seed` で以下が投入されます。
