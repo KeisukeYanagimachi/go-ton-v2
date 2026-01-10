@@ -124,35 +124,46 @@ async function main() {
     skipDuplicates: true,
   });
 
-  await prisma.staffUser.createMany({
-    data: [
-      {
-        id: "10000000-0000-0000-0000-000000000001",
-        email: "admin@example.com",
-        displayName: "Admin User",
-        isActive: true,
-      },
-      {
-        id: "10000000-0000-0000-0000-000000000002",
-        email: "author@example.com",
-        displayName: "Author User",
-        isActive: true,
-      },
-      {
-        id: "10000000-0000-0000-0000-000000000003",
-        email: "proctor@example.com",
-        displayName: "Proctor User",
-        isActive: true,
-      },
-      {
-        id: "10000000-0000-0000-0000-000000000004",
-        email: "viewer@example.com",
-        displayName: "Viewer User",
-        isActive: true,
-      },
-    ],
-    skipDuplicates: true,
-  });
+  const staffUsers = [
+    {
+      id: "10000000-0000-0000-0000-000000000001",
+      email: "admin@example.com",
+      displayName: "Admin User",
+      isActive: true,
+    },
+    {
+      id: "10000000-0000-0000-0000-000000000002",
+      email: "author@example.com",
+      displayName: "Author User",
+      isActive: true,
+    },
+    {
+      id: "10000000-0000-0000-0000-000000000003",
+      email: "proctor@example.com",
+      displayName: "Proctor User",
+      isActive: true,
+    },
+    {
+      id: "10000000-0000-0000-0000-000000000004",
+      email: "viewer@example.com",
+      displayName: "Viewer User",
+      isActive: true,
+    },
+  ];
+
+  await Promise.all(
+    staffUsers.map((user) =>
+      prisma.staffUser.upsert({
+        where: { id: user.id },
+        update: {
+          email: user.email,
+          displayName: user.displayName,
+          isActive: user.isActive,
+        },
+        create: user,
+      }),
+    ),
+  );
 
   await prisma.staffUserRole.createMany({
     data: [
@@ -296,81 +307,95 @@ async function main() {
     skipDuplicates: true,
   });
 
-  await prisma.ticket.createMany({
-    data: [
-      {
-        id: "50000000-0000-0000-0000-000000000001",
-        ticketCode: "TICKET-CAND-001",
-        candidateId: "40000000-0000-0000-0000-000000000001",
-        examVersionId: "71000000-0000-0000-0000-000000000002",
-        visitSlotId: "30000000-0000-0000-0000-000000000001",
-        pinHash: hashPin("19990101"),
-        status: "ACTIVE",
-        createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
-      },
-      {
-        id: "50000000-0000-0000-0000-000000000002",
-        ticketCode: "TICKET-CAND-002",
-        candidateId: "40000000-0000-0000-0000-000000000002",
-        examVersionId: "71000000-0000-0000-0000-000000000002",
-        visitSlotId: "30000000-0000-0000-0000-000000000001",
-        pinHash: hashPin("20000202"),
-        status: "ACTIVE",
-        createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
-      },
-      {
-        id: "50000000-0000-0000-0000-000000000004",
-        ticketCode: "TICKET-CAND-003",
-        candidateId: "40000000-0000-0000-0000-000000000002",
-        examVersionId: "71000000-0000-0000-0000-000000000002",
-        visitSlotId: "30000000-0000-0000-0000-000000000001",
-        pinHash: hashPin("20000202"),
-        status: "ACTIVE",
-        createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
-      },
-      {
-        id: "50000000-0000-0000-0000-000000000005",
-        ticketCode: "TICKET-CAND-004",
-        candidateId: "40000000-0000-0000-0000-000000000001",
-        examVersionId: "71000000-0000-0000-0000-000000000002",
-        visitSlotId: "30000000-0000-0000-0000-000000000001",
-        pinHash: hashPin("19990101"),
-        status: "ACTIVE",
-        createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
-      },
-      {
-        id: "50000000-0000-0000-0000-000000000006",
-        ticketCode: "TICKET-CAND-005",
-        candidateId: "40000000-0000-0000-0000-000000000002",
-        examVersionId: "71000000-0000-0000-0000-000000000002",
-        visitSlotId: "30000000-0000-0000-0000-000000000001",
-        pinHash: hashPin("20000202"),
-        status: "ACTIVE",
-        createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
-      },
-      {
-        id: "50000000-0000-0000-0000-000000000007",
-        ticketCode: "TICKET-CAND-006",
-        candidateId: "40000000-0000-0000-0000-000000000002",
-        examVersionId: "71000000-0000-0000-0000-000000000002",
-        visitSlotId: "30000000-0000-0000-0000-000000000001",
-        pinHash: hashPin("20000202"),
-        status: "ACTIVE",
-        createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
-      },
-      {
-        id: "50000000-0000-0000-0000-000000000003",
-        ticketCode: "TICKET-REISSUE-001",
-        candidateId: "40000000-0000-0000-0000-000000000001",
-        examVersionId: "71000000-0000-0000-0000-000000000002",
-        visitSlotId: "30000000-0000-0000-0000-000000000001",
-        pinHash: hashPin("19990101"),
-        status: "ACTIVE",
-        createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
-      },
-    ],
-    skipDuplicates: true,
-  });
+  const tickets = [
+    {
+      id: "50000000-0000-0000-0000-000000000001",
+      ticketCode: "TICKET-CAND-001",
+      candidateId: "40000000-0000-0000-0000-000000000001",
+      examVersionId: "71000000-0000-0000-0000-000000000002",
+      visitSlotId: "30000000-0000-0000-0000-000000000001",
+      pinHash: hashPin("19990101"),
+      status: "ACTIVE",
+      createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
+    },
+    {
+      id: "50000000-0000-0000-0000-000000000002",
+      ticketCode: "TICKET-CAND-002",
+      candidateId: "40000000-0000-0000-0000-000000000002",
+      examVersionId: "71000000-0000-0000-0000-000000000002",
+      visitSlotId: "30000000-0000-0000-0000-000000000001",
+      pinHash: hashPin("20000202"),
+      status: "ACTIVE",
+      createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
+    },
+    {
+      id: "50000000-0000-0000-0000-000000000004",
+      ticketCode: "TICKET-CAND-003",
+      candidateId: "40000000-0000-0000-0000-000000000002",
+      examVersionId: "71000000-0000-0000-0000-000000000002",
+      visitSlotId: "30000000-0000-0000-0000-000000000001",
+      pinHash: hashPin("20000202"),
+      status: "ACTIVE",
+      createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
+    },
+    {
+      id: "50000000-0000-0000-0000-000000000005",
+      ticketCode: "TICKET-CAND-004",
+      candidateId: "40000000-0000-0000-0000-000000000001",
+      examVersionId: "71000000-0000-0000-0000-000000000002",
+      visitSlotId: "30000000-0000-0000-0000-000000000001",
+      pinHash: hashPin("19990101"),
+      status: "ACTIVE",
+      createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
+    },
+    {
+      id: "50000000-0000-0000-0000-000000000006",
+      ticketCode: "TICKET-CAND-005",
+      candidateId: "40000000-0000-0000-0000-000000000002",
+      examVersionId: "71000000-0000-0000-0000-000000000002",
+      visitSlotId: "30000000-0000-0000-0000-000000000001",
+      pinHash: hashPin("20000202"),
+      status: "ACTIVE",
+      createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
+    },
+    {
+      id: "50000000-0000-0000-0000-000000000007",
+      ticketCode: "TICKET-CAND-006",
+      candidateId: "40000000-0000-0000-0000-000000000002",
+      examVersionId: "71000000-0000-0000-0000-000000000002",
+      visitSlotId: "30000000-0000-0000-0000-000000000001",
+      pinHash: hashPin("20000202"),
+      status: "ACTIVE",
+      createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
+    },
+    {
+      id: "50000000-0000-0000-0000-000000000003",
+      ticketCode: "TICKET-REISSUE-001",
+      candidateId: "40000000-0000-0000-0000-000000000001",
+      examVersionId: "71000000-0000-0000-0000-000000000002",
+      visitSlotId: "30000000-0000-0000-0000-000000000001",
+      pinHash: hashPin("19990101"),
+      status: "ACTIVE",
+      createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
+    },
+  ];
+
+  await Promise.all(
+    tickets.map((ticket) =>
+      prisma.ticket.upsert({
+        where: { ticketCode: ticket.ticketCode },
+        update: {
+          candidateId: ticket.candidateId,
+          examVersionId: ticket.examVersionId,
+          visitSlotId: ticket.visitSlotId,
+          pinHash: ticket.pinHash,
+          status: ticket.status,
+          createdByStaffUserId: ticket.createdByStaffUserId,
+        },
+        create: ticket,
+      }),
+    ),
+  );
 
   await resetReissueTicket();
 
