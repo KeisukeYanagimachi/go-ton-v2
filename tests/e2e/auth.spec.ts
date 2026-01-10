@@ -11,8 +11,8 @@ test("candidate login succeeds with valid ticket and pin", async ({ page }) => {
 
 test("candidate can start an attempt after login", async ({ page }) => {
   await page.goto("/candidate-login");
-  await page.getByTestId("candidate-ticket-code").fill("TICKET-CAND-001");
-  await page.getByTestId("candidate-pin").fill("19990101");
+  await page.getByTestId("candidate-ticket-code").fill("TICKET-CAND-002");
+  await page.getByTestId("candidate-pin").fill("20000202");
   await page.getByTestId("candidate-login-submit").click();
   await expect(page).toHaveURL(/\/start/);
   await expect(page.getByTestId("candidate-start-submit")).toBeVisible();

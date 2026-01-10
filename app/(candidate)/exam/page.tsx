@@ -1,46 +1,73 @@
 "use client";
 
 import {
-    Box,
-    Button,
-    Chip,
-    Divider,
-    LinearProgress,
-    Paper,
-    Stack,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Divider,
+  LinearProgress,
+  Paper,
+  Stack,
+  Typography,
 } from "@mui/material";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
-const questionNumbers = Array.from({ length: 20 }, (_, index) => index + 1);
-const answeredQuestions = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-const activeQuestion = 12;
-const flaggedQuestion = 13;
+type AttemptModuleSnapshot = {
+  moduleId: string;
+  code: string;
+  name: string;
+  position: number;
+  durationSeconds: number;
+  remainingSeconds: number;
+};
 
-const questionStatusStyles = (number: number) => {
-  if (number === activeQuestion) {
+type AttemptQuestionOptionSnapshot = {
+  id: string;
+  position: number;
+  optionText: string;
+};
+
+type AttemptQuestionSnapshot = {
+  id: string;
+  stem: string;
+  options: AttemptQuestionOptionSnapshot[];
+};
+
+type AttemptItemSnapshot = {
+  attemptItemId: string;
+  moduleId: string;
+  position: number;
+  points: number;
+  question: AttemptQuestionSnapshot;
+};
+
+type AttemptSnapshot = {
+  attemptId: string;
+  status: string;
+  modules: AttemptModuleSnapshot[];
+  items: AttemptItemSnapshot[];
+};
+
+const formatSeconds = (seconds: number) => {
+  const safeSeconds = Math.max(0, seconds);
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const remaining = safeSeconds % 60;
+  const pad = (value: number) => value.toString().padStart(2, "0");
+
+  return `${pad(hours)}:${pad(minutes)}:${pad(remaining)}`;
+};
+
+const questionStatusStyles = (number: number, activeNumber: number) => {
+  if (number === activeNumber) {
     return {
       bgcolor: "#ffffff",
       color: "#137fec",
       border: "2px solid #137fec",
       boxShadow: "0 0 0 4px rgba(19, 127, 236, 0.15)",
-      fontWeight: 700,
-    };
-  }
-
-  if (number === flaggedQuestion) {
-    return {
-      bgcolor: "rgba(251, 146, 60, 0.12)",
-      color: "#c2410c",
-      border: "1px solid rgba(251, 146, 60, 0.5)",
-      fontWeight: 700,
-    };
-  }
-
-  if (answeredQuestions.has(number)) {
-    return {
-      bgcolor: "#137fec",
-      color: "#ffffff",
-      border: "1px solid transparent",
       fontWeight: 700,
     };
   }
@@ -54,6 +81,75 @@ const questionStatusStyles = (number: number) => {
 };
 
 export default function CandidateExamPage() {
+  const router = useRouter();
+  const [snapshot, setSnapshot] = useState<AttemptSnapshot | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const storedTicketCode = sessionStorage.getItem("candidate.ticketCode");
+    const storedPin = sessionStorage.getItem("candidate.pin");
+
+    if (!storedTicketCode || !storedPin) {
+      setError("MISSING_CREDENTIALS");
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchSnapshot = async () => {
+      try {
+        const response = await fetch("/api/candidate/attempt", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            ticketCode: storedTicketCode,
+            pin: storedPin,
+          }),
+        });
+
+        if (!response.ok) {
+          const payload = (await response.json()) as { error?: string };
+          setError(payload.error ?? "UNAUTHORIZED");
+          setIsLoading(false);
+          return;
+        }
+
+        const payload = (await response.json()) as AttemptSnapshot;
+        setSnapshot(payload);
+        setIsLoading(false);
+      } catch (requestError) {
+        setError("NETWORK_ERROR");
+        setIsLoading(false);
+      }
+    };
+
+    fetchSnapshot();
+  }, []);
+
+  const currentModule = snapshot?.modules[0] ?? null;
+  const moduleItems = useMemo(() => {
+    if (!snapshot || !currentModule) {
+      return [];
+    }
+
+    return snapshot.items
+      .filter((item) => item.moduleId === currentModule.moduleId)
+      .sort((a, b) => a.position - b.position);
+  }, [snapshot, currentModule]);
+
+  const activeItem = moduleItems[0] ?? null;
+  const questionNumbers = moduleItems.map((_, index) => index + 1);
+  const progressValue =
+    moduleItems.length > 0 ? Math.round((1 / moduleItems.length) * 100) : 0;
+  const timerLabel = currentModule
+    ? formatSeconds(currentModule.remainingSeconds)
+    : "00:00:00";
+  const errorMessageMap: Record<string, string> = {
+    MISSING_CREDENTIALS: "ログイン情報が見つかりません。",
+    UNAUTHORIZED: "認証に失敗しました。",
+    NETWORK_ERROR: "通信に失敗しました。",
+  };
+
   return (
     <Box
       data-testid="candidate-exam-page"
@@ -95,7 +191,9 @@ export default function CandidateExamPage() {
               SPI 採用適性検査
             </Typography>
             <Typography variant="caption" sx={{ color: "#64748b" }}>
-              言語能力検査・セクション 1 / 4
+              {currentModule
+                ? `${currentModule.name}・セクション ${currentModule.position} / ${snapshot?.modules.length ?? 0}`
+                : "試験準備中"}
             </Typography>
           </Box>
         </Stack>
@@ -126,17 +224,19 @@ export default function CandidateExamPage() {
               variant="subtitle1"
               sx={{ fontWeight: 700, letterSpacing: 2 }}
             >
-              00:14:32
+              {timerLabel}
             </Typography>
           </Paper>
-          <Chip
-            label="残り時間わずか"
-            sx={{
-              bgcolor: "rgba(251, 146, 60, 0.15)",
-              color: "#c2410c",
-              fontWeight: 700,
-            }}
-          />
+          {currentModule && currentModule.remainingSeconds <= 300 && (
+            <Chip
+              label="残り時間わずか"
+              sx={{
+                bgcolor: "rgba(251, 146, 60, 0.15)",
+                color: "#c2410c",
+                fontWeight: 700,
+              }}
+            />
+          )}
         </Box>
         <Stack direction="row" spacing={1.5}>
           <Button
@@ -219,7 +319,7 @@ export default function CandidateExamPage() {
                       transform: "translateY(-1px)",
                       boxShadow: "0 4px 10px rgba(15, 23, 42, 0.15)",
                     },
-                    ...questionStatusStyles(number),
+                    ...questionStatusStyles(number, 1),
                   }}
                 >
                   {number}
@@ -281,163 +381,167 @@ export default function CandidateExamPage() {
           }}
         >
           <Stack spacing={3} sx={{ maxWidth: 900, mx: "auto" }}>
-            <Box>
-              <Stack
-                direction="row"
-                alignItems="baseline"
-                justifyContent="space-between"
-              >
-                <Stack direction="row" spacing={1} alignItems="baseline">
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                    問 12
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#64748b" }}>
-                    / 40
-                  </Typography>
-                </Stack>
-                <Typography variant="body2" sx={{ color: "#137fec" }}>
-                  30% 完了
-                </Typography>
-              </Stack>
-              <LinearProgress
-                variant="determinate"
-                value={30}
-                sx={{
-                  mt: 1.5,
-                  height: 10,
-                  borderRadius: 999,
-                  bgcolor: "#e2e8f0",
-                  "& .MuiLinearProgress-bar": {
-                    bgcolor: "#137fec",
-                  },
-                }}
-              />
-            </Box>
+            {isLoading && (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+                <CircularProgress />
+              </Box>
+            )}
 
-            <Paper
-              sx={{
-                p: { xs: 3, md: 4 },
-                borderRadius: 3,
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 12px 24px rgba(15, 23, 42, 0.08)",
-              }}
-            >
-              <Stack spacing={3}>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  次の文章を読み、その内容に基づいて論理的に導かれる結論として、
-                  最も適切なものを選択肢から1つ選びなさい。
-                </Typography>
+            {!isLoading && error && (
+              <Paper sx={{ p: 4, borderRadius: 3 }}>
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  {errorMessageMap[error] ?? "試験情報を取得できませんでした。"}
+                </Alert>
+                <Button
+                  variant="contained"
+                  sx={{ fontWeight: 700, bgcolor: "#111418" }}
+                  onClick={() => router.push("/candidate-login")}
+                >
+                  ログイン画面に戻る
+                </Button>
+              </Paper>
+            )}
+
+            {!isLoading && !error && snapshot && activeItem && (
+              <>
+                <Box>
+                  <Stack
+                    direction="row"
+                    alignItems="baseline"
+                    justifyContent="space-between"
+                  >
+                    <Stack direction="row" spacing={1} alignItems="baseline">
+                      <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                        問 1
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: "#64748b" }}>
+                        / {moduleItems.length}
+                      </Typography>
+                    </Stack>
+                    <Typography variant="body2" sx={{ color: "#137fec" }}>
+                      {progressValue}% 完了
+                    </Typography>
+                  </Stack>
+                  <LinearProgress
+                    variant="determinate"
+                    value={progressValue}
+                    sx={{
+                      mt: 1.5,
+                      height: 10,
+                      borderRadius: 999,
+                      bgcolor: "#e2e8f0",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: "#137fec",
+                      },
+                    }}
+                  />
+                </Box>
+
                 <Paper
-                  variant="outlined"
                   sx={{
-                    p: { xs: 2.5, md: 3 },
-                    bgcolor: "#f8fafc",
-                    borderRadius: 2,
-                    borderColor: "#e2e8f0",
+                    p: { xs: 3, md: 4 },
+                    borderRadius: 3,
+                    border: "1px solid #e2e8f0",
+                    boxShadow: "0 12px 24px rgba(15, 23, 42, 0.08)",
                   }}
                 >
-                  <Typography sx={{ color: "#475569", lineHeight: 1.8 }}>
-                    近年、企業の採用活動におけるAIの導入は急速に進み、大幅な効率化を
-                    もたらしている。しかし、批評家たちは、これらのアルゴリズムが過去の
-                    採用データに含まれる既存のバイアスを意図せず永続させる可能性があると
-                    主張している。したがって、AIは初期スクリーニングのプロセスを合理化する
-                    一方で、公平な採用慣行を確保するためには人間の監視が依然として重要である。
-                  </Typography>
-                </Paper>
-              </Stack>
-            </Paper>
-
-            <Paper
-              sx={{
-                p: { xs: 3, md: 4 },
-                borderRadius: 3,
-                border: "1px solid #e2e8f0",
-              }}
-            >
-              <Stack spacing={2.5}>
-                <Typography variant="caption" sx={{ color: "#64748b" }}>
-                  選択肢
-                </Typography>
-                {[
-                  "A. AIツールは直ちに手動のスクリーニング方法に完全に置き換えられるべきである。",
-                  "B. AI採用ツールの潜在的なバイアスを軽減するには、人間の介入が必要である。",
-                  "C. 過去の採用データは、採用アルゴリズムをトレーニングするための唯一の信頼できる情報源である。",
-                  "D. AIの導入は採用の公平性に影響を与えないため、人間の監視は不要である。",
-                ].map((option, index) => (
-                  <Paper
-                    key={option}
-                    variant="outlined"
-                    sx={{
-                      p: 2.5,
-                      borderRadius: 2,
-                      borderColor: index === 1 ? "#137fec" : "#e2e8f0",
-                      bgcolor: index === 1 ? "rgba(19, 127, 236, 0.08)" : "#fff",
-                      display: "flex",
-                      gap: 2,
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <Box
+                  <Stack spacing={3}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                      {activeItem.question.stem}
+                    </Typography>
+                    <Paper
+                      variant="outlined"
                       sx={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: "50%",
-                        border: "2px solid",
-                        borderColor: index === 1 ? "#137fec" : "#cbd5f5",
-                        display: "grid",
-                        placeItems: "center",
-                        mt: 0.3,
+                        p: { xs: 2.5, md: 3 },
+                        bgcolor: "#f8fafc",
+                        borderRadius: 2,
+                        borderColor: "#e2e8f0",
                       }}
                     >
-                      {index === 1 && (
+                      <Typography sx={{ color: "#475569", lineHeight: 1.8 }}>
+                        問題文を読み、最も適切な選択肢を選んでください。
+                      </Typography>
+                    </Paper>
+                  </Stack>
+                </Paper>
+
+                <Paper
+                  sx={{
+                    p: { xs: 3, md: 4 },
+                    borderRadius: 3,
+                    border: "1px solid #e2e8f0",
+                  }}
+                >
+                  <Stack spacing={2.5}>
+                    <Typography variant="caption" sx={{ color: "#64748b" }}>
+                      選択肢
+                    </Typography>
+                    {activeItem.question.options.map((option) => (
+                      <Paper
+                        key={option.id}
+                        variant="outlined"
+                        sx={{
+                          p: 2.5,
+                          borderRadius: 2,
+                          borderColor: "#e2e8f0",
+                          bgcolor: "#fff",
+                          display: "flex",
+                          gap: 2,
+                          alignItems: "flex-start",
+                        }}
+                      >
                         <Box
                           sx={{
-                            width: 10,
-                            height: 10,
+                            width: 20,
+                            height: 20,
                             borderRadius: "50%",
-                            bgcolor: "#137fec",
+                            border: "2px solid",
+                            borderColor: "#cbd5f5",
+                            display: "grid",
+                            placeItems: "center",
+                            mt: 0.3,
                           }}
                         />
-                      )}
-                    </Box>
-                    <Typography sx={{ color: "#1f2937", lineHeight: 1.7 }}>
-                      {option}
-                    </Typography>
-                  </Paper>
-                ))}
-              </Stack>
-            </Paper>
+                        <Typography sx={{ color: "#1f2937", lineHeight: 1.7 }}>
+                          {option.optionText}
+                        </Typography>
+                      </Paper>
+                    ))}
+                  </Stack>
+                </Paper>
 
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <Button
-                variant="outlined"
-                sx={{
-                  borderColor: "#cbd5f5",
-                  color: "#1f2937",
-                  fontWeight: 700,
-                  "&:hover": {
-                    bgcolor: "#eff6ff",
-                    borderColor: "#93c5fd",
-                  },
-                }}
-              >
-                前の問題
-              </Button>
-              <Button
-                variant="contained"
-                sx={{
-                  bgcolor: "#137fec",
-                  fontWeight: 700,
-                  boxShadow: "none",
-                  "&:hover": {
-                    bgcolor: "#1068c2",
-                    boxShadow: "none",
-                  },
-                }}
-              >
-                次の問題へ
-              </Button>
-            </Stack>
+                <Stack direction="row" spacing={2} justifyContent="flex-end">
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      borderColor: "#cbd5f5",
+                      color: "#1f2937",
+                      fontWeight: 700,
+                      "&:hover": {
+                        bgcolor: "#eff6ff",
+                        borderColor: "#93c5fd",
+                      },
+                    }}
+                  >
+                    前の問題
+                  </Button>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      bgcolor: "#137fec",
+                      fontWeight: 700,
+                      boxShadow: "none",
+                      "&:hover": {
+                        bgcolor: "#1068c2",
+                        boxShadow: "none",
+                      },
+                    }}
+                  >
+                    次の問題へ
+                  </Button>
+                </Stack>
+              </>
+            )}
           </Stack>
         </Box>
       </Box>

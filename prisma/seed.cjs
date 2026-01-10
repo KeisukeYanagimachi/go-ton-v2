@@ -11,6 +11,7 @@ const hashPin = (pin) => createHash("sha256").update(pin).digest("hex");
 const seedTicketCodes = [
   "TICKET-CAND-001",
   "TICKET-CAND-002",
+  "TICKET-CAND-003",
   "TICKET-REISSUE-001",
 ];
 
@@ -307,6 +308,16 @@ async function main() {
       {
         id: "50000000-0000-0000-0000-000000000002",
         ticketCode: "TICKET-CAND-002",
+        candidateId: "40000000-0000-0000-0000-000000000002",
+        examVersionId: "71000000-0000-0000-0000-000000000002",
+        visitSlotId: "30000000-0000-0000-0000-000000000001",
+        pinHash: hashPin("20000202"),
+        status: "ACTIVE",
+        createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
+      },
+      {
+        id: "50000000-0000-0000-0000-000000000004",
+        ticketCode: "TICKET-CAND-003",
         candidateId: "40000000-0000-0000-0000-000000000002",
         examVersionId: "71000000-0000-0000-0000-000000000002",
         visitSlotId: "30000000-0000-0000-0000-000000000001",
