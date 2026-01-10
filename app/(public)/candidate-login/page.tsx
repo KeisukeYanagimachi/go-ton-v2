@@ -13,26 +13,16 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-type LoginResult = {
-  candidateId: string;
-  ticketId: string;
-};
-
 export default function CandidateLoginPage() {
   const router = useRouter();
   const [ticketCode, setTicketCode] = useState("");
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<LoginResult | null>(null);
-  const [attemptId, setAttemptId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isStarting, setIsStarting] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    setResult(null);
-    setAttemptId(null);
     setIsSubmitting(true);
 
     try {
@@ -50,42 +40,14 @@ export default function CandidateLoginPage() {
         return;
       }
 
-      const payload = (await response.json()) as LoginResult;
-      setResult(payload);
+      await response.json();
+      sessionStorage.setItem("candidate.ticketCode", ticketCode);
+      sessionStorage.setItem("candidate.pin", pin);
+      router.push("/start");
     } catch (requestError) {
       setError("NETWORK_ERROR");
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleStart = async () => {
-    setError(null);
-    setAttemptId(null);
-    setIsStarting(true);
-
-    try {
-      const response = await fetch("/api/candidate/start", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({ ticketCode, pin }),
-      });
-
-      if (!response.ok) {
-        const payload = (await response.json()) as { error?: string };
-        setError(payload.error ?? "UNAUTHORIZED");
-        return;
-      }
-
-      const payload = (await response.json()) as { attemptId: string };
-      setAttemptId(payload.attemptId);
-      router.push("/exam");
-    } catch (requestError) {
-      setError("NETWORK_ERROR");
-    } finally {
-      setIsStarting(false);
     }
   };
 
@@ -294,38 +256,6 @@ export default function CandidateLoginPage() {
                   {error}
                 </Alert>
               )}
-              {result && (
-                <Alert
-                  severity="success"
-                  sx={{ mt: 3 }}
-                  data-testid="candidate-login-success"
-                >
-                  ログインに成功しました。Candidate ID: {result.candidateId}
-                </Alert>
-              )}
-
-              {result && (
-                <Button
-                  variant="contained"
-                  sx={{ mt: 3, py: 1.4, fontWeight: 700, bgcolor: "#111418" }}
-                  onClick={handleStart}
-                  disabled={isStarting}
-                  data-testid="candidate-start-submit"
-                >
-                  {isStarting ? "開始中..." : "試験開始"}
-                </Button>
-              )}
-
-              {attemptId && (
-                <Alert
-                  severity="info"
-                  sx={{ mt: 3 }}
-                  data-testid="candidate-start-success"
-                >
-                  Attempt を開始しました。Attempt ID: {attemptId}
-                </Alert>
-              )}
-
               <Divider sx={{ my: 3 }} />
               <Typography variant="body2" color="text.secondary">
                 受験票が見つからない場合は、当日スタッフまでご連絡ください。
