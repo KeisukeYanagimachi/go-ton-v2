@@ -52,7 +52,7 @@ services:
       [
         "bash",
         "-lc",
-        "npm ci && npm run db:migrate && npm run db:seed && npx playwright test",
+        "npm ci --force && npm run db:migrate && npm run db:seed && npx playwright test",
       ]
 
 volumes:

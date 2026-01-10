@@ -1,24 +1,47 @@
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { auth } from "@/features/auth/infra/auth";
+const devTestPaths = new Set([
+  "/staff-dev-login",
+  "/api/staff/dev-login",
+  "/api/staff/test-login",
+]);
 
-const handler = auth((request) => {
-  if (request.nextUrl.pathname.startsWith("/staff")) {
-    if (!request.auth?.user?.email) {
+const handleStaffRoute = async (request: NextRequest) => {
+  const { pathname, search } = request.nextUrl;
+
+  if (process.env.NODE_ENV === "production" && devTestPaths.has(pathname)) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+    }
+    return NextResponse.rewrite(new URL("/404", request.url));
+  }
+
+  if (pathname === "/staff" || pathname.startsWith("/staff/")) {
+    const token =
+      request.cookies.get("next-auth.session-token") ??
+      request.cookies.get("__Secure-next-auth.session-token") ??
+      request.cookies.get("__Host-next-auth.session-token");
+
+    if (!token) {
       const signInUrl = new URL("/api/auth/signin", request.url);
-      signInUrl.searchParams.set(
-        "callbackUrl",
-        `${request.nextUrl.pathname}${request.nextUrl.search}`,
-      );
+      signInUrl.searchParams.set("callbackUrl", `${pathname}${search}`);
       return NextResponse.redirect(signInUrl);
     }
   }
 
   return NextResponse.next();
-});
+};
 
-export default handler;
+const middleware = async (request: NextRequest) => handleStaffRoute(request);
+
+export default middleware;
 
 export const config = {
-  matcher: ["/staff/:path*"],
+  matcher: [
+    "/staff/:path*",
+    "/staff-dev-login",
+    "/api/staff/dev-login",
+    "/api/staff/test-login",
+  ],
 };

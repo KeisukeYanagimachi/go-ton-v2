@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveStaffRole } from "@/features/auth/usecase/require-staff-role";
+import { resolveStaffRole } from "@/features/auth/usecase/resolve-staff-role";
 
 describe("resolveStaffRole", () => {
   it("returns null when staff record is missing", async () => {
