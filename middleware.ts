@@ -6,6 +6,7 @@ const devTestPaths = new Set([
   "/api/staff/dev-login",
   "/api/staff/test-login",
 ]);
+const DEV_STAFF_SESSION_COOKIE = "dev_staff_session";
 
 const handleStaffRoute = async (request: NextRequest) => {
   const { pathname, search } = request.nextUrl;
@@ -22,8 +23,9 @@ const handleStaffRoute = async (request: NextRequest) => {
       request.cookies.get("next-auth.session-token") ??
       request.cookies.get("__Secure-next-auth.session-token") ??
       request.cookies.get("__Host-next-auth.session-token");
+    const devToken = request.cookies.get(DEV_STAFF_SESSION_COOKIE);
 
-    if (!token) {
+    if (!token && !(process.env.NODE_ENV !== "production" && devToken)) {
       const signInUrl = new URL("/api/auth/signin", request.url);
       signInUrl.searchParams.set("callbackUrl", `${pathname}${search}`);
       return NextResponse.redirect(signInUrl);

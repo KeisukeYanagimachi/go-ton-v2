@@ -6,6 +6,10 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   LinearProgress,
   Paper,
@@ -130,6 +134,7 @@ export default function CandidateExamPage() {
   const [showUnanswered, setShowUnanswered] = useState(false);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [timerReady, setTimerReady] = useState(false);
+  const [isModuleConfirmOpen, setIsModuleConfirmOpen] = useState(false);
   const remainingSecondsRef = useRef<number | null>(null);
   const lastSyncSeconds = useRef<number | null>(null);
   const syncIntervalId = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -430,7 +435,16 @@ export default function CandidateExamPage() {
     setActiveIndex(0);
     setRemainingSeconds(currentModule.remainingSeconds ?? null);
     lastSyncSeconds.current = currentModule.remainingSeconds ?? null;
+    setSaveMessage(null);
   }, [currentModule?.moduleId]);
+
+  useEffect(() => {
+    if (!activeItem) {
+      return;
+    }
+
+    setSaveMessage(null);
+  }, [activeItem?.attemptItemId]);
 
   const persistTimer = async (elapsed: number) => {
     if (!ticketCode || !pin || !currentModule || elapsed <= 0) {
@@ -529,13 +543,22 @@ export default function CandidateExamPage() {
     }
 
     if (isLastQuestion) {
-      setModuleIndex((previous) => Math.min(previous + 1, modules.length - 1));
+      setIsModuleConfirmOpen(true);
       return;
     }
 
     setActiveIndex((previous) =>
       Math.min(previous + 1, moduleItems.length - 1),
     );
+  };
+
+  const handleModuleAdvance = async () => {
+    if (!activeItem) {
+      return;
+    }
+
+    setIsModuleConfirmOpen(false);
+    setModuleIndex((previous) => Math.min(previous + 1, modules.length - 1));
   };
 
   const handlePrev = async () => {
@@ -792,6 +815,19 @@ export default function CandidateExamPage() {
                         setError("LOCKED");
                         return;
                       }
+                      const selectedOptionId =
+                        answersRef.current[activeItem?.attemptItemId ?? ""] ??
+                        (activeItem ? answers[activeItem.attemptItemId] : null);
+                      if (
+                        activeItem &&
+                        index !== activeIndex &&
+                        !selectedOptionId
+                      ) {
+                        setHasAttemptedAdvance(true);
+                        setShowUnanswered(true);
+                        setSaveError("ANSWER_REQUIRED");
+                        return;
+                      }
                       setActiveIndex(index);
                     }}
                   >
@@ -900,6 +936,73 @@ export default function CandidateExamPage() {
                     {errorMessageMap.LOCKED}
                   </Alert>
                 )}
+                <Paper sx={{ p: 3, borderRadius: 3 }}>
+                  <Stack spacing={1.5}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                      モジュール構成
+                    </Typography>
+                    <Stack spacing={1}>
+                      {modules.map((module, index) => {
+                        const isCurrent = index === moduleIndex;
+                        const isComplete = index < moduleIndex;
+
+                        return (
+                          <Stack
+                            key={module.moduleId}
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            sx={{
+                              px: 2,
+                              py: 1,
+                              borderRadius: 2,
+                              bgcolor: isCurrent
+                                ? "rgba(19, 127, 236, 0.08)"
+                                : "#f8fafc",
+                              border: "1px solid #e2e8f0",
+                            }}
+                            data-testid={`candidate-module-${module.code}`}
+                          >
+                            <Stack>
+                              <Typography sx={{ fontWeight: 700 }}>
+                                {module.name}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{ color: "#64748b" }}
+                              >
+                                目安時間:{" "}
+                                {Math.ceil(module.durationSeconds / 60)}分
+                              </Typography>
+                            </Stack>
+                            <Chip
+                              label={
+                                isCurrent
+                                  ? "実施中"
+                                  : isComplete
+                                    ? "完了"
+                                    : "未開始"
+                              }
+                              sx={{
+                                bgcolor: isCurrent
+                                  ? "rgba(19, 127, 236, 0.12)"
+                                  : isComplete
+                                    ? "rgba(16, 185, 129, 0.12)"
+                                    : "rgba(148, 163, 184, 0.2)",
+                                color: isCurrent
+                                  ? "#137fec"
+                                  : isComplete
+                                    ? "#047857"
+                                    : "#475569",
+                                fontWeight: 700,
+                              }}
+                            />
+                          </Stack>
+                        );
+                      })}
+                    </Stack>
+                  </Stack>
+                </Paper>
                 <Box>
                   <Stack
                     direction="row"
@@ -1098,6 +1201,35 @@ export default function CandidateExamPage() {
                     </Button>
                   )}
                 </Stack>
+                <Dialog
+                  open={isModuleConfirmOpen}
+                  onClose={() => setIsModuleConfirmOpen(false)}
+                  data-testid="candidate-module-confirm"
+                >
+                  <DialogTitle>次のモジュールへ進みますか？</DialogTitle>
+                  <DialogContent>
+                    <Typography variant="body2" sx={{ color: "#64748b" }}>
+                      次のモジュールに進むと、前のモジュールには戻れません。
+                    </Typography>
+                  </DialogContent>
+                  <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => setIsModuleConfirmOpen(false)}
+                      data-testid="candidate-module-confirm-cancel"
+                    >
+                      キャンセル
+                    </Button>
+                    <Button
+                      variant="contained"
+                      sx={{ bgcolor: "#137fec" }}
+                      onClick={handleModuleAdvance}
+                      data-testid="candidate-module-confirm-advance"
+                    >
+                      進む
+                    </Button>
+                  </DialogActions>
+                </Dialog>
               </>
             )}
           </Stack>

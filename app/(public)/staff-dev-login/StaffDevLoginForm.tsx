@@ -15,19 +15,11 @@ export default function StaffDevLoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<StaffLoginResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [ticketCode, setTicketCode] = useState("");
-  const [reissueError, setReissueError] = useState<string | null>(null);
-  const [reissueResult, setReissueResult] = useState<{
-    newTicketCode: string;
-  } | null>(null);
-  const [isReissuing, setIsReissuing] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setResult(null);
-    setReissueError(null);
-    setReissueResult(null);
     setIsSubmitting(true);
 
     try {
@@ -40,6 +32,7 @@ export default function StaffDevLoginForm() {
         headers: {
           "content-type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ email }),
       });
 
@@ -55,36 +48,6 @@ export default function StaffDevLoginForm() {
       setError("NETWORK_ERROR");
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleReissue = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setReissueError(null);
-    setReissueResult(null);
-    setIsReissuing(true);
-
-    try {
-      const response = await fetch("/api/staff/tickets/reissue", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({ ticketCode }),
-      });
-
-      if (!response.ok) {
-        const payload = (await response.json()) as { error?: string };
-        setReissueError(payload.error ?? "FAILED");
-        return;
-      }
-
-      const payload = (await response.json()) as { newTicketCode: string };
-      setReissueResult(payload);
-    } catch (requestError) {
-      setReissueError("NETWORK_ERROR");
-    } finally {
-      setIsReissuing(false);
     }
   };
 
@@ -163,51 +126,11 @@ export default function StaffDevLoginForm() {
           <Button
             variant="contained"
             sx={{ fontWeight: 700 }}
-            href="/attempts"
-            data-testid="staff-attempts-link"
+            href="/staff"
+            data-testid="staff-home-link"
           >
-            引き継ぎ操作へ
+            スタッフホームへ
           </Button>
-        </Box>
-      )}
-
-      {result && (
-        <Box
-          component="form"
-          onSubmit={handleReissue}
-          sx={{ mt: 4, display: "grid", gap: 2 }}
-          data-testid="ticket-reissue-form"
-        >
-          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-            受験票の再発行
-          </Typography>
-          <TextField
-            label="受験票コード"
-            value={ticketCode}
-            onChange={(event) => setTicketCode(event.target.value)}
-            required
-            fullWidth
-            inputProps={{ "data-testid": "ticket-reissue-code" }}
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={isReissuing}
-            data-testid="ticket-reissue-submit"
-            sx={{ py: 1.2, fontWeight: 700 }}
-          >
-            {isReissuing ? "再発行中..." : "再発行"}
-          </Button>
-          {reissueError && (
-            <Alert severity="error" data-testid="ticket-reissue-error">
-              {reissueError}
-            </Alert>
-          )}
-          {reissueResult && (
-            <Alert severity="success" data-testid="ticket-reissue-success">
-              新しい受験票コード: {reissueResult.newTicketCode}
-            </Alert>
-          )}
         </Box>
       )}
     </>
