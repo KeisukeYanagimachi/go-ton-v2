@@ -20,5 +20,15 @@ const isCandidateLoginAllowed = (
     !record.hasActiveAttempt,
   );
 
-export { isCandidateLoginAllowed };
+const isCandidateAccessAllowed = (
+  record: CandidateAuthRecord | null,
+  inputPinHash: string,
+) =>
+  Boolean(
+    record &&
+    record.ticketStatus === "ACTIVE" &&
+    record.pinHash === inputPinHash,
+  );
+
+export { isCandidateAccessAllowed, isCandidateLoginAllowed };
 export type { CandidateAuthRecord, TicketStatus };

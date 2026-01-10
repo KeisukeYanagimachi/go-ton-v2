@@ -10,6 +10,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type LoginResult = {
@@ -18,6 +19,7 @@ type LoginResult = {
 };
 
 export default function CandidateLoginPage() {
+  const router = useRouter();
   const [ticketCode, setTicketCode] = useState("");
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +81,7 @@ export default function CandidateLoginPage() {
 
       const payload = (await response.json()) as { attemptId: string };
       setAttemptId(payload.attemptId);
+      router.push("/exam");
     } catch (requestError) {
       setError("NETWORK_ERROR");
     } finally {

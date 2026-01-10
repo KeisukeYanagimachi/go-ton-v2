@@ -1,6 +1,10 @@
 import { describe, expect, test } from "vitest";
 
-import { CandidateAuthRecord, isCandidateLoginAllowed } from "./candidate-auth";
+import {
+  CandidateAuthRecord,
+  isCandidateAccessAllowed,
+  isCandidateLoginAllowed,
+} from "./candidate-auth";
 
 const baseRecord: CandidateAuthRecord = {
   ticketId: "ticket-id",
@@ -40,5 +44,33 @@ describe("isCandidateLoginAllowed", () => {
 
   test("returns true when all conditions are satisfied", () => {
     expect(isCandidateLoginAllowed(baseRecord, "hash")).toBe(true);
+  });
+});
+
+describe("isCandidateAccessAllowed", () => {
+  test("returns false when record is missing", () => {
+    expect(isCandidateAccessAllowed(null, "hash")).toBe(false);
+  });
+
+  test("returns false when ticket is not active", () => {
+    expect(
+      isCandidateAccessAllowed(
+        { ...baseRecord, ticketStatus: "REVOKED" },
+        "hash",
+      ),
+    ).toBe(false);
+  });
+
+  test("returns false when pin hash does not match", () => {
+    expect(isCandidateAccessAllowed(baseRecord, "different-hash")).toBe(false);
+  });
+
+  test("returns true even when another attempt is active", () => {
+    expect(
+      isCandidateAccessAllowed(
+        { ...baseRecord, hasActiveAttempt: true },
+        "hash",
+      ),
+    ).toBe(true);
   });
 });
