@@ -5,6 +5,7 @@
 - 2026-01-10: バリデーション（Zod）、ORM（Prisma）、フォーム管理（React Hook Form）を明記
 - 2026-01-10: UIコンポーネント（MUI）とスタイリング方針（MUI System + theme）を明記
 - 2026-01-10: MUIの導入範囲（Core/Icon/X系の扱い）を詳細化
+- 2026-01-10: Auth.js（Google SSO）の実装方針とセッション設計を明文化
 
 ## 技術仕様（アーキテクチャ・技術方針）
 
@@ -145,6 +146,25 @@
 - production ではビルド対象外とする
 
 ---
+
+### 6.4 Auth.js 実装方針（production / development 共通）
+
+- App Router の Route Handler として `/api/auth/[...nextauth]` を使用する
+- Auth.js v5（Auth.js）を採用し、Provider は Google（OIDC）のみ
+- 認証の成否は Auth.js の `signIn` コールバックで判断し、以下を満たさない場合は拒否する
+  - staff_users に該当 email が存在する
+  - is_active=true
+- セッション方式は JWT を採用し、セッションには以下のみを含める
+  - staffUserId
+  - email
+  - roleCodes（参照用）
+- 役割情報は毎回 DB を正として取得する（セッションの role は参照用に限る）
+  - 理由: role / is_active の変更は即時反映が必要なため
+
+**重要**
+
+- development では Google SSO を動かすが、開発用ログイン UI / API は別経路として保持する
+- production ビルドには dev/test ログイン経路を含めない
 
 ## 7. API / 処理方式
 

@@ -4,6 +4,7 @@
 
 - 2026-01-10: Candidate の「他 Attempt で使用中」の判定基準を明文化
 - 2026-01-10: 開発用ログインのURL/方法を明記
+- 2026-01-10: Auth.js の本番SSOフローとセッション設計を明文化
 
 ## 認証・認可仕様（Auth / Access Control）
 
@@ -41,6 +42,14 @@
   - is_active=true であること
 
 ※ 社内ドメイン一致のみではログイン不可とする。
+
+**Auth.js フロー（確定）**
+
+1. 未認証で staff 画面にアクセスした場合、Auth.js の sign-in に遷移する
+2. Google OIDC 認証成功後、Auth.js の `signIn` コールバックで staff_users を検索する
+3. staff_users が存在しない / is_active=false の場合はログイン拒否する
+4. 成功時は staffUserId / email / roleCodes をセッションに格納する
+5. 以後の認可判定は DB を正として再取得し、セッション内 role は参照用とする
 
 ---
 
@@ -149,7 +158,9 @@ UI 側の表示制御は **補助的手段**とする。
 ### 6.1 Staff セッション
 
 - Auth.js によるセッション管理
-- role 情報はセッションに含めるが、**最終判断はDBを正**とする
+- セッションには staffUserId / email / roleCodes を含める
+- role 情報は参照用とし、**最終判断はDBを正**とする
+- is_active / role の変更は次リクエストで必ず反映される
 
 ### 6.2 Candidate セッション
 
