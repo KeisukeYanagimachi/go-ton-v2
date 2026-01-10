@@ -1,6 +1,17 @@
 "use client";
 
-import { Alert, Box, Button, Container, Paper, Stack, TextField, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Container,
+  Divider,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 
 type ActionState = "idle" | "submitting" | "success" | "error";
@@ -64,63 +75,174 @@ export default function StaffAttemptTakeoverPage() {
 
   return (
     <Box sx={baseStyles}>
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
-          <Stack spacing={3}>
+      <Box
+        component="header"
+        sx={{
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          borderBottom: "1px solid #e2e8f0",
+          bgcolor: "#ffffff",
+          boxShadow: "0 1px 2px rgba(15, 23, 42, 0.05)",
+        }}
+      >
+        <Container
+          maxWidth="lg"
+          sx={{
+            py: 1.5,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Box
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: 2,
+                bgcolor: "rgba(19, 127, 236, 0.12)",
+                display: "grid",
+                placeItems: "center",
+                color: "#137fec",
+                fontWeight: 700,
+              }}
+            >
+              SPI
+            </Box>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>
+              SPI 採用管理
+            </Typography>
+          </Stack>
+          <Stack direction="row" spacing={2} alignItems="center">
+            {["ダッシュボード", "受験者管理", "試験管理", "設定"].map(
+              (label) => (
+                <Button
+                  key={label}
+                  variant="text"
+                  sx={{
+                    fontWeight: 700,
+                    color: label === "試験管理" ? "#137fec" : "#64748b",
+                  }}
+                >
+                  {label}
+                </Button>
+              ),
+            )}
+          </Stack>
+        </Container>
+      </Box>
+
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+        <Stack spacing={3}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="body2" sx={{ color: "#64748b" }}>
+              ホーム
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#94a3b8" }}>
+              /
+            </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 700 }}>
+              引き継ぎ操作
+            </Typography>
+          </Stack>
+
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            justifyContent="space-between"
+            alignItems={{ xs: "flex-start", md: "center" }}
+          >
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              <Typography variant="h4" sx={{ fontWeight: 900 }}>
                 受験引き継ぎ操作
               </Typography>
-              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+              <Typography variant="body1" sx={{ color: "#64748b", mt: 1 }}>
                 Attempt をロックして一時停止、または新端末で再開します。
               </Typography>
             </Box>
-
-            <Stack spacing={2}>
-              <TextField
-                label="Attempt ID"
-                value={attemptId}
-                onChange={(event) => setAttemptId(event.target.value)}
-                fullWidth
-                inputProps={{ "data-testid": "staff-attempt-id" }}
-              />
-              <TextField
-                label="Device ID（任意）"
-                value={deviceId}
-                onChange={(event) => setDeviceId(event.target.value)}
-                fullWidth
-                inputProps={{ "data-testid": "staff-device-id" }}
-              />
-            </Stack>
-
-            {message && alertProps && (
-              <Alert {...alertProps} data-testid="staff-attempt-message">
-                {message}
-              </Alert>
-            )}
-
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <Button
-                variant="outlined"
-                sx={{ fontWeight: 700 }}
-                data-testid="staff-attempt-lock"
-                onClick={() => handleAction("lock")}
-                disabled={state === "submitting"}
-              >
-                {state === "submitting" ? "処理中..." : "LOCK"}
-              </Button>
-              <Button
-                variant="contained"
-                sx={{ fontWeight: 700, bgcolor: "#111418" }}
-                data-testid="staff-attempt-resume"
-                onClick={() => handleAction("resume")}
-                disabled={state === "submitting"}
-              >
-                {state === "submitting" ? "処理中..." : "RESUME"}
-              </Button>
-            </Stack>
+            <Chip
+              label="PROCTOR 専用"
+              sx={{
+                bgcolor: "rgba(19, 127, 236, 0.12)",
+                color: "#137fec",
+                fontWeight: 700,
+              }}
+            />
           </Stack>
-        </Paper>
+
+          <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+            <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                LOCK 操作
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                進行中の Attempt を LOCKED に変更し、端末を切り替えます。
+              </Typography>
+            </Paper>
+            <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                RESUME 操作
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                新端末で Attempt を再開し、セッションを発行します。
+              </Typography>
+            </Paper>
+          </Stack>
+
+          <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
+            <Stack spacing={3}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                操作対象の指定
+              </Typography>
+              <Stack spacing={2}>
+                <TextField
+                  label="Attempt ID"
+                  value={attemptId}
+                  onChange={(event) => setAttemptId(event.target.value)}
+                  fullWidth
+                  inputProps={{ "data-testid": "staff-attempt-id" }}
+                />
+                <TextField
+                  label="Device ID（任意）"
+                  value={deviceId}
+                  onChange={(event) => setDeviceId(event.target.value)}
+                  fullWidth
+                  inputProps={{ "data-testid": "staff-device-id" }}
+                />
+              </Stack>
+
+              {message && alertProps && (
+                <Alert {...alertProps} data-testid="staff-attempt-message">
+                  {message}
+                </Alert>
+              )}
+
+              <Divider />
+
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Button
+                  variant="outlined"
+                  sx={{ fontWeight: 700 }}
+                  data-testid="staff-attempt-lock"
+                  onClick={() => handleAction("lock")}
+                  disabled={state === "submitting"}
+                >
+                  {state === "submitting" ? "処理中..." : "LOCK"}
+                </Button>
+                <Button
+                  variant="contained"
+                  sx={{ fontWeight: 700, bgcolor: "#111418" }}
+                  data-testid="staff-attempt-resume"
+                  onClick={() => handleAction("resume")}
+                  disabled={state === "submitting"}
+                >
+                  {state === "submitting" ? "処理中..." : "RESUME"}
+                </Button>
+              </Stack>
+            </Stack>
+          </Paper>
+        </Stack>
       </Container>
     </Box>
   );
