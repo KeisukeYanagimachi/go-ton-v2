@@ -15,6 +15,12 @@ import {
 import { useState } from "react";
 
 type ActionState = "idle" | "submitting" | "success" | "error";
+type MessageCode =
+  | "ATTEMPT_ID_REQUIRED"
+  | "REQUEST_FAILED"
+  | "NETWORK_ERROR"
+  | "ATTEMPT_LOCKED"
+  | "ATTEMPT_RESUMED";
 
 const baseStyles = {
   minHeight: "100vh",
@@ -25,7 +31,7 @@ const baseStyles = {
 export default function StaffAttemptTakeoverPage() {
   const [attemptId, setAttemptId] = useState("");
   const [deviceId, setDeviceId] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<MessageCode | null>(null);
   const [state, setState] = useState<ActionState>("idle");
 
   const handleAction = async (endpoint: "lock" | "resume") => {
@@ -72,6 +78,21 @@ export default function StaffAttemptTakeoverPage() {
       : state === "error"
         ? { severity: "error" as const }
         : null;
+  const statusLabel =
+    state === "submitting"
+      ? "処理中"
+      : state === "success"
+        ? "完了"
+        : state === "error"
+          ? "エラー"
+          : "待機中";
+  const messageLabelMap: Record<MessageCode, string> = {
+    ATTEMPT_ID_REQUIRED: "Attempt ID を入力してください。",
+    REQUEST_FAILED: "操作に失敗しました。入力内容を確認してください。",
+    NETWORK_ERROR: "通信に失敗しました。再度お試しください。",
+    ATTEMPT_LOCKED: "Attempt を LOCKED にしました。",
+    ATTEMPT_RESUMED: "Attempt を再開しました。",
+  };
 
   return (
     <Box sx={baseStyles}>
@@ -191,6 +212,28 @@ export default function StaffAttemptTakeoverPage() {
           </Stack>
 
           <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
+            <Stack spacing={2}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                手順の目安
+              </Typography>
+              <Stack spacing={1} data-testid="staff-takeover-steps">
+                <Typography variant="body2" sx={{ color: "#475569" }}>
+                  1. 対象 Attempt を LOCK して受験者の操作を停止
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#475569" }}>
+                  2. 新端末で Candidate がログイン
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#475569" }}>
+                  3. RESUME で新しいセッションを発行
+                </Typography>
+              </Stack>
+              <Alert severity="warning" data-testid="staff-takeover-note">
+                LOCK 中は Candidate の画面操作がブロックされます。
+              </Alert>
+            </Stack>
+          </Paper>
+
+          <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
             <Stack spacing={3}>
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
                 操作対象の指定
@@ -209,18 +252,43 @@ export default function StaffAttemptTakeoverPage() {
                   onChange={(event) => setDeviceId(event.target.value)}
                   fullWidth
                   inputProps={{ "data-testid": "staff-device-id" }}
+                  helperText="入力がない場合は端末未指定として記録されます。"
                 />
               </Stack>
 
               {message && alertProps && (
                 <Alert {...alertProps} data-testid="staff-attempt-message">
-                  {message}
+                  {messageLabelMap[message]}
                 </Alert>
               )}
 
               <Divider />
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Chip
+                  label={`状態: ${statusLabel}`}
+                  data-testid="staff-takeover-status"
+                  sx={{
+                    bgcolor:
+                      state === "error"
+                        ? "rgba(239, 68, 68, 0.1)"
+                        : state === "success"
+                          ? "rgba(34, 197, 94, 0.12)"
+                          : "rgba(148, 163, 184, 0.2)",
+                    color:
+                      state === "error"
+                        ? "#b91c1c"
+                        : state === "success"
+                          ? "#15803d"
+                          : "#475569",
+                    fontWeight: 700,
+                  }}
+                />
                 <Button
                   variant="outlined"
                   sx={{ fontWeight: 700 }}
