@@ -1,36 +1,37 @@
 import { AttemptStatus } from "@prisma/client";
 
 import {
-    CandidateAuthRecord,
-    TicketStatus
+  CandidateAuthRecord,
+  TicketStatus,
 } from "@/features/auth/domain/candidate-auth";
 import { prisma } from "@/shared/db/prisma";
 
 const activeAttemptStatuses: AttemptStatus[] = [
   "NOT_STARTED",
   "IN_PROGRESS",
-  "LOCKED"
+  "LOCKED",
 ];
 
 const fetchCandidateAuthByTicket = async (
-  ticketCode: string
+  ticketCode: string,
 ): Promise<CandidateAuthRecord | null> => {
   const ticket = await prisma.ticket.findUnique({
     where: { ticketCode },
     select: {
       id: true,
       candidateId: true,
+      examVersionId: true,
       status: true,
       pinHash: true,
       attempts: {
         where: {
           status: {
-            in: activeAttemptStatuses
-          }
+            in: activeAttemptStatuses,
+          },
         },
-        select: { id: true }
-      }
-    }
+        select: { id: true },
+      },
+    },
   });
 
   if (!ticket) {
@@ -40,9 +41,10 @@ const fetchCandidateAuthByTicket = async (
   return {
     ticketId: ticket.id,
     candidateId: ticket.candidateId,
+    examVersionId: ticket.examVersionId,
     ticketStatus: ticket.status as TicketStatus,
     pinHash: ticket.pinHash,
-    hasActiveAttempt: ticket.attempts.length > 0
+    hasActiveAttempt: ticket.attempts.length > 0,
   };
 };
 

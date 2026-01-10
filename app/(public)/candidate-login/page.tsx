@@ -1,14 +1,14 @@
 "use client";
 
 import {
-    Alert,
-    Box,
-    Button,
-    Container,
-    Divider,
-    Paper,
-    TextField,
-    Typography
+  Alert,
+  Box,
+  Button,
+  Container,
+  Divider,
+  Paper,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { useState } from "react";
 
@@ -22,21 +22,24 @@ export default function CandidateLoginPage() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LoginResult | null>(null);
+  const [attemptId, setAttemptId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setResult(null);
+    setAttemptId(null);
     setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/candidate/login", {
         method: "POST",
         headers: {
-          "content-type": "application/json"
+          "content-type": "application/json",
         },
-        body: JSON.stringify({ ticketCode, pin })
+        body: JSON.stringify({ ticketCode, pin }),
       });
 
       if (!response.ok) {
@@ -54,6 +57,35 @@ export default function CandidateLoginPage() {
     }
   };
 
+  const handleStart = async () => {
+    setError(null);
+    setAttemptId(null);
+    setIsStarting(true);
+
+    try {
+      const response = await fetch("/api/candidate/start", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ ticketCode, pin }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string };
+        setError(payload.error ?? "UNAUTHORIZED");
+        return;
+      }
+
+      const payload = (await response.json()) as { attemptId: string };
+      setAttemptId(payload.attemptId);
+    } catch (requestError) {
+      setError("NETWORK_ERROR");
+    } finally {
+      setIsStarting(false);
+    }
+  };
+
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f6f7f8", color: "#111418" }}>
       <Box
@@ -68,7 +100,7 @@ export default function CandidateLoginPage() {
           px: { xs: 2, md: 4 },
           py: 1.5,
           bgcolor: "#ffffff",
-          borderBottom: "1px solid #e2e8f0"
+          borderBottom: "1px solid #e2e8f0",
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -81,7 +113,7 @@ export default function CandidateLoginPage() {
               display: "grid",
               placeItems: "center",
               color: "#137fec",
-              fontWeight: 700
+              fontWeight: 700,
             }}
           >
             SPI
@@ -97,7 +129,7 @@ export default function CandidateLoginPage() {
             color: "#111418",
             fontWeight: 700,
             boxShadow: "none",
-            "&:hover": { bgcolor: "#e2e8f0", boxShadow: "none" }
+            "&:hover": { bgcolor: "#e2e8f0", boxShadow: "none" },
           }}
         >
           お問い合わせ
@@ -109,7 +141,7 @@ export default function CandidateLoginPage() {
         sx={{
           display: "flex",
           minHeight: { xs: "auto", lg: "calc(100vh - 64px)" },
-          flexDirection: { xs: "column", lg: "row" }
+          flexDirection: { xs: "column", lg: "row" },
         }}
       >
         <Box
@@ -122,7 +154,7 @@ export default function CandidateLoginPage() {
             px: 6,
             py: 8,
             overflow: "hidden",
-            bgcolor: "#137fec"
+            bgcolor: "#137fec",
           }}
         >
           <Box
@@ -130,7 +162,7 @@ export default function CandidateLoginPage() {
               position: "absolute",
               inset: 0,
               background:
-                "linear-gradient(145deg, rgba(19,127,236,0.95), rgba(5,27,68,0.65))"
+                "linear-gradient(145deg, rgba(19,127,236,0.95), rgba(5,27,68,0.65))",
             }}
           />
           <Box
@@ -139,7 +171,7 @@ export default function CandidateLoginPage() {
               inset: 0,
               backgroundImage:
                 "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.25), transparent 60%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.2), transparent 55%)",
-              mixBlendMode: "screen"
+              mixBlendMode: "screen",
             }}
           />
           <Box sx={{ position: "relative", maxWidth: 520 }}>
@@ -152,7 +184,7 @@ export default function CandidateLoginPage() {
                 display: "grid",
                 placeItems: "center",
                 mb: 3,
-                fontWeight: 700
+                fontWeight: 700,
               }}
             >
               ✓
@@ -162,7 +194,9 @@ export default function CandidateLoginPage() {
               <br />
               試験環境
             </Typography>
-            <Typography sx={{ fontSize: 18, mb: 3, color: "rgba(255,255,255,0.9)" }}>
+            <Typography
+              sx={{ fontSize: 18, mb: 3, color: "rgba(255,255,255,0.9)" }}
+            >
               公正で正確な能力評価のため、受験状況を見守る設計で運用します。
             </Typography>
             <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
@@ -175,7 +209,7 @@ export default function CandidateLoginPage() {
                     borderRadius: 999,
                     border: "1px solid rgba(255,255,255,0.2)",
                     bgcolor: "rgba(255,255,255,0.12)",
-                    fontSize: 14
+                    fontSize: 14,
                   }}
                 >
                   {label}
@@ -192,7 +226,7 @@ export default function CandidateLoginPage() {
             alignItems: "center",
             justifyContent: "center",
             px: { xs: 2, sm: 6 },
-            py: { xs: 6, lg: 10 }
+            py: { xs: 6, lg: 10 },
           }}
         >
           <Container maxWidth="sm">
@@ -202,7 +236,7 @@ export default function CandidateLoginPage() {
                 p: { xs: 3, sm: 4 },
                 borderRadius: 3,
                 bgcolor: "#ffffff",
-                boxShadow: "0 12px 30px rgba(15, 23, 42, 0.08)"
+                boxShadow: "0 12px 30px rgba(15, 23, 42, 0.08)",
               }}
             >
               <Box sx={{ mb: 3 }}>
@@ -264,6 +298,28 @@ export default function CandidateLoginPage() {
                   data-testid="candidate-login-success"
                 >
                   ログインに成功しました。Candidate ID: {result.candidateId}
+                </Alert>
+              )}
+
+              {result && (
+                <Button
+                  variant="contained"
+                  sx={{ mt: 3, py: 1.4, fontWeight: 700, bgcolor: "#111418" }}
+                  onClick={handleStart}
+                  disabled={isStarting}
+                  data-testid="candidate-start-submit"
+                >
+                  {isStarting ? "開始中..." : "試験開始"}
+                </Button>
+              )}
+
+              {attemptId && (
+                <Alert
+                  severity="info"
+                  sx={{ mt: 3 }}
+                  data-testid="candidate-start-success"
+                >
+                  Attempt を開始しました。Attempt ID: {attemptId}
                 </Alert>
               )}
 

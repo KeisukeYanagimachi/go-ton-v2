@@ -5,9 +5,10 @@ import { CandidateAuthRecord, isCandidateLoginAllowed } from "./candidate-auth";
 const baseRecord: CandidateAuthRecord = {
   ticketId: "ticket-id",
   candidateId: "candidate-id",
+  examVersionId: "exam-version-id",
   ticketStatus: "ACTIVE",
   pinHash: "hash",
-  hasActiveAttempt: false
+  hasActiveAttempt: false,
 };
 
 describe("isCandidateLoginAllowed", () => {
@@ -19,20 +20,21 @@ describe("isCandidateLoginAllowed", () => {
     expect(
       isCandidateLoginAllowed(
         { ...baseRecord, ticketStatus: "REVOKED" },
-        "hash"
-      )
+        "hash",
+      ),
     ).toBe(false);
   });
 
   test("returns false when pin hash does not match", () => {
-    expect(
-      isCandidateLoginAllowed(baseRecord, "different-hash")
-    ).toBe(false);
+    expect(isCandidateLoginAllowed(baseRecord, "different-hash")).toBe(false);
   });
 
   test("returns false when another attempt is active", () => {
     expect(
-      isCandidateLoginAllowed({ ...baseRecord, hasActiveAttempt: true }, "hash")
+      isCandidateLoginAllowed(
+        { ...baseRecord, hasActiveAttempt: true },
+        "hash",
+      ),
     ).toBe(false);
   });
 

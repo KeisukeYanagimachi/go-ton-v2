@@ -3,6 +3,7 @@ type TicketStatus = "ACTIVE" | "REVOKED" | "USED";
 type CandidateAuthRecord = {
   ticketId: string;
   candidateId: string;
+  examVersionId: string;
   ticketStatus: TicketStatus;
   pinHash: string;
   hasActiveAttempt: boolean;
@@ -10,15 +11,14 @@ type CandidateAuthRecord = {
 
 const isCandidateLoginAllowed = (
   record: CandidateAuthRecord | null,
-  inputPinHash: string
+  inputPinHash: string,
 ) =>
   Boolean(
     record &&
-      record.ticketStatus === "ACTIVE" &&
-      record.pinHash === inputPinHash &&
-      !record.hasActiveAttempt
+    record.ticketStatus === "ACTIVE" &&
+    record.pinHash === inputPinHash &&
+    !record.hasActiveAttempt,
   );
 
 export { isCandidateLoginAllowed };
 export type { CandidateAuthRecord, TicketStatus };
-
