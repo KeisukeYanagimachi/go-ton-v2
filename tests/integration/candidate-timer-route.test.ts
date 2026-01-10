@@ -126,7 +126,10 @@ describe("candidate timer route (integration)", () => {
     });
 
     const startResponse = await startAttempt(
-      createRequest("http://localhost/api/candidate/start", { ticketCode, pin }),
+      createRequest("http://localhost/api/candidate/start", {
+        ticketCode,
+        pin,
+      }),
     );
     expect(startResponse.status).toBe(200);
 
@@ -146,17 +149,59 @@ describe("candidate timer route (integration)", () => {
     const timer = await prisma.attemptModuleTimer.findUnique({
       where: {
         attemptId_moduleId: {
-          attemptId: (
-            await prisma.attempt.findUnique({
-              where: { ticketId: ticket.id },
-              select: { id: true },
-            })
-          )!.id,
+          attemptId: (await prisma.attempt.findUnique({
+            where: { ticketId: ticket.id },
+            select: { id: true },
+          }))!.id,
           moduleId: examModule.id,
         },
       },
     });
 
     expect(timer?.remainingSeconds).toBe(90);
+  });
+
+  test("rejects updates when attempt is locked", async () => {
+    const candidate = await createCandidate();
+    const visitSlot = await createVisitSlot();
+    const { examVersion, examModule } = await createExamVersionBundle();
+    const pin = "19990101";
+    const ticketCode = `TICKET-${randomUUID()}`;
+
+    const ticket = await prisma.ticket.create({
+      data: {
+        id: randomUUID(),
+        ticketCode,
+        candidateId: candidate.id,
+        examVersionId: examVersion.id,
+        visitSlotId: visitSlot.id,
+        pinHash: hashPin(pin),
+        status: "ACTIVE",
+      },
+    });
+
+    const startResponse = await startAttempt(
+      createRequest("http://localhost/api/candidate/start", {
+        ticketCode,
+        pin,
+      }),
+    );
+    expect(startResponse.status).toBe(200);
+
+    await prisma.attempt.update({
+      where: { ticketId: ticket.id },
+      data: { status: "LOCKED" },
+    });
+
+    const response = await updateTimer(
+      createRequest("http://localhost/api/candidate/timer", {
+        ticketCode,
+        pin,
+        moduleId: examModule.id,
+        elapsedSeconds: 10,
+      }),
+    );
+
+    expect(response.status).toBe(401);
   });
 });

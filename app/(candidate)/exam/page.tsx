@@ -189,6 +189,7 @@ export default function CandidateExamPage() {
 
   const activeItem = moduleItems[activeIndex] ?? null;
   const questionNumbers = moduleItems.map((_, index) => index + 1);
+  const isLocked = snapshot?.status === "LOCKED";
   const progressValue =
     moduleItems.length > 0
       ? Math.round(((activeIndex + 1) / moduleItems.length) * 100)
@@ -199,6 +200,7 @@ export default function CandidateExamPage() {
     MISSING_CREDENTIALS: "ログイン情報が見つかりません。",
     UNAUTHORIZED: "認証に失敗しました。",
     NETWORK_ERROR: "通信に失敗しました。",
+    LOCKED: "試験が一時停止されています。スタッフに確認してください。",
   };
   const answerMessageMap: Record<string, string> = {
     ANSWER_REQUIRED: "回答を選択してから次へ進んでください。",
@@ -206,6 +208,10 @@ export default function CandidateExamPage() {
 
   const handleSelectOption = (optionId: string) => {
     if (!activeItem) {
+      return;
+    }
+    if (isLocked) {
+      setError("LOCKED");
       return;
     }
 
@@ -222,6 +228,10 @@ export default function CandidateExamPage() {
   const handleSaveAnswer = async () => {
     if (!activeItem || !ticketCode || !pin) {
       setError("MISSING_CREDENTIALS");
+      return false;
+    }
+    if (isLocked) {
+      setError("LOCKED");
       return false;
     }
 
@@ -313,7 +323,7 @@ export default function CandidateExamPage() {
   };
 
   useEffect(() => {
-    if (!currentModule || !timerReady) {
+    if (!currentModule || !timerReady || isLocked) {
       return undefined;
     }
 
@@ -355,13 +365,17 @@ export default function CandidateExamPage() {
         syncIntervalId.current = null;
       }
     };
-  }, [currentModule?.moduleId, ticketCode, pin, timerReady]);
+  }, [currentModule?.moduleId, ticketCode, pin, timerReady, isLocked]);
 
   const handleNext = async () => {
     if (!activeItem) {
       return;
     }
 
+    if (isLocked) {
+      setError("LOCKED");
+      return;
+    }
     setHasAttemptedAdvance(true);
     setShowUnanswered(true);
     const saved = await handleSaveAnswer();
@@ -379,6 +393,10 @@ export default function CandidateExamPage() {
       return;
     }
 
+    if (isLocked) {
+      setError("LOCKED");
+      return;
+    }
     setHasAttemptedAdvance(true);
     setShowUnanswered(true);
     const saved = await handleSaveAnswer();
@@ -560,6 +578,7 @@ export default function CandidateExamPage() {
                       placeItems: "center",
                       fontSize: 14,
                       cursor: "pointer",
+                      opacity: isLocked ? 0.5 : 1,
                       transition: "transform 0.15s ease, box-shadow 0.15s ease",
                       "&:hover": {
                         transform: "translateY(-1px)",
@@ -572,7 +591,13 @@ export default function CandidateExamPage() {
                         shouldHighlight,
                       ),
                     }}
-                    onClick={() => setActiveIndex(index)}
+                    onClick={() => {
+                      if (isLocked) {
+                        setError("LOCKED");
+                        return;
+                      }
+                      setActiveIndex(index);
+                    }}
                   >
                     {number}
                   </Box>
@@ -779,7 +804,8 @@ export default function CandidateExamPage() {
                             display: "flex",
                             gap: 2,
                             alignItems: "flex-start",
-                            cursor: "pointer",
+                            cursor: isLocked ? "not-allowed" : "pointer",
+                            opacity: isLocked ? 0.6 : 1,
                           }}
                           data-testid={`candidate-option-${option.position}`}
                           onClick={() => handleSelectOption(option.id)}
@@ -821,7 +847,7 @@ export default function CandidateExamPage() {
                     }}
                     data-testid="candidate-prev-question"
                     onClick={handlePrev}
-                    disabled={isSaving || activeIndex === 0}
+                    disabled={isSaving || activeIndex === 0 || isLocked}
                   >
                     {isSaving ? "保存中..." : "前の問題"}
                   </Button>
@@ -838,7 +864,11 @@ export default function CandidateExamPage() {
                     }}
                     data-testid="candidate-next-question"
                     onClick={handleNext}
-                    disabled={isSaving || activeIndex >= moduleItems.length - 1}
+                    disabled={
+                      isSaving ||
+                      activeIndex >= moduleItems.length - 1 ||
+                      isLocked
+                    }
                   >
                     {isSaving ? "保存中..." : "次の問題へ"}
                   </Button>
