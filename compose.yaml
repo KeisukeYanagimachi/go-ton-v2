@@ -46,6 +46,7 @@ services:
       NODE_ENV: test
     volumes:
       - .:/app
+      - /app/node_modules
     depends_on:
       app:
         condition: service_healthy

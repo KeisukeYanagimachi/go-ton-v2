@@ -1,25 +1,18 @@
 "use client";
 
 import { Alert, Box, Button, TextField, Typography } from "@mui/material";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-type StaffLoginResult = {
-  staffUserId: string;
-  email: string;
-  displayName: string | null;
-  roles: string[];
-};
-
 export default function StaffDevLoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<StaffLoginResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    setResult(null);
     setIsSubmitting(true);
 
     try {
@@ -42,8 +35,8 @@ export default function StaffDevLoginForm() {
         return;
       }
 
-      const payload = (await response.json()) as StaffLoginResult;
-      setResult(payload);
+      await response.json();
+      router.push("/staff");
     } catch (requestError) {
       setError("NETWORK_ERROR");
     } finally {
@@ -111,27 +104,6 @@ export default function StaffDevLoginForm() {
         >
           {error}
         </Alert>
-      )}
-      {result && (
-        <Alert
-          severity="success"
-          sx={{ mt: 3 }}
-          data-testid="staff-dev-login-success"
-        >
-          ログインに成功しました。{result.email}
-        </Alert>
-      )}
-      {result && (
-        <Box sx={{ mt: 2 }}>
-          <Button
-            variant="contained"
-            sx={{ fontWeight: 700 }}
-            href="/staff"
-            data-testid="staff-home-link"
-          >
-            スタッフホームへ
-          </Button>
-        </Box>
       )}
     </>
   );

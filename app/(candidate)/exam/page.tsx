@@ -1,6 +1,9 @@
 "use client";
 
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Button,
@@ -135,6 +138,8 @@ export default function CandidateExamPage() {
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [timerReady, setTimerReady] = useState(false);
   const [isModuleConfirmOpen, setIsModuleConfirmOpen] = useState(false);
+  const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState(false);
+  const [isModulePanelOpen, setIsModulePanelOpen] = useState(true);
   const remainingSecondsRef = useRef<number | null>(null);
   const lastSyncSeconds = useRef<number | null>(null);
   const syncIntervalId = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -590,6 +595,7 @@ export default function CandidateExamPage() {
       return;
     }
 
+    setIsSubmitConfirmOpen(false);
     setHasAttemptedAdvance(true);
     setShowUnanswered(true);
     const saved = await handleSaveAnswer();
@@ -769,7 +775,7 @@ export default function CandidateExamPage() {
               質問一覧
             </Typography>
             <Typography variant="caption" sx={{ color: "#64748b" }}>
-              クリックで任意の質問に移動できます
+              回答状況を確認できます
             </Typography>
           </Box>
           <Box sx={{ flex: 1, px: 3, py: 2.5, overflowY: "auto" }}>
@@ -796,39 +802,14 @@ export default function CandidateExamPage() {
                       display: "grid",
                       placeItems: "center",
                       fontSize: 14,
-                      cursor: "pointer",
+                      cursor: "default",
                       opacity: isLocked ? 0.5 : 1,
-                      transition: "transform 0.15s ease, box-shadow 0.15s ease",
-                      "&:hover": {
-                        transform: "translateY(-1px)",
-                        boxShadow: "0 4px 10px rgba(15, 23, 42, 0.15)",
-                      },
                       ...questionStatusStyles(
                         number,
                         activeIndex + 1,
                         hasAnswer,
                         shouldHighlight,
                       ),
-                    }}
-                    onClick={() => {
-                      if (isLocked) {
-                        setError("LOCKED");
-                        return;
-                      }
-                      const selectedOptionId =
-                        answersRef.current[activeItem?.attemptItemId ?? ""] ??
-                        (activeItem ? answers[activeItem.attemptItemId] : null);
-                      if (
-                        activeItem &&
-                        index !== activeIndex &&
-                        !selectedOptionId
-                      ) {
-                        setHasAttemptedAdvance(true);
-                        setShowUnanswered(true);
-                        setSaveError("ANSWER_REQUIRED");
-                        return;
-                      }
-                      setActiveIndex(index);
                     }}
                   >
                     {number}
@@ -937,71 +918,102 @@ export default function CandidateExamPage() {
                   </Alert>
                 )}
                 <Paper sx={{ p: 3, borderRadius: 3 }}>
-                  <Stack spacing={1.5}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                      モジュール構成
-                    </Typography>
-                    <Stack spacing={1}>
-                      {modules.map((module, index) => {
-                        const isCurrent = index === moduleIndex;
-                        const isComplete = index < moduleIndex;
+                  <Accordion
+                    elevation={0}
+                    disableGutters
+                    expanded={isModulePanelOpen}
+                    onChange={(_, expanded) => setIsModulePanelOpen(expanded)}
+                    sx={{
+                      bgcolor: "transparent",
+                      "&::before": { display: "none" },
+                    }}
+                  >
+                    <AccordionSummary
+                      sx={{ px: 0 }}
+                      expandIcon={
+                        <Box
+                          component="span"
+                          sx={{ fontWeight: 700, color: "#475569" }}
+                        >
+                          {isModulePanelOpen ? "v" : ">"}
+                        </Box>
+                      }
+                    >
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: 700 }}
+                        >
+                          モジュール構成
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#64748b" }}>
+                          全{modules.length}件
+                        </Typography>
+                      </Stack>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ px: 0 }}>
+                      <Stack spacing={1}>
+                        {modules.map((module, index) => {
+                          const isCurrent = index === moduleIndex;
+                          const isComplete = index < moduleIndex;
 
-                        return (
-                          <Stack
-                            key={module.moduleId}
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="space-between"
-                            sx={{
-                              px: 2,
-                              py: 1,
-                              borderRadius: 2,
-                              bgcolor: isCurrent
-                                ? "rgba(19, 127, 236, 0.08)"
-                                : "#f8fafc",
-                              border: "1px solid #e2e8f0",
-                            }}
-                            data-testid={`candidate-module-${module.code}`}
-                          >
-                            <Stack>
-                              <Typography sx={{ fontWeight: 700 }}>
-                                {module.name}
-                              </Typography>
-                              <Typography
-                                variant="caption"
-                                sx={{ color: "#64748b" }}
-                              >
-                                目安時間:{" "}
-                                {Math.ceil(module.durationSeconds / 60)}分
-                              </Typography>
-                            </Stack>
-                            <Chip
-                              label={
-                                isCurrent
-                                  ? "実施中"
-                                  : isComplete
-                                    ? "完了"
-                                    : "未開始"
-                              }
+                          return (
+                            <Stack
+                              key={module.moduleId}
+                              direction="row"
+                              alignItems="center"
+                              justifyContent="space-between"
                               sx={{
+                                px: 2,
+                                py: 1,
+                                borderRadius: 2,
                                 bgcolor: isCurrent
-                                  ? "rgba(19, 127, 236, 0.12)"
-                                  : isComplete
-                                    ? "rgba(16, 185, 129, 0.12)"
-                                    : "rgba(148, 163, 184, 0.2)",
-                                color: isCurrent
-                                  ? "#137fec"
-                                  : isComplete
-                                    ? "#047857"
-                                    : "#475569",
-                                fontWeight: 700,
+                                  ? "rgba(19, 127, 236, 0.08)"
+                                  : "#f8fafc",
+                                border: "1px solid #e2e8f0",
                               }}
-                            />
-                          </Stack>
-                        );
-                      })}
-                    </Stack>
-                  </Stack>
+                              data-testid={`candidate-module-${module.code}`}
+                            >
+                              <Stack>
+                                <Typography sx={{ fontWeight: 700 }}>
+                                  {module.name}
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  sx={{ color: "#64748b" }}
+                                >
+                                  目安時間:{" "}
+                                  {Math.ceil(module.durationSeconds / 60)}分
+                                </Typography>
+                              </Stack>
+                              <Chip
+                                label={
+                                  isCurrent
+                                    ? "実施中"
+                                    : isComplete
+                                      ? "完了"
+                                      : "未開始"
+                                }
+                                sx={{
+                                  bgcolor: isCurrent
+                                    ? "rgba(19, 127, 236, 0.12)"
+                                    : isComplete
+                                      ? "rgba(16, 185, 129, 0.12)"
+                                      : "rgba(148, 163, 184, 0.2)",
+                                  color: isCurrent
+                                    ? "#137fec"
+                                    : isComplete
+                                      ? "#047857"
+                                      : "#475569",
+                                  fontWeight: 700,
+                                }}
+                              />
+                            </Stack>
+                          );
+                        })}
+                      </Stack>
+                    </AccordionDetails>
+                  </Accordion>
                 </Paper>
                 <Box>
                   <Stack
@@ -1172,7 +1184,7 @@ export default function CandidateExamPage() {
                         },
                       }}
                       data-testid="candidate-submit-exam"
-                      onClick={handleSubmit}
+                      onClick={() => setIsSubmitConfirmOpen(true)}
                       disabled={isSaving || isSubmitting || isLocked}
                     >
                       {isSubmitting ? "提出中..." : "提出する"}
@@ -1227,6 +1239,35 @@ export default function CandidateExamPage() {
                       data-testid="candidate-module-confirm-advance"
                     >
                       進む
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+                <Dialog
+                  open={isSubmitConfirmOpen}
+                  onClose={() => setIsSubmitConfirmOpen(false)}
+                  data-testid="candidate-submit-confirm"
+                >
+                  <DialogTitle>試験を提出しますか？</DialogTitle>
+                  <DialogContent>
+                    <Typography variant="body2" sx={{ color: "#64748b" }}>
+                      提出すると回答は確定され、再編集はできません。
+                    </Typography>
+                  </DialogContent>
+                  <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => setIsSubmitConfirmOpen(false)}
+                      data-testid="candidate-submit-confirm-cancel"
+                    >
+                      キャンセル
+                    </Button>
+                    <Button
+                      variant="contained"
+                      sx={{ bgcolor: "#111418" }}
+                      onClick={handleSubmit}
+                      data-testid="candidate-submit-confirm-submit"
+                    >
+                      提出する
                     </Button>
                   </DialogActions>
                 </Dialog>

@@ -4,7 +4,8 @@ test("staff can lock and resume an attempt", async ({ page }) => {
   await page.goto("/staff-dev-login");
   await page.getByTestId("staff-dev-email").fill("admin@example.com");
   await page.getByTestId("staff-dev-login-submit").click();
-  await expect(page.getByTestId("staff-dev-login-success")).toBeVisible();
+  await expect(page).toHaveURL(/\/staff/);
+  await expect(page.getByTestId("staff-home-attempts-link")).toBeVisible();
 
   const startResponse = await page.request.post("/api/candidate/start", {
     data: { ticketCode: "TICKET-CAND-004", pin: "19990101" },

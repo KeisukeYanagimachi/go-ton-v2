@@ -33,8 +33,8 @@ test("staff dev login succeeds with whitelisted email", async ({ page }) => {
   await page.goto("/staff-dev-login");
   await page.getByTestId("staff-dev-email").fill("admin@example.com");
   await page.getByTestId("staff-dev-login-submit").click();
-  await expect(page.getByTestId("staff-dev-login-success")).toBeVisible();
-  await expect(page.getByTestId("staff-home-link")).toBeVisible();
+  await expect(page).toHaveURL(/\/staff/);
+  await expect(page.getByTestId("staff-home-reissue-link")).toBeVisible();
 });
 
 test("staff dev login fails with unknown email", async ({ page }) => {
