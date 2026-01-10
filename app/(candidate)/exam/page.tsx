@@ -103,6 +103,9 @@ export default function CandidateExamPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | null>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [hasAttemptedAdvance, setHasAttemptedAdvance] = useState(false);
 
   useEffect(() => {
     const storedTicketCode = sessionStorage.getItem("candidate.ticketCode");
@@ -178,12 +181,18 @@ export default function CandidateExamPage() {
     UNAUTHORIZED: "認証に失敗しました。",
     NETWORK_ERROR: "通信に失敗しました。",
   };
+  const answerMessageMap: Record<string, string> = {
+    ANSWER_REQUIRED: "回答を選択してから次へ進んでください。",
+  };
 
   const handleSelectOption = (optionId: string) => {
     if (!activeItem) {
       return;
     }
 
+    setSaveError(null);
+    setSaveMessage(null);
+    setHasAttemptedAdvance(false);
     setAnswers((previous) => ({
       ...previous,
       [activeItem.attemptItemId]: optionId,
@@ -196,8 +205,15 @@ export default function CandidateExamPage() {
       return false;
     }
 
+    if (!answers[activeItem.attemptItemId]) {
+      setSaveError("ANSWER_REQUIRED");
+      return false;
+    }
+
     setIsSaving(true);
     setError(null);
+    setSaveError(null);
+    setSaveMessage(null);
 
     try {
       const response = await fetch("/api/candidate/answer", {
@@ -226,6 +242,7 @@ export default function CandidateExamPage() {
         ...previous,
         [payload.attemptItemId]: payload.selectedOptionId,
       }));
+      setSaveMessage("保存しました。");
       return true;
     } catch (requestError) {
       setError("NETWORK_ERROR");
@@ -240,6 +257,7 @@ export default function CandidateExamPage() {
       return;
     }
 
+    setHasAttemptedAdvance(true);
     const saved = await handleSaveAnswer();
     if (!saved) {
       return;
@@ -255,6 +273,7 @@ export default function CandidateExamPage() {
       return;
     }
 
+    setHasAttemptedAdvance(true);
     const saved = await handleSaveAnswer();
     if (!saved) {
       return;
@@ -608,6 +627,17 @@ export default function CandidateExamPage() {
                     <Typography variant="caption" sx={{ color: "#64748b" }}>
                       選択肢
                     </Typography>
+                    {hasAttemptedAdvance && saveError && (
+                      <Alert severity="warning" sx={{ mb: 1 }}>
+                        {answerMessageMap[saveError] ??
+                          "回答を選択してください。"}
+                      </Alert>
+                    )}
+                    {saveMessage && (
+                      <Alert severity="success" sx={{ mb: 1 }}>
+                        {saveMessage}
+                      </Alert>
+                    )}
                     {activeItem.question.options.map((option) => {
                       const isSelected =
                         answers[activeItem.attemptItemId] === option.id;
