@@ -52,11 +52,13 @@ export default function StaffCandidatesPage() {
   const [listError, setListError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [formMessage, setFormMessage] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const selectedCandidate = useMemo(
     () =>
-      candidates.find((candidate) => candidate.candidateId === selectedCandidateId) ??
-      null,
+      candidates.find(
+        (candidate) => candidate.candidateId === selectedCandidateId,
+      ) ?? null,
     [candidates, selectedCandidateId],
   );
 
@@ -70,7 +72,9 @@ export default function StaffCandidatesPage() {
       if (candidateIdQuery.trim()) {
         params.set("candidateId", candidateIdQuery.trim());
       }
-      const response = await fetch(`/api/staff/candidates?${params.toString()}`);
+      const response = await fetch(
+        `/api/staff/candidates?${params.toString()}`,
+      );
       if (!response.ok) {
         setListError("候補者一覧の取得に失敗しました。");
         return;
@@ -107,6 +111,10 @@ export default function StaffCandidatesPage() {
 
   useEffect(() => {
     fetchCandidates();
+  }, []);
+
+  useEffect(() => {
+    setIsHydrated(true);
   }, []);
 
   useEffect(() => {
@@ -171,7 +179,11 @@ export default function StaffCandidatesPage() {
   };
 
   return (
-    <Box sx={{ py: { xs: 3, md: 5 } }} data-testid="staff-candidates-page">
+    <Box
+      sx={{ py: { xs: 3, md: 5 } }}
+      data-testid="staff-candidates-page"
+      data-hydrated={isHydrated ? "true" : "false"}
+    >
       <Container maxWidth="lg">
         <Stack spacing={3}>
           <Box>
@@ -200,12 +212,16 @@ export default function StaffCandidatesPage() {
                     onChange={(event) => setNameQuery(event.target.value)}
                     fullWidth
                     size="small"
-                    inputProps={{ "data-testid": "staff-candidates-search-name" }}
+                    inputProps={{
+                      "data-testid": "staff-candidates-search-name",
+                    }}
                   />
                   <TextField
                     label="Candidate ID"
                     value={candidateIdQuery}
-                    onChange={(event) => setCandidateIdQuery(event.target.value)}
+                    onChange={(event) =>
+                      setCandidateIdQuery(event.target.value)
+                    }
                     fullWidth
                     size="small"
                     inputProps={{
@@ -281,7 +297,10 @@ export default function StaffCandidatesPage() {
                         }
                         data-testid="staff-candidates-item"
                       >
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 700 }}
+                        >
                           {candidate.fullName}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
