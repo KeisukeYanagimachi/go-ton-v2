@@ -5,19 +5,23 @@ import {
   Box,
   Button,
   Container,
+  Divider,
   Paper,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import QRCode from "qrcode";
+import { useEffect, useState } from "react";
 
 type ReissueResult = {
   newTicketCode: string;
+  qrPayload: string;
 };
 type ReissueErrorCode =
   | "NOT_FOUND"
   | "INVALID_REQUEST"
+  | "MISSING_SECRET"
   | "FAILED"
   | "NETWORK_ERROR";
 
@@ -33,18 +37,43 @@ export default function TicketReissuePage() {
   const [reissueResult, setReissueResult] = useState<ReissueResult | null>(
     null,
   );
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [isReissuing, setIsReissuing] = useState(false);
   const errorMessageMap: Record<ReissueErrorCode, string> = {
     NOT_FOUND: "該当する受験票が見つからない、または再発行不可の状態です。",
     INVALID_REQUEST: "入力内容を確認してください。",
+    MISSING_SECRET: "環境設定に問題があります。スタッフに連絡してください。",
     FAILED: "再発行に失敗しました。もう一度お試しください。",
     NETWORK_ERROR: "通信に失敗しました。再度お試しください。",
   };
+
+  useEffect(() => {
+    if (!reissueResult) {
+      setQrDataUrl(null);
+      return;
+    }
+    let isMounted = true;
+    QRCode.toDataURL(reissueResult.qrPayload, { width: 240, margin: 1 })
+      .then((url) => {
+        if (isMounted) {
+          setQrDataUrl(url);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setQrDataUrl(null);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [reissueResult]);
 
   const handleReissue = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setReissueError(null);
     setReissueResult(null);
+    setQrDataUrl(null);
     setIsReissuing(true);
 
     try {
@@ -131,6 +160,33 @@ export default function TicketReissuePage() {
                     <Typography variant="caption" sx={{ color: "#64748b" }}>
                       旧チケットは無効化されました。
                     </Typography>
+                    <Divider sx={{ my: 1.5 }} />
+                    <Stack spacing={1} alignItems="flex-start">
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        QRコード（紙配布用）
+                      </Typography>
+                      {qrDataUrl ? (
+                        <Box
+                          component="img"
+                          src={qrDataUrl}
+                          alt="ticket QR"
+                          sx={{ width: 200, height: 200 }}
+                          data-testid="ticket-reissue-qr"
+                        />
+                      ) : (
+                        <Typography variant="caption" color="text.secondary">
+                          QRコードを生成しています...
+                        </Typography>
+                      )}
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => window.print()}
+                        data-testid="ticket-reissue-print"
+                      >
+                        印刷する
+                      </Button>
+                    </Stack>
                   </Stack>
                 </Alert>
               )}

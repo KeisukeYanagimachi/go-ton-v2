@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { requireStaffRoleFromRequest } from "@/features/auth/usecase/require-staff-role";
+import { buildTicketQrPayload } from "@/features/tickets/domain/ticket-qr";
 import { reissueTicket } from "@/features/tickets/usecase/reissue-ticket";
 
 const requestSchema = z.object({
@@ -16,6 +17,11 @@ export const POST = async (request: Request) => {
 
   if (!staff) {
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
+
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) {
+    return NextResponse.json({ error: "MISSING_SECRET" }, { status: 500 });
   }
 
   const payload = requestSchema.safeParse(await request.json());
@@ -33,5 +39,8 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   }
 
-  return NextResponse.json(result);
+  return NextResponse.json({
+    ...result,
+    qrPayload: buildTicketQrPayload(result.newTicketCode, secret),
+  });
 };

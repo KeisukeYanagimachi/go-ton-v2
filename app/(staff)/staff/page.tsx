@@ -101,6 +101,23 @@ export default function StaffHomePage() {
 
             <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                受験票の発行
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                候補者に紐づく受験票コードとQRを発行します。
+              </Typography>
+              <Button
+                variant="contained"
+                sx={{ mt: 3, fontWeight: 700 }}
+                href="/staff/tickets/issue"
+                data-testid="staff-home-issue-link"
+              >
+                発行画面へ
+              </Button>
+            </Paper>
+
+            <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
                 受験票の再発行
               </Typography>
               <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>

@@ -16,10 +16,18 @@ import { useEffect, useState } from "react";
 export default function CandidateLoginPage() {
   const router = useRouter();
   const [ticketCode, setTicketCode] = useState("");
+  const [qrPayload, setQrPayload] = useState("");
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const errorMessageMap: Record<string, string> = {
+    INVALID_REQUEST: "入力内容を確認してください。",
+    INVALID_QR: "QRコードを読み取れませんでした。",
+    UNAUTHORIZED: "受験票コードまたはPINが違います。",
+    MISSING_SECRET: "環境設定に問題があります。スタッフに連絡してください。",
+    NETWORK_ERROR: "通信に失敗しました。再度お試しください。",
+  };
 
   useEffect(() => {
     setIsHydrated(true);
@@ -36,21 +44,29 @@ export default function CandidateLoginPage() {
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({ ticketCode, pin }),
+        body: JSON.stringify({
+          ticketCode: ticketCode.trim() || undefined,
+          qrPayload: qrPayload.trim() || undefined,
+          pin,
+        }),
       });
 
       if (!response.ok) {
         const payload = (await response.json()) as { error?: string };
-        setError(payload.error ?? "UNAUTHORIZED");
+        const code = payload.error ?? "UNAUTHORIZED";
+        setError(errorMessageMap[code] ?? errorMessageMap.UNAUTHORIZED);
         return;
       }
 
-      await response.json();
-      sessionStorage.setItem("candidate.ticketCode", ticketCode);
+      const payload = (await response.json()) as { ticketCode?: string };
+      sessionStorage.setItem(
+        "candidate.ticketCode",
+        payload.ticketCode ?? ticketCode,
+      );
       sessionStorage.setItem("candidate.pin", pin);
       router.push("/start");
     } catch (requestError) {
-      setError("NETWORK_ERROR");
+      setError(errorMessageMap.NETWORK_ERROR);
     } finally {
       setIsSubmitting(false);
     }
@@ -170,10 +186,17 @@ export default function CandidateLoginPage() {
               data-hydrated={isHydrated ? "true" : "false"}
             >
               <TextField
+                label="QRコード（読み取り結果を貼り付け）"
+                value={qrPayload}
+                onChange={(event) => setQrPayload(event.target.value)}
+                fullWidth
+                inputProps={{ "data-testid": "candidate-qr-payload" }}
+                helperText="QRリーダーで読み取った文字列を入力してください。"
+              />
+              <TextField
                 label="受験票コード"
                 value={ticketCode}
                 onChange={(event) => setTicketCode(event.target.value)}
-                required
                 fullWidth
                 inputProps={{ "data-testid": "candidate-ticket-code" }}
               />
@@ -189,7 +212,11 @@ export default function CandidateLoginPage() {
               <Button
                 type="submit"
                 variant="contained"
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting ||
+                  (!ticketCode.trim() && !qrPayload.trim()) ||
+                  !pin.trim()
+                }
                 data-testid="candidate-login-submit"
                 sx={{ py: 1.4, fontWeight: 700, bgcolor: "#137fec" }}
               >

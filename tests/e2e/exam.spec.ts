@@ -19,9 +19,7 @@ test("candidate exam page renders", async ({ page }) => {
     timeout: loadTimeout,
   });
   await page.getByTestId("candidate-next-question").click();
-  await expect(
-    page.getByText("回答を選択してから次へ進んでください。"),
-  ).toBeVisible();
+  await expect(page.getByText("回答を選択してください。")).toBeVisible();
   await page.getByTestId("candidate-option-1").click();
   await page.getByTestId("candidate-next-question").click();
   await expect(page.getByTestId("candidate-current-question")).toHaveText(
