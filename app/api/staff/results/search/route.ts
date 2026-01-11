@@ -6,8 +6,16 @@ import { requireStaffRoleFromRequest } from "@/features/auth/usecase/require-sta
 
 const requestSchema = z.object({
   ticketCode: z.string().optional(),
+  candidateName: z.string().optional(),
   status: z
-    .enum(["NOT_STARTED", "IN_PROGRESS", "LOCKED", "SUBMITTED", "SCORED", "ABORTED"])
+    .enum([
+      "NOT_STARTED",
+      "IN_PROGRESS",
+      "LOCKED",
+      "SUBMITTED",
+      "SCORED",
+      "ABORTED",
+    ])
     .optional(),
 });
 
@@ -28,6 +36,7 @@ export const POST = async (request: Request) => {
 
   const attempts = await listAttemptResults({
     ticketCode: payload.data.ticketCode?.trim() || undefined,
+    candidateName: payload.data.candidateName?.trim() || undefined,
     status: payload.data.status,
   });
 

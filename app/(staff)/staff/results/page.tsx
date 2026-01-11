@@ -1,21 +1,21 @@
 "use client";
 
 import {
-    Alert,
-    Box,
-    Button,
-    Chip,
-    Container,
-    MenuItem,
-    Paper,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    TextField,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Container,
+  MenuItem,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 
@@ -65,6 +65,7 @@ const statusLabelMap: Record<AttemptStatus, string> = {
 
 export default function StaffResultsPage() {
   const [ticketCode, setTicketCode] = useState("");
+  const [candidateName, setCandidateName] = useState("");
   const [statusFilter, setStatusFilter] = useState<AttemptStatus | "ALL">(
     "ALL",
   );
@@ -83,6 +84,7 @@ export default function StaffResultsPage() {
         },
         body: JSON.stringify({
           ticketCode: ticketCode.trim() || undefined,
+          candidateName: candidateName.trim() || undefined,
           status: statusFilter === "ALL" ? undefined : statusFilter,
         }),
       });
@@ -112,6 +114,7 @@ export default function StaffResultsPage() {
 
   const handleClear = () => {
     setTicketCode("");
+    setCandidateName("");
     setStatusFilter("ALL");
   };
 
@@ -198,6 +201,16 @@ export default function StaffResultsPage() {
                   inputProps={{ "data-testid": "staff-results-ticket-input" }}
                 />
                 <TextField
+                  label="受験者名"
+                  value={candidateName}
+                  onChange={(event) => setCandidateName(event.target.value)}
+                  placeholder="候補者の氏名"
+                  sx={{ minWidth: 200, flex: 1 }}
+                  inputProps={{
+                    "data-testid": "staff-results-candidate-input",
+                  }}
+                />
+                <TextField
                   select
                   label="ステータス"
                   value={statusFilter}
@@ -249,9 +262,7 @@ export default function StaffResultsPage() {
                   検索結果
                 </Typography>
                 <Typography variant="body2" sx={{ color: "#64748b" }}>
-                  {isLoading
-                    ? "読み込み中..."
-                    : `${results.length} 件`}
+                  {isLoading ? "読み込み中..." : `${results.length} 件`}
                 </Typography>
               </Stack>
 
@@ -311,10 +322,7 @@ export default function StaffResultsPage() {
                   {results.length === 0 && !isLoading ? (
                     <TableRow>
                       <TableCell colSpan={6}>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#64748b" }}
-                        >
+                        <Typography variant="body2" sx={{ color: "#64748b" }}>
                           該当する結果がありません。
                         </Typography>
                       </TableCell>

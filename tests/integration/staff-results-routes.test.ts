@@ -134,11 +134,11 @@ const createExamVersionBundle = async () => {
   return examVersion;
 };
 
-const createCandidate = async () =>
+const createCandidate = async (fullName: string) =>
   prisma.candidate.create({
     data: {
       id: randomUUID(),
-      fullName: `Candidate ${randomUUID()}`,
+      fullName,
       birthDate: new Date("1999-01-01"),
     },
   });
@@ -178,7 +178,8 @@ describe("staff results routes (integration)", () => {
     process.env.AUTH_SECRET = "test-secret";
 
     const staff = await createStaffUser(`report-${randomUUID()}@example.com`);
-    const candidate = await createCandidate();
+    const candidateName = `Candidate ${randomUUID()}`;
+    const candidate = await createCandidate(candidateName);
     const visitSlot = await createVisitSlot();
     const examVersion = await createExamVersionBundle();
     const pin = "19990101";
@@ -229,7 +230,7 @@ describe("staff results routes (integration)", () => {
     const searchResponse = await postSearch(
       createRequest(
         "http://localhost/api/staff/results/search",
-        { ticketCode, status: "SCORED" },
+        { ticketCode, candidateName, status: "SCORED" },
         `${DEV_STAFF_SESSION_COOKIE}=${token}`,
       ),
     );

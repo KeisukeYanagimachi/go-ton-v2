@@ -4,6 +4,7 @@ import { prisma } from "@/shared/db/prisma";
 
 type AttemptResultFilters = {
   ticketCode?: string;
+  candidateName?: string;
   status?: AttemptStatus;
 };
 
@@ -25,13 +26,27 @@ const listAttemptResults = async (
   const attempts = await prisma.attempt.findMany({
     where: {
       ...(filters.status ? { status: filters.status } : {}),
-      ...(filters.ticketCode
+      ...(filters.ticketCode || filters.candidateName
         ? {
             ticket: {
-              ticketCode: {
-                contains: filters.ticketCode,
-                mode: "insensitive",
-              },
+              ...(filters.ticketCode
+                ? {
+                    ticketCode: {
+                      contains: filters.ticketCode,
+                      mode: "insensitive",
+                    },
+                  }
+                : {}),
+              ...(filters.candidateName
+                ? {
+                    candidate: {
+                      fullName: {
+                        contains: filters.candidateName,
+                        mode: "insensitive",
+                      },
+                    },
+                  }
+                : {}),
             },
           }
         : {}),
@@ -73,4 +88,3 @@ const listAttemptResults = async (
 
 export { listAttemptResults };
 export type { AttemptResultFilters, AttemptResultItem };
-
