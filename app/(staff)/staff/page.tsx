@@ -71,7 +71,17 @@ export default function StaffHomePage() {
             </Typography>
           </Box>
 
-          <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "repeat(2, minmax(0, 1fr))",
+                lg: "repeat(3, minmax(0, 1fr))",
+              },
+              gap: 2,
+            }}
+          >
             <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
                 引き継ぎ操作
@@ -137,7 +147,23 @@ export default function StaffHomePage() {
                 問題管理へ
               </Button>
             </Paper>
-          </Stack>
+            <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                結果の閲覧
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                提出済みの Attempt を検索してスコアを確認します。
+              </Typography>
+              <Button
+                variant="outlined"
+                sx={{ mt: 3, fontWeight: 700 }}
+                href="/staff/results"
+                data-testid="staff-home-results-link"
+              >
+                結果一覧へ
+              </Button>
+            </Paper>
+          </Box>
         </Stack>
       </Container>
     </Box>

@@ -106,6 +106,9 @@ test("candidate can complete the exam and submit", async ({ page }) => {
 
   await page.getByTestId("candidate-option-1").click();
   await page.getByTestId("candidate-next-question").click();
+  await expect(page.getByTestId("candidate-current-question")).toHaveText(
+    "問 2",
+  );
   await page.getByTestId("candidate-option-1").click();
   await page.getByTestId("candidate-submit-exam").click();
   await expect(page.getByTestId("candidate-submit-confirm")).toBeVisible();
