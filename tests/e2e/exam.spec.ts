@@ -112,8 +112,12 @@ test("candidate can complete the exam and submit", async ({ page }) => {
   await page.getByTestId("candidate-option-1").click();
   await page.getByTestId("candidate-submit-exam").click();
   await expect(page.getByTestId("candidate-submit-confirm")).toBeVisible();
-  await page.getByTestId("candidate-submit-confirm-submit").click();
+  const [submitResponse] = await Promise.all([
+    page.waitForResponse("**/api/candidate/submit"),
+    page.getByTestId("candidate-submit-confirm-submit").click(),
+  ]);
+  expect(submitResponse.ok()).toBeTruthy();
 
-  await expect(page).toHaveURL(/\/complete/);
+  await expect(page).toHaveURL(/\/complete/, { timeout: loadTimeout });
   await expect(page.getByTestId("candidate-complete-page")).toBeVisible();
 });

@@ -8,6 +8,7 @@
 - 2026-01-10: Auth.js（Google SSO）の実装方針とセッション設計を明文化
 - 2026-01-10: Auth.js 本番SSOの環境変数を明記
 - 2026-01-10: Auth.js 本番SSOの境界と理由（whitelist / roleの正はDB）を追記
+- 2026-01-11: QRコードの署名仕様を追記
 
 ## 技術仕様（アーキテクチャ・技術方針）
 
@@ -185,6 +186,16 @@
 - `AUTH_URL`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
+
+---
+
+## 6.6 QRコード仕様（Candidate）
+
+- QRコードのペイロードは **ticket_code と署名**のみを含む
+- 署名は `AUTH_SECRET` を用いた HMAC-SHA256 とする
+- 形式: `<ticket_code>.<signature>`
+  - signature は base64url でエンコードする
+- PIN などの個人情報は **QRコードに含めない**
 
 ## 7. API / 処理方式
 

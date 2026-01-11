@@ -179,6 +179,38 @@ export default function StaffHomePage() {
                 監査ログへ
               </Button>
             </Paper>
+            <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                来社枠管理
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                来社枠の作成・編集を行います。
+              </Typography>
+              <Button
+                variant="outlined"
+                sx={{ mt: 3, fontWeight: 700 }}
+                href="/staff/visits"
+                data-testid="staff-home-visits-link"
+              >
+                来社枠へ
+              </Button>
+            </Paper>
+            <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                来社割当
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                受験者を来社枠へ割り当てます。
+              </Typography>
+              <Button
+                variant="outlined"
+                sx={{ mt: 3, fontWeight: 700 }}
+                href="/staff/visits/assignments"
+                data-testid="staff-home-visit-assignments-link"
+              >
+                割当画面へ
+              </Button>
+            </Paper>
           </Box>
         </Stack>
       </Container>

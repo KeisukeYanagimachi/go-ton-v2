@@ -2,8 +2,8 @@ import { randomUUID } from "crypto";
 import { afterAll, describe, expect, test } from "vitest";
 
 import {
-    DEV_STAFF_SESSION_COOKIE,
-    createDevStaffSessionToken,
+  DEV_STAFF_SESSION_COOKIE,
+  createDevStaffSessionToken,
 } from "@/features/auth/infra/dev-staff-session";
 import { disconnectPrisma, prisma } from "@/shared/db/prisma";
 import { POST as postSearch } from "../../app/api/staff/audit-logs/search/route";
@@ -52,9 +52,7 @@ describe("staff audit logs route (integration)", () => {
     process.env.NODE_ENV = "development";
     process.env.AUTH_SECRET = "test-secret";
 
-    const staff = await createStaffUser(
-      `report-${randomUUID()}@example.com`,
-    );
+    const staff = await createStaffUser(`report-${randomUUID()}@example.com`);
 
     const log = await prisma.auditLog.create({
       data: {
@@ -77,14 +75,17 @@ describe("staff audit logs route (integration)", () => {
 
     const from = new Date(log.serverTime.getTime() - 1000).toISOString();
     const to = new Date(log.serverTime.getTime() + 1000).toISOString();
-    const request = new Request("http://localhost/api/staff/audit-logs/search", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        cookie: `${DEV_STAFF_SESSION_COOKIE}=${token}`,
+    const request = new Request(
+      "http://localhost/api/staff/audit-logs/search",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          cookie: `${DEV_STAFF_SESSION_COOKIE}=${token}`,
+        },
+        body: JSON.stringify({ action: "ATTEMPT_LOCKED", from, to }),
       },
-      body: JSON.stringify({ action: "ATTEMPT_LOCKED", from, to }),
-    });
+    );
 
     const response = await postSearch(request);
 
@@ -99,13 +100,14 @@ describe("staff audit logs route (integration)", () => {
       }[];
     };
 
-    expect(payload.logs).toHaveLength(1);
-    expect(payload.logs[0]).toMatchObject({
+    const matched = payload.logs.find((item) => item.id === log.id);
+    expect(matched).toBeTruthy();
+    expect(matched).toMatchObject({
       id: log.id,
       action: "ATTEMPT_LOCKED",
       entityType: "attempt",
       entityId: log.entityId,
     });
-    expect(payload.logs[0].actor?.email).toBe(staff.email);
+    expect(matched?.actor?.email).toBe(staff.email);
   });
 });

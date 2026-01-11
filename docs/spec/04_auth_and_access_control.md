@@ -7,6 +7,7 @@
 - 2026-01-10: Auth.js の本番SSOフローとセッション設計を明文化
 - 2026-01-10: dev/test ログインはサーバ発行のセッションCookieを使用することを明記
 - 2026-01-10: 本番SSOの境界と理由（whitelist/role正はDB）を明記
+- 2026-01-11: QRコード認証の署名検証を明文化
 
 ## 認証・認可仕様（Auth / Access Control）
 
@@ -112,12 +113,15 @@
   - Ticket（受験票コード / QR）
   - PIN（生年月日）
   - ログイン UI: `/candidate-login`
+- QRコードには **ticket_code と署名**を含める
+- QRコードは ticket_code 入力の補助として扱う（PIN は必須）
 
 #### 3.2.2 認証時の検証内容
 
 - Ticket が存在すること
 - Ticket の status が ACTIVE であること
 - PIN が一致すること（ハッシュ比較）
+- QRコード入力時は **署名の検証を必須**とする
 - Ticket が他の Attempt で使用中でないこと
   - 使用中の定義: Attempt status が `NOT_STARTED` / `IN_PROGRESS` / `LOCKED` のいずれか
   - 理由: 受験開始前〜引き継ぎ中は同一 Ticket の再ログインを防ぐ必要があるため。`SUBMITTED` 以降は受験完了として再認証対象外とする。
