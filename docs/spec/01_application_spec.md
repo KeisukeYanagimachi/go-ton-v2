@@ -11,6 +11,7 @@
 - 2026-01-11: Staff の Attempt 一覧・検索・引き継ぎ操作の業務要件を明文化
 - 2026-01-11: 受験票再発行の入力・結果表示・エラー条件を明文化
 - 2026-01-11: 試験定義（Exam / ExamVersion / Module）の運用要件を明文化
+- 2026-01-11: 受験票再発行の対象条件に「未受験（Attempt 未作成）」を明記
 
 ---
 
@@ -180,6 +181,9 @@
 - 再発行は **受験票コード（ticket_code）** によって行う
 - 再発行の対象は **ACTIVE の ticket のみ**とする
   - REVOKED / USED の ticket は対象外
+- **Attempt が作成済みの ticket は再発行不可**
+  - 試験終了済み（SUBMITTED / SCORED）は再発行不可
+  - 受験中（IN_PROGRESS / LOCKED）も再発行不可
 - 再発行の結果として以下を表示する
   - 新しい受験票コード（new ticket code）
   - 旧チケットが無効化されたこと

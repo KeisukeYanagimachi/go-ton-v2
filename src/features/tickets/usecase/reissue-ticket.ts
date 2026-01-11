@@ -29,6 +29,15 @@ const reissueTicket = async (
       return null;
     }
 
+    const existingAttempt = await tx.attempt.findFirst({
+      where: { ticketId: ticket.id },
+      select: { id: true },
+    });
+
+    if (existingAttempt) {
+      return null;
+    }
+
     const newTicket = await tx.ticket.create({
       data: {
         ticketCode: `TICKET-${randomUUID()}`,
@@ -71,4 +80,3 @@ const reissueTicket = async (
 
 export { reissueTicket };
 export type { ReissueTicketResult };
-

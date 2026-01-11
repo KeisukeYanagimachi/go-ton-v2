@@ -115,4 +115,34 @@ describe("ticket reissue (integration)", () => {
 
     await expect(reissueTicket(ticketCode, staff.id)).resolves.toBeNull();
   });
+
+  test("returns null when attempt already exists", async () => {
+    const staff = await createStaffUser();
+    const candidate = await createCandidate();
+    const examVersion = await createExamVersion();
+    const ticketCode = `TICKET-${randomUUID()}`;
+    const ticket = await prisma.ticket.create({
+      data: {
+        id: randomUUID(),
+        ticketCode,
+        candidateId: candidate.id,
+        examVersionId: examVersion.id,
+        pinHash: hashPin("19990101"),
+        status: "ACTIVE",
+      },
+    });
+
+    await prisma.attempt.create({
+      data: {
+        id: randomUUID(),
+        candidateId: candidate.id,
+        examVersionId: examVersion.id,
+        ticketId: ticket.id,
+        status: "SUBMITTED",
+        submittedAt: new Date(),
+      },
+    });
+
+    await expect(reissueTicket(ticketCode, staff.id)).resolves.toBeNull();
+  });
 });
