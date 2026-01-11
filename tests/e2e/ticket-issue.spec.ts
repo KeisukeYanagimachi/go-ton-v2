@@ -24,7 +24,16 @@ test("staff can issue a ticket with QR payload", async ({ page }) => {
 
   await page.getByTestId("staff-home-issue-link").click();
   await expect(page).toHaveURL(/\/staff\/tickets\/issue/);
-  await page.waitForLoadState("networkidle");
+  const listResponse = await page.waitForResponse((response) => {
+    return (
+      response.url().includes("/api/staff/tickets/issue") &&
+      response.request().method() === "GET"
+    );
+  });
+  expect(listResponse.ok()).toBeTruthy();
+  await expect(page.getByTestId("ticket-issue-form")).toBeVisible({
+    timeout: loadTimeout,
+  });
 
   await page.getByRole("combobox", { name: "候補者" }).click();
   await page.getByRole("option", { name: /Candidate One/ }).click();
