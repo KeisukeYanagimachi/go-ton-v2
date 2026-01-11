@@ -142,10 +142,17 @@ describe("candidate submit route (integration)", () => {
 
     const attempt = await prisma.attempt.findUnique({
       where: { ticketId: ticket.id },
-      select: { status: true, submittedAt: true },
+      select: {
+        status: true,
+        submittedAt: true,
+        score: { select: { rawScore: true, maxScore: true } },
+        moduleScores: { select: { rawScore: true, maxScore: true } },
+      },
     });
 
-    expect(attempt?.status).toBe("SUBMITTED");
+    expect(attempt?.status).toBe("SCORED");
     expect(attempt?.submittedAt).not.toBeNull();
+    expect(attempt?.score).not.toBeNull();
+    expect(attempt?.moduleScores.length).toBeGreaterThan(0);
   });
 });

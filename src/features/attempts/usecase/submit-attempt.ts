@@ -1,4 +1,6 @@
+import { recordAuditLog } from "@/features/audit/usecase/record-audit-log";
 import { authorizeCandidateAccess } from "@/features/auth/usecase/authorize-candidate-access";
+import { scoreAttempt } from "@/features/scoring/usecase/score-attempt";
 import { prisma } from "@/shared/db/prisma";
 
 type SubmitAttemptResult = {
@@ -35,9 +37,28 @@ const submitAttempt = async (
       select: { id: true, status: true },
     });
 
+    await recordAuditLog(tx, {
+      actorStaffUserId: null,
+      action: "ATTEMPT_SUBMITTED",
+      entityType: "attempt",
+      entityId: updated.id,
+    });
+
+    const scored = await scoreAttempt(tx, updated.id);
+    if (!scored.ok) {
+      return null;
+    }
+
+    await recordAuditLog(tx, {
+      actorStaffUserId: null,
+      action: "ATTEMPT_SCORED",
+      entityType: "attempt",
+      entityId: updated.id,
+    });
+
     return {
       attemptId: updated.id,
-      status: "SUBMITTED",
+      status: "SCORED",
     };
   });
 };
