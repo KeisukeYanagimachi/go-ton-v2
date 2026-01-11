@@ -405,6 +405,19 @@ export default function StaffQuestionManagementPage() {
   }, [selectedQuestionId, isCreating]);
 
   useEffect(() => {
+    if (!selectedQuestionId) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      const element = document.getElementById(
+        `question-row-${selectedQuestionId}`,
+      );
+      element?.scrollIntoView({ block: "center" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [selectedQuestionId, questions.length]);
+
+  useEffect(() => {
     if (!formState.moduleCategoryId && modules.length > 0) {
       setFormState((previous) => ({
         ...previous,
@@ -547,6 +560,7 @@ export default function StaffQuestionManagementPage() {
                     return (
                       <Paper
                         key={question.questionId}
+                        id={`question-row-${question.questionId}`}
                         variant={isSelected ? "outlined" : "elevation"}
                         sx={{
                           p: 1.5,
