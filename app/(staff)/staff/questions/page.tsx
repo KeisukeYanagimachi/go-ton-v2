@@ -100,6 +100,11 @@ export default function StaffQuestionManagementPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [formMessage, setFormMessage] = useState<string | null>(null);
   const canSubmit = isCreating || Boolean(selectedQuestionId);
+  const [fieldErrors, setFieldErrors] = useState<{
+    stem?: string;
+    module?: string;
+    options?: string;
+  }>({});
 
   const moduleOptions = useMemo(
     () => [{ categoryId: "all", name: "すべて", code: "ALL" }, ...modules],
@@ -254,28 +259,29 @@ export default function StaffQuestionManagementPage() {
   };
 
   const validateForm = () => {
+    const nextErrors: { stem?: string; module?: string; options?: string } = {};
     if (!formState.stem.trim()) {
-      setFormError("問題文を入力してください。");
-      return false;
+      nextErrors.stem = "問題文を入力してください。";
     }
     if (!detailModuleId) {
-      setFormError("モジュールを選択してください。");
-      return false;
+      nextErrors.module = "モジュールを選択してください。";
     }
     const normalizedOptions = formState.options.map((option) =>
       option.optionText.trim(),
     );
     if (normalizedOptions.length < 2 || normalizedOptions.some((t) => !t)) {
-      setFormError("選択肢は2つ以上入力してください。");
-      return false;
+      nextErrors.options = "選択肢は2つ以上入力してください。";
     }
     const correctCount = formState.options.filter((o) => o.isCorrect).length;
     if (correctCount === 0) {
-      setFormError("正解を1つ選択してください。");
-      return false;
+      nextErrors.options = "正解を1つ選択してください。";
     }
     if (correctCount > 1) {
-      setFormError("正解は1つだけ選択してください。");
+      nextErrors.options = "正解は1つだけ選択してください。";
+    }
+    setFieldErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      setFormError("入力内容を確認してください。");
       return false;
     }
     return true;
@@ -284,6 +290,7 @@ export default function StaffQuestionManagementPage() {
   const handleSubmit = async () => {
     setFormError(null);
     setFormMessage(null);
+    setFieldErrors({});
 
     if (!canSubmit) {
       setFormError("問題を選択してください。");
@@ -591,6 +598,8 @@ export default function StaffQuestionManagementPage() {
                     fullWidth
                     multiline
                     minRows={3}
+                    error={Boolean(fieldErrors.stem)}
+                    helperText={fieldErrors.stem}
                     inputProps={{ "data-testid": "question-stem" }}
                   />
                   <TextField
@@ -622,6 +631,7 @@ export default function StaffQuestionManagementPage() {
                             moduleCategoryId: event.target.value,
                           }))
                         }
+                        error={Boolean(fieldErrors.module)}
                         data-testid="question-module"
                       >
                         {modules.map((module) => (
@@ -633,6 +643,11 @@ export default function StaffQuestionManagementPage() {
                           </MenuItem>
                         ))}
                       </Select>
+                      {fieldErrors.module && (
+                        <Typography variant="caption" color="error">
+                          {fieldErrors.module}
+                        </Typography>
+                      )}
                     </FormControl>
                     <FormControl fullWidth>
                       <InputLabel id="question-subcategory-label">
@@ -683,6 +698,9 @@ export default function StaffQuestionManagementPage() {
                     <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                       選択肢（正解は1つ）
                     </Typography>
+                    <Typography variant="caption" sx={{ color: "#64748b" }}>
+                      2択以上・正解は1つのみ保存できます。
+                    </Typography>
                     {formState.options.map((option, index) => (
                       <Stack
                         key={`option-${index}`}
@@ -719,6 +737,11 @@ export default function StaffQuestionManagementPage() {
                         </Button>
                       </Stack>
                     ))}
+                    {fieldErrors.options && (
+                      <Typography variant="caption" color="error">
+                        {fieldErrors.options}
+                      </Typography>
+                    )}
                     <Button
                       variant="outlined"
                       onClick={handleAddOption}
