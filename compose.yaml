@@ -14,6 +14,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/.next
     depends_on:
       db:
         condition: service_healthy
@@ -30,19 +31,21 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/go-ton?schema=e2e
       AUTH_SECRET: dev-secret
-      NODE_ENV: test
+      NODE_ENV: development
       NEXT_DISABLE_TURBOPACK: "1"
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/.next
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 5s
-      timeout: 5s
+      timeout: 15s
       retries: 20
+      start_period: 30s
 
   db:
     image: postgres:16

@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Container,
+  InputAdornment,
   MenuItem,
   Paper,
   Stack,
@@ -22,6 +23,7 @@ type ModuleMaster = {
 type QuestionSummary = {
   questionId: string;
   stem: string;
+  moduleCodes: string[];
 };
 
 type ExamVersionSummary = {
@@ -69,6 +71,7 @@ export default function StaffExamManagementPage() {
   const [questionSearch, setQuestionSearch] = useState("");
   const [questionPosition, setQuestionPosition] = useState(1);
   const [questionPoints, setQuestionPoints] = useState(1);
+  const [showAllVersions, setShowAllVersions] = useState(false);
   const [assignedQuestions, setAssignedQuestions] = useState<
     {
       examVersionQuestionId: string;
@@ -81,8 +84,12 @@ export default function StaffExamManagementPage() {
       points: number;
     }[]
   >([]);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [pageMessage, setPageMessage] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
+  const [assignmentMessage, setAssignmentMessage] = useState<string | null>(
+    null,
+  );
+  const [assignmentError, setAssignmentError] = useState<string | null>(null);
 
   const requiredModules = useMemo(
     () => modules.filter((module) => REQUIRED_CODES.includes(module.code)),
@@ -98,12 +105,14 @@ export default function StaffExamManagementPage() {
     if (!selectedExam) {
       return [];
     }
-    return selectedExam.versions.map((version) => ({
-      examVersionId: version.examVersionId,
-      label: `v${version.versionNumber}`,
-      status: version.status,
-      modules: version.modules,
-    }));
+    return [...selectedExam.versions]
+      .sort((a, b) => b.versionNumber - a.versionNumber)
+      .map((version) => ({
+        examVersionId: version.examVersionId,
+        label: `v${version.versionNumber}`,
+        status: version.status,
+        modules: version.modules,
+      }));
   }, [selectedExam]);
 
   const selectedVersion = versionOptions.find(
@@ -122,20 +131,46 @@ export default function StaffExamManagementPage() {
 
   const filteredQuestions = useMemo(() => {
     const keyword = questionSearch.trim().toLowerCase();
-    if (!keyword) {
-      return questions;
+    const moduleCode =
+      selectedVersionModules.find(
+        (module) => module.moduleId === selectedModuleId,
+      )?.code ?? "";
+    let filtered = questions;
+
+    if (moduleCode) {
+      filtered = filtered.filter((question) =>
+        question.moduleCodes.includes(moduleCode),
+      );
     }
-    return questions.filter((question) =>
+
+    if (!keyword) {
+      return filtered;
+    }
+
+    return filtered.filter((question) =>
       question.stem.toLowerCase().includes(keyword),
     );
-  }, [questionSearch, questions]);
+  }, [questionSearch, questions, selectedModuleId, selectedVersionModules]);
+
+  const sortedVersions = useMemo(() => {
+    if (!selectedExam) {
+      return [];
+    }
+    return [...selectedExam.versions].sort(
+      (a, b) => b.versionNumber - a.versionNumber,
+    );
+  }, [selectedExam]);
+
+  const visibleVersions = showAllVersions
+    ? sortedVersions
+    : sortedVersions.slice(0, 1);
 
   const fetchExams = async () => {
-    setError(null);
+    setPageError(null);
     try {
       const response = await fetch("/api/staff/exams", { method: "GET" });
       if (!response.ok) {
-        setError("試験一覧の取得に失敗しました。");
+        setPageError("試験一覧の取得に失敗しました。");
         return;
       }
       const payload = (await response.json()) as ExamResponse;
@@ -152,7 +187,7 @@ export default function StaffExamManagementPage() {
         }
       }
     } catch (requestError) {
-      setError("通信に失敗しました。");
+      setPageError("通信に失敗しました。");
     }
   };
 
@@ -165,15 +200,31 @@ export default function StaffExamManagementPage() {
       setSelectedVersionId("");
       return;
     }
+    if (selectedExam.versions.length === 0) {
+      setSelectedVersionId("");
+      return;
+    }
     const hasSelectedVersion = selectedExam.versions.some(
       (version) => version.examVersionId === selectedVersionId,
     );
     if (!hasSelectedVersion) {
-      const latestVersion =
-        selectedExam.versions[selectedExam.versions.length - 1];
-      setSelectedVersionId(latestVersion?.examVersionId ?? "");
+      const latestVersion = selectedExam.versions.reduce(
+        (current, candidate) =>
+          candidate.versionNumber > current.versionNumber ? candidate : current,
+      );
+      setSelectedVersionId(latestVersion.examVersionId);
     }
   }, [selectedExam, selectedVersionId]);
+
+  useEffect(() => {
+    if (!selectedExam || selectedExam.versions.length === 0) {
+      return;
+    }
+    const latestVersion = selectedExam.versions.reduce((current, candidate) =>
+      candidate.versionNumber > current.versionNumber ? candidate : current,
+    );
+    setVersionNumber(latestVersion.versionNumber + 1);
+  }, [selectedExam]);
 
   const fetchQuestions = async () => {
     try {
@@ -233,12 +284,29 @@ export default function StaffExamManagementPage() {
 
   useEffect(() => {
     if (!selectedVersionModules.length) {
+      setSelectedModuleId("");
       return;
     }
-    if (!selectedModuleId) {
+    const moduleExists = selectedVersionModules.some(
+      (module) => module.moduleId === selectedModuleId,
+    );
+    if (!selectedModuleId || !moduleExists) {
       setSelectedModuleId(selectedVersionModules[0].moduleId);
     }
   }, [selectedVersionModules, selectedModuleId]);
+
+  useEffect(() => {
+    if (filteredQuestions.length === 0) {
+      setSelectedQuestionId("");
+      return;
+    }
+    const exists = filteredQuestions.some(
+      (question) => question.questionId === selectedQuestionId,
+    );
+    if (!exists) {
+      setSelectedQuestionId(filteredQuestions[0].questionId);
+    }
+  }, [filteredQuestions, selectedQuestionId]);
 
   useEffect(() => {
     if (!selectedModuleId) {
@@ -267,8 +335,8 @@ export default function StaffExamManagementPage() {
   }, [requiredModules]);
 
   const handleCreateExam = async () => {
-    setError(null);
-    setMessage(null);
+    setPageError(null);
+    setPageMessage(null);
     try {
       const response = await fetch("/api/staff/exams", {
         method: "POST",
@@ -280,25 +348,25 @@ export default function StaffExamManagementPage() {
       });
 
       if (!response.ok) {
-        setError("試験の作成に失敗しました。");
+        setPageError("試験の作成に失敗しました。");
         return;
       }
 
       await response.json();
       setExamName("");
       setExamDescription("");
-      setMessage("試験を作成しました。");
+      setPageMessage("試験を作成しました。");
       await fetchExams();
     } catch (requestError) {
-      setError("通信に失敗しました。");
+      setPageError("通信に失敗しました。");
     }
   };
 
   const handleCreateVersion = async () => {
-    setError(null);
-    setMessage(null);
+    setPageError(null);
+    setPageMessage(null);
     if (!selectedExamId) {
-      setError("対象の Exam を選択してください。");
+      setPageError("対象の Exam を選択してください。");
       return;
     }
     const modulePayload = requiredModules.map((module, index) => ({
@@ -321,21 +389,21 @@ export default function StaffExamManagementPage() {
 
       if (!response.ok) {
         const payload = (await response.json()) as { error?: string };
-        setError(payload.error ?? "試験バージョンの作成に失敗しました。");
+        setPageError(payload.error ?? "試験バージョンの作成に失敗しました。");
         return;
       }
 
       await response.json();
-      setMessage("試験バージョンを作成しました。");
+      setPageMessage("試験バージョンを作成しました。");
       await fetchExams();
     } catch (requestError) {
-      setError("通信に失敗しました。");
+      setPageError("通信に失敗しました。");
     }
   };
 
   const handlePublish = async (examVersionId: string) => {
-    setError(null);
-    setMessage(null);
+    setPageError(null);
+    setPageMessage(null);
     try {
       const response = await fetch("/api/staff/exams/versions/publish", {
         method: "POST",
@@ -345,20 +413,20 @@ export default function StaffExamManagementPage() {
 
       if (!response.ok) {
         const payload = (await response.json()) as { error?: string };
-        setError(payload.error ?? "公開に失敗しました。");
+        setPageError(payload.error ?? "公開に失敗しました。");
         return;
       }
 
-      setMessage("試験バージョンを公開しました。");
+      setPageMessage("試験バージョンを公開しました。");
       await fetchExams();
     } catch (requestError) {
-      setError("通信に失敗しました。");
+      setPageError("通信に失敗しました。");
     }
   };
 
   const handleArchive = async (examVersionId: string) => {
-    setError(null);
-    setMessage(null);
+    setPageError(null);
+    setPageMessage(null);
     try {
       const response = await fetch("/api/staff/exams/versions/archive", {
         method: "POST",
@@ -368,26 +436,26 @@ export default function StaffExamManagementPage() {
 
       if (!response.ok) {
         const payload = (await response.json()) as { error?: string };
-        setError(payload.error ?? "アーカイブに失敗しました。");
+        setPageError(payload.error ?? "アーカイブに失敗しました。");
         return;
       }
 
-      setMessage("試験バージョンをアーカイブしました。");
+      setPageMessage("試験バージョンをアーカイブしました。");
       await fetchExams();
     } catch (requestError) {
-      setError("通信に失敗しました。");
+      setPageError("通信に失敗しました。");
     }
   };
 
   const handleAssignQuestion = async () => {
-    setError(null);
-    setMessage(null);
+    setAssignmentError(null);
+    setAssignmentMessage(null);
     if (!selectedVersionId || !selectedModuleId || !selectedQuestionId) {
-      setError("出題割当の入力を確認してください。");
+      setAssignmentError("出題割当の入力を確認してください。");
       return;
     }
     if (selectedVersion?.status !== "DRAFT") {
-      setError("DRAFT の試験バージョンのみ割当を変更できます。");
+      setAssignmentError("DRAFT の試験バージョンのみ割当を変更できます。");
       return;
     }
     try {
@@ -405,20 +473,20 @@ export default function StaffExamManagementPage() {
 
       if (!response.ok) {
         const payload = (await response.json()) as { error?: string };
-        setError(payload.error ?? "出題割当に失敗しました。");
+        setAssignmentError(payload.error ?? "出題割当に失敗しました。");
         return;
       }
 
-      setMessage("出題割当を追加しました。");
+      setAssignmentMessage("出題割当を追加しました。");
       await fetchAssignments(selectedVersionId);
     } catch (requestError) {
-      setError("通信に失敗しました。");
+      setAssignmentError("通信に失敗しました。");
     }
   };
 
   const handleRemoveQuestion = async (examVersionQuestionId: string) => {
-    setError(null);
-    setMessage(null);
+    setAssignmentError(null);
+    setAssignmentMessage(null);
     try {
       const response = await fetch("/api/staff/exams/versions/questions", {
         method: "DELETE",
@@ -428,14 +496,14 @@ export default function StaffExamManagementPage() {
 
       if (!response.ok) {
         const payload = (await response.json()) as { error?: string };
-        setError(payload.error ?? "削除に失敗しました。");
+        setAssignmentError(payload.error ?? "削除に失敗しました。");
         return;
       }
 
-      setMessage("出題割当を削除しました。");
+      setAssignmentMessage("出題割当を削除しました。");
       await fetchAssignments(selectedVersionId);
     } catch (requestError) {
-      setError("通信に失敗しました。");
+      setAssignmentError("通信に失敗しました。");
     }
   };
 
@@ -457,17 +525,57 @@ export default function StaffExamManagementPage() {
             </Stack>
           </Paper>
 
-          {(error || message) && (
-            <Alert severity={error ? "error" : "success"}>
-              {error ?? message}
+          {(pageError || pageMessage) && (
+            <Alert severity={pageError ? "error" : "success"}>
+              {pageError ?? pageMessage}
             </Alert>
           )}
 
+          <Paper sx={{ p: 3, borderRadius: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+              新規作成
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#64748b", mb: 2 }}>
+              既存の試験に関係なく、新しく試験マスタを作成します。
+            </Typography>
+            <Stack spacing={2}>
+              <TextField
+                label="試験名"
+                value={examName}
+                onChange={(event) => setExamName(event.target.value)}
+                fullWidth
+                inputProps={{ "data-testid": "exam-create-name" }}
+              />
+              <TextField
+                label="説明（任意）"
+                value={examDescription}
+                onChange={(event) => setExamDescription(event.target.value)}
+                fullWidth
+                inputProps={{ "data-testid": "exam-create-description" }}
+              />
+              <Button
+                variant="contained"
+                onClick={handleCreateExam}
+                data-testid="exam-create-submit"
+                sx={{ alignSelf: "flex-start" }}
+              >
+                作成
+              </Button>
+            </Stack>
+          </Paper>
+
           <Stack direction={{ xs: "column", lg: "row" }} spacing={3}>
             <Paper
-              sx={{ width: { xs: "100%", lg: 360 }, p: 2.5, borderRadius: 3 }}
+              sx={{
+                width: { xs: "100%", lg: 360 },
+                p: 2.5,
+                borderRadius: 3,
+                display: "flex",
+                flexDirection: "column",
+                minHeight: { xs: "auto", lg: "calc(100vh - 280px)" },
+              }}
             >
-              <Stack spacing={2}>
+              <Stack spacing={2} sx={{ flex: 1, minHeight: 0 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                   試験一覧
                 </Typography>
@@ -478,14 +586,7 @@ export default function StaffExamManagementPage() {
                   fullWidth
                   inputProps={{ "data-testid": "exam-search" }}
                 />
-                <Stack
-                  spacing={1}
-                  sx={{
-                    maxHeight: { xs: 280, lg: 520 },
-                    overflow: "auto",
-                    pr: 1,
-                  }}
-                >
+                <Stack spacing={1} sx={{ flex: 1, overflow: "auto", pr: 1 }}>
                   {filteredExams.map((exam) => {
                     const isSelected = exam.examId === selectedExamId;
                     return (
@@ -500,13 +601,22 @@ export default function StaffExamManagementPage() {
                         }}
                       >
                         <Stack spacing={0.5}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontWeight: 700 }}
+                          >
                             {exam.name}
                           </Typography>
-                          <Typography variant="caption" sx={{ color: "#64748b" }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "#64748b" }}
+                          >
                             ID: {exam.examId}
                           </Typography>
-                          <Typography variant="caption" sx={{ color: "#64748b" }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "#64748b" }}
+                          >
                             バージョン数: {exam.versions.length}
                           </Typography>
                         </Stack>
@@ -553,9 +663,34 @@ export default function StaffExamManagementPage() {
                           {selectedExam.description}
                         </Typography>
                       )}
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "#64748b", display: "block", mt: 1 }}
+                      >
+                        編集は新しいバージョンを追加する操作です。
+                      </Typography>
                     </Box>
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1}
+                      justifyContent="space-between"
+                      alignItems={{ xs: "flex-start", sm: "center" }}
+                    >
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                        バージョン
+                      </Typography>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => setShowAllVersions((value) => !value)}
+                      >
+                        {showAllVersions
+                          ? "過去バージョンを隠す"
+                          : "過去バージョンを表示"}
+                      </Button>
+                    </Stack>
                     <Stack spacing={1.5}>
-                      {selectedExam.versions.map((version) => (
+                      {visibleVersions.map((version) => (
                         <Paper
                           key={version.examVersionId}
                           variant="outlined"
@@ -575,10 +710,16 @@ export default function StaffExamManagementPage() {
                             alignItems={{ xs: "flex-start", md: "center" }}
                           >
                             <Box>
-                              <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                              <Typography
+                                variant="body1"
+                                sx={{ fontWeight: 700 }}
+                              >
                                 Version {version.versionNumber}
                               </Typography>
-                              <Typography variant="body2" sx={{ color: "#64748b" }}>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: "#64748b" }}
+                              >
                                 状態: {version.status}
                               </Typography>
                             </Box>
@@ -601,7 +742,9 @@ export default function StaffExamManagementPage() {
                               <Button
                                 size="small"
                                 variant="outlined"
-                                onClick={() => handlePublish(version.examVersionId)}
+                                onClick={() =>
+                                  handlePublish(version.examVersionId)
+                                }
                                 disabled={version.status !== "DRAFT"}
                               >
                                 公開
@@ -610,7 +753,9 @@ export default function StaffExamManagementPage() {
                                 size="small"
                                 variant="contained"
                                 sx={{ bgcolor: "#111418" }}
-                                onClick={() => handleArchive(version.examVersionId)}
+                                onClick={() =>
+                                  handleArchive(version.examVersionId)
+                                }
                                 disabled={version.status !== "PUBLISHED"}
                               >
                                 アーカイブ
@@ -633,7 +778,8 @@ export default function StaffExamManagementPage() {
                                   fontSize: 12,
                                 }}
                               >
-                                {module.code} · {Math.round(module.durationSeconds / 60)}分
+                                {module.code} ·{" "}
+                                {Math.round(module.durationSeconds / 60)}分
                               </Box>
                             ))}
                           </Stack>
@@ -654,111 +800,69 @@ export default function StaffExamManagementPage() {
               </Paper>
 
               <Paper sx={{ p: 3, borderRadius: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                  新規作成
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                  既存試験の更新（バージョン追加）
                 </Typography>
-                <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
-                  <Paper
-                    sx={{ flex: 1, p: 2, borderRadius: 2 }}
-                    variant="outlined"
+                <Typography variant="body2" sx={{ color: "#64748b", mb: 2 }}>
+                  試験詳細から対象試験を選択し、新しいバージョンを追加します。
+                </Typography>
+                <Stack spacing={2}>
+                  <TextField
+                    select
+                    label="対象試験"
+                    value={selectedExamId}
+                    onChange={(event) => setSelectedExamId(event.target.value)}
+                    fullWidth
+                    inputProps={{ "data-testid": "exam-version-exam" }}
                   >
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-                      試験の作成
-                    </Typography>
-                    <Stack spacing={2}>
+                    {exams.map((exam) => (
+                      <MenuItem key={exam.examId} value={exam.examId}>
+                        {exam.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    label="バージョン番号"
+                    type="number"
+                    value={versionNumber}
+                    onChange={(event) =>
+                      setVersionNumber(Number(event.target.value))
+                    }
+                    fullWidth
+                    inputProps={{
+                      min: 1,
+                      "data-testid": "exam-version-number",
+                    }}
+                  />
+                  <Stack spacing={1}>
+                    {requiredModules.map((module) => (
                       <TextField
-                        label="試験名"
-                        value={examName}
-                        onChange={(event) => setExamName(event.target.value)}
-                        fullWidth
-                        inputProps={{ "data-testid": "exam-create-name" }}
-                      />
-                      <TextField
-                        label="説明（任意）"
-                        value={examDescription}
-                        onChange={(event) =>
-                          setExamDescription(event.target.value)
-                        }
-                        fullWidth
-                        inputProps={{ "data-testid": "exam-create-description" }}
-                      />
-                      <Button
-                        variant="contained"
-                        onClick={handleCreateExam}
-                        data-testid="exam-create-submit"
-                      >
-                        作成
-                      </Button>
-                    </Stack>
-                  </Paper>
-
-                  <Paper
-                    sx={{ flex: 1, p: 2, borderRadius: 2 }}
-                    variant="outlined"
-                  >
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-                      試験バージョンの作成
-                    </Typography>
-                    <Stack spacing={2}>
-                      <TextField
-                        select
-                        label="対象 Exam"
-                        value={selectedExamId}
-                        onChange={(event) =>
-                          setSelectedExamId(event.target.value)
-                        }
-                        fullWidth
-                        inputProps={{ "data-testid": "exam-version-exam" }}
-                      >
-                        {exams.map((exam) => (
-                          <MenuItem key={exam.examId} value={exam.examId}>
-                            {exam.name}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                      <TextField
-                        label="バージョン番号"
+                        key={module.moduleId}
+                        label={`${module.name}（分）`}
                         type="number"
-                        value={versionNumber}
+                        value={moduleMinutes[module.moduleId] ?? 30}
                         onChange={(event) =>
-                          setVersionNumber(Number(event.target.value))
+                          setModuleMinutes((previous) => ({
+                            ...previous,
+                            [module.moduleId]: Number(event.target.value),
+                          }))
                         }
                         fullWidth
                         inputProps={{
                           min: 1,
-                          "data-testid": "exam-version-number",
+                          "data-testid": `exam-version-module-${module.code}`,
                         }}
                       />
-                      <Stack spacing={1}>
-                        {requiredModules.map((module) => (
-                          <TextField
-                            key={module.moduleId}
-                            label={`${module.name}（分）`}
-                            type="number"
-                            value={moduleMinutes[module.moduleId] ?? 30}
-                            onChange={(event) =>
-                              setModuleMinutes((previous) => ({
-                                ...previous,
-                                [module.moduleId]: Number(event.target.value),
-                              }))
-                            }
-                            fullWidth
-                            inputProps={{
-                              min: 1,
-                              "data-testid": `exam-version-module-${module.code}`,
-                            }}
-                          />
-                        ))}
-                      </Stack>
-                      <Button
-                        variant="contained"
-                        onClick={handleCreateVersion}
-                        data-testid="exam-version-create-submit"
-                      >
-                        バージョン作成
-                      </Button>
-                    </Stack>
-                  </Paper>
+                    ))}
+                  </Stack>
+                  <Button
+                    variant="contained"
+                    onClick={handleCreateVersion}
+                    data-testid="exam-version-create-submit"
+                    sx={{ alignSelf: "flex-start" }}
+                  >
+                    バージョン追加
+                  </Button>
                 </Stack>
               </Paper>
 
@@ -766,6 +870,14 @@ export default function StaffExamManagementPage() {
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
                   出題割当（DRAFT のみ）
                 </Typography>
+                {(assignmentError || assignmentMessage) && (
+                  <Alert
+                    severity={assignmentError ? "error" : "success"}
+                    sx={{ mb: 2 }}
+                  >
+                    {assignmentError ?? assignmentMessage}
+                  </Alert>
+                )}
                 <Stack spacing={2}>
                   <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                     <TextField
@@ -806,37 +918,65 @@ export default function StaffExamManagementPage() {
                   </Stack>
                   <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                     <Stack spacing={2}>
-                      <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                      <Stack
+                        direction={{ xs: "column", md: "row" }}
+                        spacing={2}
+                        alignItems={{ xs: "stretch", md: "flex-end" }}
+                      >
                         <TextField
-                          label="問題を検索"
+                          label="問題を検索（選択モジュール内）"
                           value={questionSearch}
                           onChange={(event) =>
                             setQuestionSearch(event.target.value)
                           }
                           fullWidth
                           inputProps={{ "data-testid": "exam-question-search" }}
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={() => setQuestionSearch("")}
+                                >
+                                  クリア
+                                </Button>
+                              </InputAdornment>
+                            ),
+                          }}
+                          helperText="空欄で全件表示されます。"
                         />
-                        <TextField
-                          select
-                          label="問題"
-                          value={selectedQuestionId}
-                          onChange={(event) =>
-                            setSelectedQuestionId(event.target.value)
-                          }
-                          fullWidth
-                          inputProps={{ "data-testid": "exam-question-id" }}
-                        >
-                          {filteredQuestions.map((question) => (
+                      </Stack>
+                      <TextField
+                        select
+                        label="問題"
+                        value={selectedQuestionId || ""}
+                        onChange={(event) =>
+                          setSelectedQuestionId(event.target.value)
+                        }
+                        fullWidth
+                        disabled={filteredQuestions.length === 0}
+                        inputProps={{ "data-testid": "exam-question-id" }}
+                      >
+                        {filteredQuestions.length === 0 ? (
+                          <MenuItem value="" disabled>
+                            該当モジュールの問題がありません。
+                          </MenuItem>
+                        ) : (
+                          filteredQuestions.map((question) => (
                             <MenuItem
                               key={question.questionId}
                               value={question.questionId}
                             >
                               {question.stem.slice(0, 50)}
                             </MenuItem>
-                          ))}
-                        </TextField>
-                      </Stack>
-                      <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                          ))
+                        )}
+                      </TextField>
+                      <Stack
+                        direction={{ xs: "column", md: "row" }}
+                        spacing={2}
+                      >
                         <TextField
                           label="順序"
                           type="number"
@@ -882,7 +1022,10 @@ export default function StaffExamManagementPage() {
                             py: 1.5,
                           }}
                         >
-                          <Typography variant="caption" sx={{ color: "#64748b" }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "#64748b" }}
+                          >
                             選択中の問題
                           </Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -924,7 +1067,10 @@ export default function StaffExamManagementPage() {
                               >
                                 {module.code}（{module.name}）
                               </Typography>
-                              <Typography variant="caption" sx={{ color: "#64748b" }}>
+                              <Typography
+                                variant="caption"
+                                sx={{ color: "#64748b" }}
+                              >
                                 出題数: {moduleQuestions.length}
                               </Typography>
                             </Box>
@@ -939,7 +1085,10 @@ export default function StaffExamManagementPage() {
                                 <Stack
                                   direction={{ xs: "column", md: "row" }}
                                   spacing={2}
-                                  alignItems={{ xs: "flex-start", md: "center" }}
+                                  alignItems={{
+                                    xs: "flex-start",
+                                    md: "center",
+                                  }}
                                   justifyContent="space-between"
                                 >
                                   <Box>
@@ -956,14 +1105,20 @@ export default function StaffExamManagementPage() {
                                       {question.questionStem}
                                     </Typography>
                                   </Box>
-                                  <Stack direction="row" spacing={2} alignItems="center">
+                                  <Stack
+                                    direction="row"
+                                    spacing={2}
+                                    alignItems="center"
+                                  >
                                     <Typography variant="body2">
                                       配点: {question.points}
                                     </Typography>
                                     <Button
                                       size="small"
                                       variant="outlined"
-                                      disabled={selectedVersion?.status !== "DRAFT"}
+                                      disabled={
+                                        selectedVersion?.status !== "DRAFT"
+                                      }
                                       onClick={() =>
                                         handleRemoveQuestion(
                                           question.examVersionQuestionId,
@@ -978,7 +1133,10 @@ export default function StaffExamManagementPage() {
                               </Paper>
                             ))}
                             {moduleQuestions.length === 0 && (
-                              <Typography variant="body2" sx={{ color: "#64748b" }}>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: "#64748b" }}
+                              >
                                 出題がまだ割り当てられていません。
                               </Typography>
                             )}
