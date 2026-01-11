@@ -12,6 +12,7 @@
 - 2026-01-11: 受験票再発行の入力・結果表示・エラー条件を明文化
 - 2026-01-11: 試験定義（Exam / ExamVersion / Module）の運用要件を明文化
 - 2026-01-11: 受験票再発行の対象条件に「未受験（Attempt 未作成）」を明記
+- 2026-01-11: 出題割当（exam_version_questions）の運用要件を明文化
 
 ---
 
@@ -237,6 +238,13 @@
   - VERBAL / NONVERBAL / ENGLISH / STRUCTURAL
 - モジュール順序は position で固定し、重複は不可
 - 制限時間は module ごとに保持する
+
+#### 出題割当（必須）
+
+- Staff は DRAFT の ExamVersion に対して出題割当（question / module / position / points）を設定できる
+- PUBLISHED / ARCHIVED の ExamVersion は出題割当の編集不可
+- 同一 ExamVersion 内で question は重複不可
+- 同一 ExamVersion + module 内で position は重複不可
 
 ---
 

@@ -19,6 +19,11 @@ type ModuleMaster = {
   name: string;
 };
 
+type QuestionSummary = {
+  questionId: string;
+  stem: string;
+};
+
 type ExamVersionSummary = {
   examVersionId: string;
   versionNumber: number;
@@ -49,6 +54,7 @@ const REQUIRED_CODES = ["VERBAL", "NONVERBAL", "ENGLISH", "STRUCTURAL"];
 export default function StaffExamManagementPage() {
   const [exams, setExams] = useState<ExamSummary[]>([]);
   const [modules, setModules] = useState<ModuleMaster[]>([]);
+  const [questions, setQuestions] = useState<QuestionSummary[]>([]);
   const [examName, setExamName] = useState("");
   const [examDescription, setExamDescription] = useState("");
   const [selectedExamId, setSelectedExamId] = useState("");
@@ -56,6 +62,23 @@ export default function StaffExamManagementPage() {
   const [moduleMinutes, setModuleMinutes] = useState<Record<string, number>>(
     {},
   );
+  const [selectedVersionId, setSelectedVersionId] = useState("");
+  const [selectedModuleId, setSelectedModuleId] = useState("");
+  const [selectedQuestionId, setSelectedQuestionId] = useState("");
+  const [questionPosition, setQuestionPosition] = useState(1);
+  const [questionPoints, setQuestionPoints] = useState(1);
+  const [assignedQuestions, setAssignedQuestions] = useState<
+    {
+      examVersionQuestionId: string;
+      moduleId: string;
+      moduleCode: string;
+      moduleName: string;
+      questionId: string;
+      questionStem: string;
+      position: number;
+      points: number;
+    }[]
+  >([]);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +86,31 @@ export default function StaffExamManagementPage() {
     () => modules.filter((module) => REQUIRED_CODES.includes(module.code)),
     [modules],
   );
+
+  const versionOptions = useMemo(() => {
+    const options: Array<{
+      examVersionId: string;
+      label: string;
+      status: string;
+      modules: ExamVersionSummary["modules"];
+    }> = [];
+    exams.forEach((exam) => {
+      exam.versions.forEach((version) => {
+        options.push({
+          examVersionId: version.examVersionId,
+          label: `${exam.name} / v${version.versionNumber}`,
+          status: version.status,
+          modules: version.modules,
+        });
+      });
+    });
+    return options;
+  }, [exams]);
+
+  const selectedVersion = versionOptions.find(
+    (version) => version.examVersionId === selectedVersionId,
+  );
+  const selectedVersionModules = selectedVersion?.modules ?? [];
 
   const fetchExams = async () => {
     setError(null);
@@ -78,6 +126,13 @@ export default function StaffExamManagementPage() {
       if (!selectedExamId && payload.exams.length > 0) {
         setSelectedExamId(payload.exams[0].examId);
       }
+      if (!selectedVersionId && payload.exams.length > 0) {
+        const latestVersion =
+          payload.exams[0].versions[payload.exams[0].versions.length - 1];
+        if (latestVersion) {
+          setSelectedVersionId(latestVersion.examVersionId);
+        }
+      }
     } catch (requestError) {
       setError("通信に失敗しました。");
     }
@@ -86,6 +141,82 @@ export default function StaffExamManagementPage() {
   useEffect(() => {
     void fetchExams();
   }, []);
+
+  const fetchQuestions = async () => {
+    try {
+      const response = await fetch("/api/staff/questions", { method: "GET" });
+      if (!response.ok) {
+        return;
+      }
+      const payload = (await response.json()) as {
+        questions: QuestionSummary[];
+      };
+      setQuestions(payload.questions);
+      if (!selectedQuestionId && payload.questions.length > 0) {
+        setSelectedQuestionId(payload.questions[0].questionId);
+      }
+    } catch {
+      // Ignore to avoid blocking other flows.
+    }
+  };
+
+  useEffect(() => {
+    void fetchQuestions();
+  }, []);
+
+  const fetchAssignments = async (examVersionId: string) => {
+    if (!examVersionId) {
+      setAssignedQuestions([]);
+      return;
+    }
+    try {
+      const response = await fetch(
+        `/api/staff/exams/versions/questions?examVersionId=${examVersionId}`,
+      );
+      if (!response.ok) {
+        return;
+      }
+      const payload = (await response.json()) as {
+        questions: {
+          examVersionQuestionId: string;
+          moduleId: string;
+          moduleCode: string;
+          moduleName: string;
+          questionId: string;
+          questionStem: string;
+          position: number;
+          points: number;
+        }[];
+      };
+      setAssignedQuestions(payload.questions);
+    } catch {
+      // Ignore list fetch errors for now.
+    }
+  };
+
+  useEffect(() => {
+    void fetchAssignments(selectedVersionId);
+  }, [selectedVersionId]);
+
+  useEffect(() => {
+    if (!selectedVersionModules.length) {
+      return;
+    }
+    if (!selectedModuleId) {
+      setSelectedModuleId(selectedVersionModules[0].moduleId);
+    }
+  }, [selectedVersionModules, selectedModuleId]);
+
+  useEffect(() => {
+    if (!selectedModuleId) {
+      return;
+    }
+    const positions = assignedQuestions
+      .filter((question) => question.moduleId === selectedModuleId)
+      .map((question) => question.position);
+    const nextPosition = positions.length > 0 ? Math.max(...positions) + 1 : 1;
+    setQuestionPosition(nextPosition);
+  }, [assignedQuestions, selectedModuleId]);
 
   useEffect(() => {
     if (requiredModules.length === 0) {
@@ -210,6 +341,66 @@ export default function StaffExamManagementPage() {
 
       setMessage("試験バージョンをアーカイブしました。");
       await fetchExams();
+    } catch (requestError) {
+      setError("通信に失敗しました。");
+    }
+  };
+
+  const handleAssignQuestion = async () => {
+    setError(null);
+    setMessage(null);
+    if (!selectedVersionId || !selectedModuleId || !selectedQuestionId) {
+      setError("出題割当の入力を確認してください。");
+      return;
+    }
+    if (selectedVersion?.status !== "DRAFT") {
+      setError("DRAFT の試験バージョンのみ割当を変更できます。");
+      return;
+    }
+    try {
+      const response = await fetch("/api/staff/exams/versions/questions", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          examVersionId: selectedVersionId,
+          moduleId: selectedModuleId,
+          questionId: selectedQuestionId,
+          position: questionPosition,
+          points: questionPoints,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string };
+        setError(payload.error ?? "出題割当に失敗しました。");
+        return;
+      }
+
+      setMessage("出題割当を追加しました。");
+      await fetchAssignments(selectedVersionId);
+    } catch (requestError) {
+      setError("通信に失敗しました。");
+    }
+  };
+
+  const handleRemoveQuestion = async (examVersionQuestionId: string) => {
+    setError(null);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/staff/exams/versions/questions", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ examVersionQuestionId }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string };
+        setError(payload.error ?? "削除に失敗しました。");
+        return;
+      }
+
+      setMessage("出題割当を削除しました。");
+      await fetchAssignments(selectedVersionId);
     } catch (requestError) {
       setError("通信に失敗しました。");
     }
@@ -428,6 +619,146 @@ export default function StaffExamManagementPage() {
                   試験がまだ登録されていません。
                 </Typography>
               )}
+            </Stack>
+          </Paper>
+
+          <Paper sx={{ p: 3, borderRadius: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+              出題割当（DRAFT のみ）
+            </Typography>
+            <Stack spacing={2}>
+              <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                <TextField
+                  select
+                  label="対象バージョン"
+                  value={selectedVersionId}
+                  onChange={(event) => setSelectedVersionId(event.target.value)}
+                  fullWidth
+                  inputProps={{ "data-testid": "exam-question-version" }}
+                >
+                  {versionOptions.map((version) => (
+                    <MenuItem
+                      key={version.examVersionId}
+                      value={version.examVersionId}
+                    >
+                      {version.label}（{version.status}）
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  select
+                  label="モジュール"
+                  value={selectedModuleId}
+                  onChange={(event) => setSelectedModuleId(event.target.value)}
+                  fullWidth
+                  inputProps={{ "data-testid": "exam-question-module" }}
+                >
+                  {selectedVersionModules.map((module) => (
+                    <MenuItem key={module.moduleId} value={module.moduleId}>
+                      {module.code}（{module.name}）
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Stack>
+              <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                <TextField
+                  select
+                  label="問題"
+                  value={selectedQuestionId}
+                  onChange={(event) =>
+                    setSelectedQuestionId(event.target.value)
+                  }
+                  fullWidth
+                  inputProps={{ "data-testid": "exam-question-id" }}
+                >
+                  {questions.map((question) => (
+                    <MenuItem
+                      key={question.questionId}
+                      value={question.questionId}
+                    >
+                      {question.stem.slice(0, 50)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  label="順序"
+                  type="number"
+                  value={questionPosition}
+                  onChange={(event) =>
+                    setQuestionPosition(Number(event.target.value))
+                  }
+                  fullWidth
+                  inputProps={{
+                    min: 1,
+                    "data-testid": "exam-question-position",
+                  }}
+                />
+                <TextField
+                  label="配点"
+                  type="number"
+                  value={questionPoints}
+                  onChange={(event) =>
+                    setQuestionPoints(Number(event.target.value))
+                  }
+                  fullWidth
+                  inputProps={{ min: 1, "data-testid": "exam-question-points" }}
+                />
+                <Button
+                  variant="contained"
+                  onClick={handleAssignQuestion}
+                  disabled={selectedVersion?.status !== "DRAFT"}
+                  data-testid="exam-question-assign"
+                  sx={{ minWidth: 120 }}
+                >
+                  追加
+                </Button>
+              </Stack>
+              <Stack spacing={1}>
+                {assignedQuestions.map((question) => (
+                  <Paper
+                    key={question.examVersionQuestionId}
+                    variant="outlined"
+                    sx={{ p: 2, borderRadius: 2 }}
+                  >
+                    <Stack
+                      direction={{ xs: "column", md: "row" }}
+                      spacing={2}
+                      alignItems={{ xs: "flex-start", md: "center" }}
+                      justifyContent="space-between"
+                    >
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                          {question.moduleCode} · 問 {question.position}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: "#64748b" }}>
+                          {question.questionStem}
+                        </Typography>
+                      </Box>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Typography variant="body2">
+                          配点: {question.points}
+                        </Typography>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          disabled={selectedVersion?.status !== "DRAFT"}
+                          onClick={() =>
+                            handleRemoveQuestion(question.examVersionQuestionId)
+                          }
+                          data-testid={`exam-question-remove-${question.examVersionQuestionId}`}
+                        >
+                          削除
+                        </Button>
+                      </Stack>
+                    </Stack>
+                  </Paper>
+                ))}
+                {assignedQuestions.length === 0 && (
+                  <Typography variant="body2" sx={{ color: "#64748b" }}>
+                    出題がまだ割り当てられていません。
+                  </Typography>
+                )}
+              </Stack>
             </Stack>
           </Paper>
         </Stack>
