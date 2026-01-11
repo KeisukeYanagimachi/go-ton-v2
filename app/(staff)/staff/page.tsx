@@ -163,6 +163,22 @@ export default function StaffHomePage() {
                 結果一覧へ
               </Button>
             </Paper>
+            <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                監査ログ
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                操作履歴を時系列で確認します。
+              </Typography>
+              <Button
+                variant="outlined"
+                sx={{ mt: 3, fontWeight: 700 }}
+                href="/staff/audit-logs"
+                data-testid="staff-home-audit-link"
+              >
+                監査ログへ
+              </Button>
+            </Paper>
           </Box>
         </Stack>
       </Container>
