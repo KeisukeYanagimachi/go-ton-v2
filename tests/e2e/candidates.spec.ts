@@ -38,7 +38,7 @@ test("staff can register and search candidates", async ({ page }) => {
   await waitForHydration(page, "staff-candidates-page");
 
   await page.getByTestId("staff-candidates-new").click();
-  await expect(page.getByTestId("staff-candidate-save")).toBeEnabled({
+  await expect(page.getByTestId("staff-candidate-save")).toBeDisabled({
     timeout: loadTimeout,
   });
   await page.getByTestId("staff-candidate-full-name").fill(uniqueName);
@@ -47,6 +47,9 @@ test("staff can register and search candidates", async ({ page }) => {
     .fill(`candidate.${Date.now()}@example.com`);
   await page.getByTestId("staff-candidate-education").fill("大学卒");
   await page.getByTestId("staff-candidate-birth-date").fill("1998-04-01");
+  await expect(page.getByTestId("staff-candidate-save")).toBeEnabled({
+    timeout: loadTimeout,
+  });
   await page.getByTestId("staff-candidate-save").click();
 
   await expect(page.getByTestId("staff-candidate-message")).toBeVisible({

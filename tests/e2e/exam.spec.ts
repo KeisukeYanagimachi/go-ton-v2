@@ -21,7 +21,11 @@ test("candidate exam page renders", async ({ page }) => {
   await page.getByTestId("candidate-next-question").click();
   await expect(page.getByText("回答を選択してください。")).toBeVisible();
   await page.getByTestId("candidate-option-1").click();
-  await page.getByTestId("candidate-next-question").click();
+  const [saveResponse] = await Promise.all([
+    page.waitForResponse("**/api/candidate/answer"),
+    page.getByTestId("candidate-next-question").click(),
+  ]);
+  expect(saveResponse.ok()).toBeTruthy();
   await expect(page.getByTestId("candidate-current-question")).toHaveText(
     "問 2",
   );
@@ -59,7 +63,11 @@ test("candidate can complete the exam and submit", async ({ page }) => {
 
   for (let i = 0; i < 2; i += 1) {
     await page.getByTestId("candidate-option-1").click();
-    await page.getByTestId("candidate-next-question").click();
+    const [saveResponse] = await Promise.all([
+      page.waitForResponse("**/api/candidate/answer"),
+      page.getByTestId("candidate-next-question").click(),
+    ]);
+    expect(saveResponse.ok()).toBeTruthy();
     if (i === 0) {
       await expect(page.getByTestId("candidate-current-question")).toHaveText(
         "問 2",
@@ -75,7 +83,11 @@ test("candidate can complete the exam and submit", async ({ page }) => {
 
   for (let i = 0; i < 2; i += 1) {
     await page.getByTestId("candidate-option-1").click();
-    await page.getByTestId("candidate-next-question").click();
+    const [saveResponse] = await Promise.all([
+      page.waitForResponse("**/api/candidate/answer"),
+      page.getByTestId("candidate-next-question").click(),
+    ]);
+    expect(saveResponse.ok()).toBeTruthy();
     if (i === 0) {
       await expect(page.getByTestId("candidate-current-question")).toHaveText(
         "問 2",
@@ -91,7 +103,11 @@ test("candidate can complete the exam and submit", async ({ page }) => {
 
   for (let i = 0; i < 2; i += 1) {
     await page.getByTestId("candidate-option-1").click();
-    await page.getByTestId("candidate-next-question").click();
+    const [saveResponse] = await Promise.all([
+      page.waitForResponse("**/api/candidate/answer"),
+      page.getByTestId("candidate-next-question").click(),
+    ]);
+    expect(saveResponse.ok()).toBeTruthy();
     if (i === 0) {
       await expect(page.getByTestId("candidate-current-question")).toHaveText(
         "問 2",
@@ -106,7 +122,11 @@ test("candidate can complete the exam and submit", async ({ page }) => {
   );
 
   await page.getByTestId("candidate-option-1").click();
-  await page.getByTestId("candidate-next-question").click();
+  const [saveResponse] = await Promise.all([
+    page.waitForResponse("**/api/candidate/answer"),
+    page.getByTestId("candidate-next-question").click(),
+  ]);
+  expect(saveResponse.ok()).toBeTruthy();
   await expect(page.getByTestId("candidate-current-question")).toHaveText(
     "問 2",
   );

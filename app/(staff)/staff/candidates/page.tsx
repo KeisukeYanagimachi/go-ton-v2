@@ -53,6 +53,10 @@ export default function StaffCandidatesPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [formMessage, setFormMessage] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
+  const isSaveDisabled =
+    (!isCreating && !selectedCandidateId) ||
+    !formState.fullName.trim() ||
+    !formState.birthDate.trim();
 
   const selectedCandidate = useMemo(
     () =>
@@ -348,7 +352,40 @@ export default function StaffCandidatesPage() {
                       ? "候補者情報を入力して登録します。"
                       : "候補者の情報を確認・編集します。"}
                   </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    候補者の作成・編集は ADMIN のみが実行できます。
+                  </Typography>
                 </Box>
+
+                {selectedCandidate && !isCreating && (
+                  <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                    <Paper sx={{ flex: 1, p: 2, borderRadius: 2 }}>
+                      <Typography variant="overline" sx={{ color: "#64748b" }}>
+                        Candidate ID
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {selectedCandidate.candidateId}
+                      </Typography>
+                    </Paper>
+                    <Paper sx={{ flex: 1, p: 2, borderRadius: 2 }}>
+                      <Typography variant="overline" sx={{ color: "#64748b" }}>
+                        更新日時
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {new Date(selectedCandidate.updatedAt).toLocaleString(
+                          "ja-JP",
+                          {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
+                      </Typography>
+                    </Paper>
+                  </Stack>
+                )}
 
                 <Stack spacing={2}>
                   <TextField
@@ -425,7 +462,7 @@ export default function StaffCandidatesPage() {
                   <Button
                     variant="contained"
                     onClick={handleSave}
-                    disabled={!isCreating && !selectedCandidateId}
+                    disabled={isSaveDisabled}
                     data-testid="staff-candidate-save"
                     sx={{ fontWeight: 700 }}
                   >
