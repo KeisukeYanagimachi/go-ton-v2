@@ -14,6 +14,7 @@
 - 2026-01-11: 受験票再発行の対象条件に「未受験（Attempt 未作成）」を明記
 - 2026-01-11: 出題割当（exam_version_questions）の運用要件を明文化
 - 2026-01-11: 問題管理（作成/編集/分類/正解指定）の業務要件を明文化
+- 2026-01-11: 試験定義の運用フロー/操作ガイドを明文化
 
 ---
 
@@ -246,6 +247,22 @@
 - PUBLISHED / ARCHIVED の ExamVersion は出題割当の編集不可
 - 同一 ExamVersion 内で question は重複不可
 - 同一 ExamVersion + module 内で position は重複不可
+
+#### 試験定義の運用フロー（ガイド）
+
+1. 試験マスタを新規作成（Exam）
+2. 試験バージョンを追加（ExamVersion、DRAFT）
+3. モジュール構成と制限時間を設定（必須4モジュール）
+4. 出題割当を設定（question / module / position / points）
+5. 公開（DRAFT → PUBLISHED）
+6. 次の改訂が必要になったら「新しいバージョン追加」を行う
+7. 過去バージョンは必要に応じてアーカイブ（PUBLISHED → ARCHIVED）
+
+**運用上の注意**
+
+- 公開済み（PUBLISHED）の編集は禁止（必ず新バージョンを作成）
+- 出題割当は DRAFT のみ編集可能
+- モジュール順序は固定（position の重複禁止）
 
 ---
 
