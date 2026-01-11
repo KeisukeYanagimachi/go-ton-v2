@@ -161,7 +161,7 @@ export default function CandidateLoginPage() {
       );
       sessionStorage.setItem("candidate.pin", pin);
       router.push("/start");
-    } catch (requestError) {
+    } catch {
       setError(errorMessageMap.NETWORK_ERROR);
     } finally {
       setIsSubmitting(false);

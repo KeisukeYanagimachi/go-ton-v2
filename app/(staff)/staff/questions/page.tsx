@@ -43,11 +43,6 @@ type QuestionSummary = {
   subcategoryName: string | null;
 };
 
-type QuestionOptionInput = {
-  optionText: string;
-  isCorrect: boolean;
-};
-
 type QuestionDetail = {
   questionId: string;
   stem: string;

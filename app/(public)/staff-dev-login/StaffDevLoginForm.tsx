@@ -42,7 +42,7 @@ export default function StaffDevLoginForm() {
 
       await response.json();
       router.push("/staff");
-    } catch (requestError) {
+    } catch {
       setError("NETWORK_ERROR");
     } finally {
       setIsSubmitting(false);

@@ -94,7 +94,7 @@ export default function StaffAttemptTakeoverPage() {
       const payload = (await response.json()) as { attempts: AttemptRow[] };
       setAttempts(payload.attempts);
       setState("idle");
-    } catch (requestError) {
+    } catch {
       setMessage("NETWORK_ERROR");
       setState("error");
     } finally {
@@ -136,7 +136,7 @@ export default function StaffAttemptTakeoverPage() {
       setMessage(endpoint === "lock" ? "ATTEMPT_LOCKED" : "ATTEMPT_RESUMED");
       setState("success");
       await fetchAttempts();
-    } catch (requestError) {
+    } catch {
       setMessage("NETWORK_ERROR");
       setState("error");
     }

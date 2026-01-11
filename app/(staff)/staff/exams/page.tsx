@@ -207,7 +207,7 @@ export default function StaffExamManagementPage() {
           setSelectedVersionId(latestVersion.examVersionId);
         }
       }
-    } catch (requestError) {
+    } catch {
       setPageError("通信に失敗しました。");
     }
   };
@@ -380,7 +380,7 @@ export default function StaffExamManagementPage() {
       setExamDescription("");
       setPageMessage("試験を作成しました。");
       await fetchExams();
-    } catch (requestError) {
+    } catch {
       setPageError("通信に失敗しました。");
     }
   };
@@ -419,7 +419,7 @@ export default function StaffExamManagementPage() {
       await response.json();
       setPageMessage("試験バージョンを作成しました。");
       await fetchExams();
-    } catch (requestError) {
+    } catch {
       setPageError("通信に失敗しました。");
     }
   };
@@ -442,7 +442,7 @@ export default function StaffExamManagementPage() {
 
       setPageMessage("試験バージョンを公開しました。");
       await fetchExams();
-    } catch (requestError) {
+    } catch {
       setPageError("通信に失敗しました。");
     }
   };
@@ -465,7 +465,7 @@ export default function StaffExamManagementPage() {
 
       setPageMessage("試験バージョンをアーカイブしました。");
       await fetchExams();
-    } catch (requestError) {
+    } catch {
       setPageError("通信に失敗しました。");
     }
   };
@@ -502,7 +502,7 @@ export default function StaffExamManagementPage() {
 
       setAssignmentMessage("出題割当を追加しました。");
       await fetchAssignments(selectedVersionId);
-    } catch (requestError) {
+    } catch {
       setAssignmentError("通信に失敗しました。");
     }
   };
@@ -525,7 +525,7 @@ export default function StaffExamManagementPage() {
 
       setAssignmentMessage("出題割当を削除しました。");
       await fetchAssignments(selectedVersionId);
-    } catch (requestError) {
+    } catch {
       setAssignmentError("通信に失敗しました。");
     }
   };

@@ -1,12 +1,6 @@
 "use client";
 
-import {
-    Avatar,
-    Box,
-    Container,
-    Stack,
-    Typography,
-} from "@mui/material";
+import { Avatar, Box, Container, Stack, Typography } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 
 type StaffIdentity = {
@@ -45,7 +39,7 @@ export default function StaffLayout({
         if (isMounted) {
           setIdentity(payload);
         }
-      } catch (error) {
+      } catch {
         if (isMounted) {
           setIdentity(null);
         }

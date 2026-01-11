@@ -1,16 +1,16 @@
 "use client";
 
 import {
-    Alert,
-    Box,
-    Button,
-    Container,
-    Divider,
-    MenuItem,
-    Paper,
-    Stack,
-    TextField,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Container,
+  Divider,
+  MenuItem,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
 import QRCode from "qrcode";
 import { useEffect, useMemo, useState } from "react";
@@ -76,8 +76,7 @@ export default function TicketIssuePage() {
     CANDIDATE_NOT_FOUND: "候補者が見つかりません。",
     NO_VISIT_SLOT: "来社枠が未割当のため受験票を発行できません。",
     EXAM_VERSION_NOT_FOUND: "試験バージョンが見つかりません。",
-    EXAM_VERSION_NOT_PUBLISHED:
-      "公開済みの試験バージョンのみ発行対象です。",
+    EXAM_VERSION_NOT_PUBLISHED: "公開済みの試験バージョンのみ発行対象です。",
     INVALID_REQUEST: "入力内容を確認してください。",
     MISSING_SECRET: "環境設定に問題があります。スタッフに連絡してください。",
     FAILED: "受験票の発行に失敗しました。もう一度お試しください。",
@@ -110,7 +109,7 @@ export default function TicketIssuePage() {
         };
         setCandidates(payload.candidates);
         setExamVersions(payload.examVersions);
-      } catch (error) {
+      } catch {
         setIssueError("受験票の発行情報を取得できませんでした。");
       }
     };
@@ -169,7 +168,7 @@ export default function TicketIssuePage() {
 
       const payload = (await response.json()) as IssueResult;
       setIssueResult(payload);
-    } catch (requestError) {
+    } catch {
       setIssueError(errorMessageMap.NETWORK_ERROR);
     } finally {
       setIsSubmitting(false);

@@ -1,6 +1,13 @@
 "use client";
 
-import { Alert, Box, Button, Container, Paper, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  Container,
+  Paper,
+  Typography,
+} from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -53,7 +60,7 @@ export default function CandidateStartPage() {
 
       await response.json();
       router.push("/exam");
-    } catch (requestError) {
+    } catch {
       setError("NETWORK_ERROR");
     } finally {
       setIsStarting(false);

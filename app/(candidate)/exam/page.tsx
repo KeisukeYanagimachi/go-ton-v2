@@ -145,7 +145,7 @@ export default function CandidateExamPage() {
         setRemainingSeconds(payload.modules[0]?.remainingSeconds ?? null);
         lastSyncSeconds.current = payload.modules[0]?.remainingSeconds ?? null;
         setIsLoading(false);
-      } catch (requestError) {
+      } catch {
         setError("NETWORK_ERROR");
         setIsLoading(false);
       }
@@ -256,7 +256,7 @@ export default function CandidateExamPage() {
           metadata,
         }),
       });
-    } catch (requestError) {
+    } catch {
       // Ignore telemetry errors to keep exam flow responsive.
     }
   };
@@ -343,7 +343,7 @@ export default function CandidateExamPage() {
       };
       setSaveMessage("保存しました。");
       return true;
-    } catch (requestError) {
+    } catch {
       setError("NETWORK_ERROR");
       return false;
     } finally {
@@ -474,7 +474,7 @@ export default function CandidateExamPage() {
 
       setRemainingSeconds(payload.remainingSeconds);
       lastSyncSeconds.current = payload.remainingSeconds;
-    } catch (requestError) {
+    } catch {
       // Ignore timer sync errors; UI countdown continues locally.
     }
   };
@@ -612,7 +612,7 @@ export default function CandidateExamPage() {
 
       await response.json();
       router.push("/complete");
-    } catch (requestError) {
+    } catch {
       setError("NETWORK_ERROR");
     } finally {
       setIsSubmitting(false);

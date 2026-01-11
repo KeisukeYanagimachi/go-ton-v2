@@ -95,7 +95,7 @@ export default function TicketReissuePage() {
 
       const payload = (await response.json()) as ReissueResult;
       setReissueResult(payload);
-    } catch (requestError) {
+    } catch {
       setReissueError(errorMessageMap.NETWORK_ERROR);
     } finally {
       setIsReissuing(false);
