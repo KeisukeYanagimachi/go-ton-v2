@@ -1,20 +1,20 @@
 "use client";
 
 import {
-    Alert,
-    Box,
-    Button,
-    Chip,
-    Container,
-    Divider,
-    Paper,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Container,
+  Divider,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
 } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -46,6 +46,22 @@ const baseStyles = {
   minHeight: "100vh",
   bgcolor: "#f6f7f8",
   color: "#111418",
+};
+
+const statusLabelMap: Record<string, string> = {
+  NOT_STARTED: "未開始",
+  IN_PROGRESS: "受験中",
+  LOCKED: "ロック中",
+  SUBMITTED: "提出済み",
+  SCORED: "採点済み",
+  ABORTED: "中断",
+};
+
+const statusChipColor = (status: string) => {
+  if (status === "SCORED") return "success";
+  if (status === "SUBMITTED") return "warning";
+  if (status === "LOCKED") return "error";
+  return "default";
 };
 
 const formatDateTime = (value: string | null) =>
@@ -231,14 +247,8 @@ export default function StaffResultDetailPage() {
                       </Typography>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Chip
-                          label={detail.status}
-                          color={
-                            detail.status === "SCORED"
-                              ? "success"
-                              : detail.status === "SUBMITTED"
-                                ? "warning"
-                                : "default"
-                          }
+                          label={statusLabelMap[detail.status] ?? detail.status}
+                          color={statusChipColor(detail.status)}
                         />
                         <Typography variant="body2" sx={{ color: "#64748b" }}>
                           提出: {formatDateTime(detail.submittedAt)}
@@ -259,8 +269,12 @@ export default function StaffResultDetailPage() {
                         ? `${detail.totalScore.rawScore} / ${detail.totalScore.maxScore}`
                         : "未採点"}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
-                      採点日時: {formatDateTime(detail.totalScore?.scoredAt ?? null)}
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "#64748b", mt: 1 }}
+                    >
+                      採点日時:{" "}
+                      {formatDateTime(detail.totalScore?.scoredAt ?? null)}
                     </Typography>
                   </Paper>
 
