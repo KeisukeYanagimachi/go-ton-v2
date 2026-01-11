@@ -102,6 +102,8 @@ model StaffUserRole {
 model Candidate {
   id        String   @id @default(uuid()) @db.Uuid @map("id")
   fullName  String   @map("full_name")
+  email     String?  @map("email")
+  education String?  @map("education")
   birthDate DateTime @db.Date @map("birth_date")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

@@ -234,11 +234,15 @@ async function main() {
       {
         id: "40000000-0000-0000-0000-000000000001",
         fullName: "Candidate One",
+        email: "candidate.one@example.com",
+        education: "大学卒",
         birthDate: new Date("1999-01-01"),
       },
       {
         id: "40000000-0000-0000-0000-000000000002",
         fullName: "Candidate Two",
+        email: "candidate.two@example.com",
+        education: "大学院卒",
         birthDate: new Date("2000-02-02"),
       },
     ],

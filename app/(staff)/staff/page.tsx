@@ -46,6 +46,22 @@ export default function StaffHomePage() {
             >
               <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  候補者管理
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                  候補者情報の登録・検索・編集を行います。
+                </Typography>
+                <Button
+                  variant="outlined"
+                  sx={{ mt: 3, fontWeight: 700 }}
+                  href="/staff/candidates"
+                  data-testid="staff-home-candidates-link"
+                >
+                  候補者管理へ
+                </Button>
+              </Paper>
+              <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   受験票の発行
                 </Typography>
                 <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>

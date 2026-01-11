@@ -77,18 +77,25 @@ const formatDateTime = (value: string | null) =>
 
 export default function StaffResultDetailPage() {
   const params = useParams();
-  const attemptId = String(params.attemptId ?? "");
+  const attemptId = Array.isArray(params.attemptId)
+    ? (params.attemptId[0] ?? "")
+    : String(params.attemptId ?? "");
+  const resolvedAttemptId =
+    attemptId ||
+    (typeof window !== "undefined"
+      ? (window.location.pathname.split("/").pop() ?? "")
+      : "");
 
   const [detail, setDetail] = useState<AttemptResultDetail | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchDetail = async () => {
-    if (!attemptId) return;
+    if (!resolvedAttemptId) return;
     setIsLoading(true);
     setMessage(null);
     try {
-      const response = await fetch(`/api/staff/results/${attemptId}`);
+      const response = await fetch(`/api/staff/results/${resolvedAttemptId}`);
       if (!response.ok) {
         setMessage("結果の取得に失敗しました。");
         return;
@@ -124,7 +131,7 @@ export default function StaffResultDetailPage() {
 
   useEffect(() => {
     void fetchDetail();
-  }, [attemptId]);
+  }, [resolvedAttemptId]);
 
   return (
     <Box sx={baseStyles}>
