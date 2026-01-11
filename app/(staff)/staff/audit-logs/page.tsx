@@ -1,20 +1,20 @@
 "use client";
 
 import {
-    Alert,
-    Box,
-    Button,
-    Container,
-    MenuItem,
-    Paper,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    TextField,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Container,
+  MenuItem,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 
@@ -108,48 +108,6 @@ export default function StaffAuditLogsPage() {
 
   return (
     <Box sx={baseStyles}>
-      <Box
-        component="header"
-        sx={{
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-          borderBottom: "1px solid #e2e8f0",
-          bgcolor: "#ffffff",
-          boxShadow: "0 1px 2px rgba(15, 23, 42, 0.05)",
-        }}
-      >
-        <Container
-          maxWidth="lg"
-          sx={{
-            py: 1.5,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Box
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: 2,
-                bgcolor: "rgba(19, 127, 236, 0.12)",
-                display: "grid",
-                placeItems: "center",
-                color: "#137fec",
-                fontWeight: 700,
-              }}
-            >
-              SPI
-            </Box>
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>
-              SPI 採用管理
-            </Typography>
-          </Stack>
-        </Container>
-      </Box>
-
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <Stack spacing={3}>
           <Stack direction="row" spacing={1} alignItems="center">
@@ -277,10 +235,7 @@ export default function StaffAuditLogsPage() {
                   {logs.length === 0 && !isLoading ? (
                     <TableRow>
                       <TableCell colSpan={5}>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#64748b" }}
-                        >
+                        <Typography variant="body2" sx={{ color: "#64748b" }}>
                           該当する監査ログがありません。
                         </Typography>
                       </TableCell>

@@ -7,11 +7,13 @@ import {
   Container,
   Divider,
   Paper,
+  Stack,
   TextField,
   Typography,
 } from "@mui/material";
+import type { BrowserMultiFormatReader } from "@zxing/browser";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function CandidateLoginPage() {
   const router = useRouter();
@@ -21,6 +23,14 @@ export default function CandidateLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const readerRef = useRef<{
+    reset: () => void;
+    decodeFromVideoDevice: BrowserMultiFormatReader["decodeFromVideoDevice"];
+  } | null>(null);
+  const [isReaderReady, setIsReaderReady] = useState(false);
   const errorMessageMap: Record<string, string> = {
     INVALID_REQUEST: "入力内容を確認してください。",
     INVALID_QR: "QRコードを読み取れませんでした。",
@@ -28,10 +38,96 @@ export default function CandidateLoginPage() {
     MISSING_SECRET: "環境設定に問題があります。スタッフに連絡してください。",
     NETWORK_ERROR: "通信に失敗しました。再度お試しください。",
   };
+  const handleQrInput = (value: string) => {
+    setQrPayload(value);
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return;
+    }
+    const ticketCandidate = trimmed.split(".")[0];
+    if (ticketCandidate) {
+      setTicketCode(ticketCandidate);
+    }
+  };
 
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    import("@zxing/browser")
+      .then(({ BrowserMultiFormatReader }) => {
+        if (!isMounted) {
+          return;
+        }
+        readerRef.current = new BrowserMultiFormatReader();
+        setIsReaderReady(true);
+      })
+      .catch(() => {
+        if (isMounted) {
+          setScanError("カメラの初期化に失敗しました。");
+        }
+      });
+
+    return () => {
+      isMounted = false;
+      const reader = readerRef.current;
+      if (reader && typeof reader.reset === "function") {
+        reader.reset();
+      }
+      readerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isScanning) {
+      const reader = readerRef.current;
+      if (reader && typeof reader.reset === "function") {
+        reader.reset();
+      }
+      return;
+    }
+
+    let isMounted = true;
+    setScanError(null);
+
+    const reader = readerRef.current;
+    if (!reader) {
+      setScanError("カメラの初期化に失敗しました。");
+      setIsScanning(false);
+      return;
+    }
+
+    reader
+      .decodeFromVideoDevice(undefined, videoRef.current, (result, err) => {
+        if (!isMounted) {
+          return;
+        }
+        if (result) {
+          handleQrInput(result.getText());
+          setIsScanning(false);
+          return;
+        }
+        if (err && (err as Error).name !== "NotFoundException") {
+          setScanError("QRコードの読み取りに失敗しました。");
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setScanError("カメラへのアクセスに失敗しました。");
+          setIsScanning(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+      const currentReader = readerRef.current;
+      if (currentReader && typeof currentReader.reset === "function") {
+        currentReader.reset();
+      }
+    };
+  }, [isScanning]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -185,14 +281,60 @@ export default function CandidateLoginPage() {
               data-testid="candidate-login-form"
               data-hydrated={isHydrated ? "true" : "false"}
             >
-              <TextField
-                label="QRコード（読み取り結果を貼り付け）"
-                value={qrPayload}
-                onChange={(event) => setQrPayload(event.target.value)}
-                fullWidth
-                inputProps={{ "data-testid": "candidate-qr-payload" }}
-                helperText="QRリーダーで読み取った文字列を入力してください。"
-              />
+              <Stack spacing={1}>
+                <TextField
+                  label="QRコード（読み取り結果）"
+                  value={qrPayload}
+                  onChange={(event) => handleQrInput(event.target.value)}
+                  fullWidth
+                  inputProps={{ "data-testid": "candidate-qr-payload" }}
+                  helperText="QRリーダーで読み取った文字列を入力してください。"
+                />
+                <Box
+                  sx={{
+                    display: "grid",
+                    gap: 1,
+                    alignItems: "center",
+                    gridTemplateColumns: { xs: "1fr", sm: "auto 1fr" },
+                  }}
+                >
+                  <Button
+                    variant="outlined"
+                    onClick={() => setIsScanning((current) => !current)}
+                    disabled={!isReaderReady}
+                    data-testid="candidate-qr-scan-toggle"
+                  >
+                    {isScanning ? "読み取り停止" : "カメラで読み取る"}
+                  </Button>
+                  <Typography variant="caption" color="text.secondary">
+                    {isScanning
+                      ? "カメラにQRをかざしてください。"
+                      : "カメラが使えない場合は手入力してください。"}
+                  </Typography>
+                </Box>
+                {isScanning && (
+                  <Box
+                    sx={{
+                      borderRadius: 2,
+                      border: "1px solid #e2e8f0",
+                      overflow: "hidden",
+                      bgcolor: "#0f172a",
+                    }}
+                  >
+                    <Box
+                      component="video"
+                      ref={videoRef}
+                      sx={{ width: "100%", display: "block" }}
+                      data-testid="candidate-qr-video"
+                    />
+                  </Box>
+                )}
+                {scanError && (
+                  <Typography variant="caption" color="error">
+                    {scanError}
+                  </Typography>
+                )}
+              </Stack>
               <TextField
                 label="受験票コード"
                 value={ticketCode}

@@ -29,7 +29,9 @@ test("candidate login succeeds with valid ticket and pin", async ({ page }) => {
   await page.getByTestId("candidate-pin").fill("19990101");
   await page.getByTestId("candidate-login-submit").click();
   await expect(page).toHaveURL(/\/start/, { timeout: loadTimeout });
-  await expect(page.getByTestId("candidate-start-page")).toBeVisible();
+  await expect(page.getByTestId("candidate-start-page")).toBeVisible({
+    timeout: loadTimeout,
+  });
 });
 
 test("candidate can start an attempt after login", async ({ page }) => {
@@ -42,7 +44,9 @@ test("candidate can start an attempt after login", async ({ page }) => {
   await page.getByTestId("candidate-pin").fill("20000202");
   await page.getByTestId("candidate-login-submit").click();
   await expect(page).toHaveURL(/\/start/, { timeout: loadTimeout });
-  await expect(page.getByTestId("candidate-start-submit")).toBeVisible();
+  await expect(page.getByTestId("candidate-start-submit")).toBeVisible({
+    timeout: loadTimeout,
+  });
   await page.getByTestId("candidate-start-submit").click();
   await expect(page).toHaveURL(/\/exam/, { timeout: loadTimeout });
   await expect(page.getByTestId("candidate-exam-page")).toBeVisible();
