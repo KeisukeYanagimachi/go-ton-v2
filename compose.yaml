@@ -5,11 +5,33 @@ services:
       dockerfile: docker/Dockerfile
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/go-ton?schema=public
+      TEST_DATABASE_URL: postgresql://postgres:postgres@db:5432/go-ton?schema=integration
       AUTH_SECRET: dev-secret
       NODE_ENV: development
       NEXT_DISABLE_TURBOPACK: "1"
     ports:
       - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app-e2e:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/go-ton?schema=e2e
+      AUTH_SECRET: dev-secret
+      NODE_ENV: test
+      NEXT_DISABLE_TURBOPACK: "1"
     volumes:
       - .:/app
       - /app/node_modules
@@ -42,21 +64,16 @@ services:
     image: mcr.microsoft.com/playwright:v1.57.0-jammy
     working_dir: /app
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/go-ton?schema=public
-      E2E_BASE_URL: http://app:3000
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/go-ton?schema=e2e
+      E2E_BASE_URL: http://app-e2e:3000
       NODE_ENV: test
     volumes:
       - .:/app
       - /app/node_modules
     depends_on:
-      app:
+      app-e2e:
         condition: service_healthy
-    command:
-      [
-        "bash",
-        "-lc",
-        "npm ci --force && npm run db:migrate && npm run db:seed && curl -sS http://app:3000/candidate-login >/dev/null && curl -sS http://app:3000/staff-dev-login >/dev/null && curl -sS http://app:3000/start >/dev/null && curl -sS http://app:3000/exam >/dev/null && curl -sS http://app:3000/attempts >/dev/null && curl -sS http://app:3000/staff/tickets/reissue >/dev/null && npx playwright test",
-      ]
+    command: ["sh", "-lc", "sh scripts/test-e2e.sh"]
 
 volumes:
   db-data:

@@ -11,8 +11,8 @@
     "db:seed": "prisma generate && prisma db seed",
     "db:generate": "prisma generate",
     "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "vitest run --config vitest.config.ts src --passWithNoTests",
-    "test:integration": "prisma generate && vitest run --config vitest.config.ts tests/integration",
+    "test:unit": "prisma generate && vitest run --config vitest.config.ts src --passWithNoTests",
+    "test:integration": "sh scripts/test-integration.sh",
     "test:e2e": "playwright test"
   },
   "dependencies": {
