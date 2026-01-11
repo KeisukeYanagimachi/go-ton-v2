@@ -7,6 +7,27 @@
 - Docker / docker compose
 - Node.js (コンテナ内で使用)
 
+## Initial Setup
+
+```bash
+make up
+make migrate
+make seed
+```
+
+- `make up`: app/db/e2e を build して起動します。
+- `make migrate`: Prisma migrate を実行します。
+- `make seed`: Prisma seed を実行し、ログイン用の初期データを投入します。
+
+### DB Reset (開発データを完全に初期化)
+
+```bash
+docker compose down -v
+make up
+make migrate
+make seed
+```
+
 ## Windows Setup
 
 Windows で開発する場合は WSL2 を利用します。
@@ -40,10 +61,12 @@ Docker Compose で設定しています。
 
 - exam_modules: `VERBAL`, `NONVERBAL`, `ENGLISH`, `STRUCTURAL`, `PERSONALITY`
 - staff_roles: `ADMIN`, `AUTHOR`, `PROCTOR`, `REPORT_VIEWER`
-- staff_users: `e2e-staff@example.com` (is_active=true)
-- candidates: `E2E Candidate`
-- visit_slots: `2030-01-01T09:00:00Z` - `2030-01-01T12:00:00Z`
-- tickets: `E2E-TICKET-0001` (PIN: `19900101`, status: `ACTIVE`)
+- staff_users: `admin@example.com`, `author@example.com`, `proctor@example.com`, `viewer@example.com`
+- candidates: `Candidate One`, `Candidate Two`
+- tickets (ACTIVE):
+  - `TICKET-CAND-001` (PIN: `19990101`)
+  - `TICKET-CAND-002` (PIN: `20000202`)
+  - `TICKET-CAND-007` (PIN: `19990101`)
 
 ## Make Commands
 
@@ -92,6 +115,18 @@ make test-e2e
 
 - Candidate ログイン: `http://localhost:3000/candidate-login`
 - Staff dev ログイン: `http://localhost:3000/staff-dev-login`
+
+#### Candidate (QR入力なしの場合)
+
+- Ticket Code: `TICKET-CAND-001` / `TICKET-CAND-002` / `TICKET-CAND-007`
+- PIN: `19990101` / `20000202`
+
+#### Staff (dev login)
+
+- `admin@example.com` (ADMIN)
+- `author@example.com` (AUTHOR)
+- `proctor@example.com` (PROCTOR)
+- `viewer@example.com` (REPORT_VIEWER)
 
 ### API
 
