@@ -25,6 +25,15 @@ const startAttempt = async (
   }
 
   return prisma.$transaction(async (tx) => {
+    const existingAttempt = await tx.attempt.findUnique({
+      where: { ticketId: candidateAuth.ticketId },
+      select: { id: true },
+    });
+
+    if (existingAttempt) {
+      return null;
+    }
+
     const [versionQuestions, versionModules] = await Promise.all([
       tx.examVersionQuestion.findMany({
         where: { examVersionId: candidateAuth.examVersionId },

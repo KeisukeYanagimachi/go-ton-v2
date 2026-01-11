@@ -304,6 +304,15 @@ async function main() {
       createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
     },
     {
+      id: "50000000-0000-0000-0000-000000000008",
+      ticketCode: "TICKET-CAND-007",
+      candidateId: "40000000-0000-0000-0000-000000000001",
+      examVersionId: "71000000-0000-0000-0000-000000000002",
+      pinHash: hashPin("19990101"),
+      status: "ACTIVE",
+      createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
+    },
+    {
       id: "50000000-0000-0000-0000-000000000004",
       ticketCode: "TICKET-CAND-003",
       candidateId: "40000000-0000-0000-0000-000000000002",

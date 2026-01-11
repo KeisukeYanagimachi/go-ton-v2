@@ -37,6 +37,11 @@ const submitAttempt = async (
       select: { id: true, status: true },
     });
 
+    await tx.ticket.update({
+      where: { id: candidateAuth.ticketId },
+      data: { status: "USED" },
+    });
+
     await recordAuditLog(tx, {
       actorStaffUserId: null,
       action: "ATTEMPT_SUBMITTED",

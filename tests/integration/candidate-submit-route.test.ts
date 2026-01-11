@@ -137,10 +137,15 @@ describe("candidate submit route (integration)", () => {
         moduleScores: { select: { rawScore: true, maxScore: true } },
       },
     });
+    const updatedTicket = await prisma.ticket.findUnique({
+      where: { id: ticket.id },
+      select: { status: true },
+    });
 
     expect(attempt?.status).toBe("SCORED");
     expect(attempt?.submittedAt).not.toBeNull();
     expect(attempt?.score).not.toBeNull();
     expect(attempt?.moduleScores.length).toBeGreaterThan(0);
+    expect(updatedTicket?.status).toBe("USED");
   });
 });
