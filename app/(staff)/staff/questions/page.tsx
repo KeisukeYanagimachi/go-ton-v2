@@ -239,14 +239,41 @@ export default function StaffQuestionManagementPage() {
     }));
   };
 
+  const handleMoveOption = (fromIndex: number, direction: "up" | "down") => {
+    setFormState((previous) => {
+      const targetIndex = direction === "up" ? fromIndex - 1 : fromIndex + 1;
+      if (targetIndex < 0 || targetIndex >= previous.options.length) {
+        return previous;
+      }
+      const nextOptions = [...previous.options];
+      const [moved] = nextOptions.splice(fromIndex, 1);
+      nextOptions.splice(targetIndex, 0, moved);
+      return {
+        ...previous,
+        options: nextOptions.map((option, index) => ({
+          ...option,
+          position: index + 1,
+        })),
+      };
+    });
+  };
+
   const handleRemoveOption = (index: number) => {
     setFormState((previous) => {
       if (previous.options.length <= 2) {
         return previous;
       }
+      const removedWasCorrect = previous.options[index]?.isCorrect ?? false;
       const nextOptions = previous.options.filter(
         (_, optionIndex) => optionIndex !== index,
       );
+      if (removedWasCorrect) {
+        setFieldErrors((current) => ({
+          ...current,
+          options: "正解が未選択になりました。正解を再指定してください。",
+        }));
+        setFormError("入力内容を確認してください。");
+      }
       return {
         ...previous,
         options: nextOptions.map((option, optionIndex) => ({
@@ -726,6 +753,24 @@ export default function StaffQuestionManagementPage() {
                             "data-testid": `question-option-${index}`,
                           }}
                         />
+                        <Stack direction="row" spacing={1}>
+                          <Button
+                            variant="outlined"
+                            onClick={() => handleMoveOption(index, "up")}
+                            disabled={index === 0}
+                            data-testid={`question-option-move-up-${index}`}
+                          >
+                            上へ
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            onClick={() => handleMoveOption(index, "down")}
+                            disabled={index === formState.options.length - 1}
+                            data-testid={`question-option-move-down-${index}`}
+                          >
+                            下へ
+                          </Button>
+                        </Stack>
                         <Button
                           variant="outlined"
                           onClick={() => handleRemoveOption(index)}
@@ -742,6 +787,9 @@ export default function StaffQuestionManagementPage() {
                         {fieldErrors.options}
                       </Typography>
                     )}
+                    <Typography variant="caption" sx={{ color: "#64748b" }}>
+                      並び替えは保存時に反映されます。削除で正解が外れた場合は再指定してください。
+                    </Typography>
                     <Button
                       variant="outlined"
                       onClick={handleAddOption}
