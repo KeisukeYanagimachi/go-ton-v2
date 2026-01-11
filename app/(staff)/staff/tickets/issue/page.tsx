@@ -16,13 +16,9 @@ import QRCode from "qrcode";
 import { useEffect, useMemo, useState } from "react";
 
 type CandidateAssignment = {
-  candidateId: string;
+  id: string;
   fullName: string;
-  assignment: {
-    slotId: string;
-    startsAt: string;
-    endsAt: string;
-  } | null;
+  email: string | null;
 };
 
 type ExamVersionOption = {
@@ -38,7 +34,6 @@ type IssueResult = {
 
 type IssueErrorCode =
   | "CANDIDATE_NOT_FOUND"
-  | "NO_VISIT_SLOT"
   | "EXAM_VERSION_NOT_FOUND"
   | "EXAM_VERSION_NOT_PUBLISHED"
   | "INVALID_REQUEST"
@@ -50,16 +45,6 @@ const baseStyles = {
   minHeight: "100vh",
   bgcolor: "#f6f7f8",
   color: "#111418",
-};
-
-const formatSlotWindow = (startsAt: string, endsAt: string) => {
-  const formatter = new Intl.DateTimeFormat("ja-JP", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-  return `${formatter.format(new Date(startsAt))} 〜 ${formatter.format(
-    new Date(endsAt),
-  )}`;
 };
 
 export default function TicketIssuePage() {
@@ -74,7 +59,6 @@ export default function TicketIssuePage() {
 
   const errorMessageMap: Record<IssueErrorCode, string> = {
     CANDIDATE_NOT_FOUND: "候補者が見つかりません。",
-    NO_VISIT_SLOT: "来社枠が未割当のため受験票を発行できません。",
     EXAM_VERSION_NOT_FOUND: "試験バージョンが見つかりません。",
     EXAM_VERSION_NOT_PUBLISHED: "公開済みの試験バージョンのみ発行対象です。",
     INVALID_REQUEST: "入力内容を確認してください。",
@@ -84,7 +68,7 @@ export default function TicketIssuePage() {
   };
 
   const selectedCandidate = useMemo(
-    () => candidates.find((candidate) => candidate.candidateId === candidateId),
+    () => candidates.find((candidate) => candidate.id === candidateId),
     [candidates, candidateId],
   );
 
@@ -175,10 +159,7 @@ export default function TicketIssuePage() {
     }
   };
 
-  const canSubmit =
-    Boolean(candidateId) &&
-    Boolean(examVersionId) &&
-    Boolean(selectedCandidate?.assignment);
+  const canSubmit = Boolean(candidateId) && Boolean(examVersionId);
 
   return (
     <Box sx={baseStyles}>
@@ -191,9 +172,6 @@ export default function TicketIssuePage() {
               </Typography>
               <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
                 候補者と試験バージョンを選択し、受験票コードとQRを発行します。
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#94a3b8", mt: 0.5 }}>
-                来社枠の割当がない候補者には発行できません。
               </Typography>
             </Box>
 
@@ -214,17 +192,9 @@ export default function TicketIssuePage() {
                 }}
               >
                 {candidates.map((candidate) => (
-                  <MenuItem
-                    key={candidate.candidateId}
-                    value={candidate.candidateId}
-                  >
+                  <MenuItem key={candidate.id} value={candidate.id}>
                     {candidate.fullName}
-                    {candidate.assignment
-                      ? `（来社: ${formatSlotWindow(
-                          candidate.assignment.startsAt,
-                          candidate.assignment.endsAt,
-                        )}）`
-                      : "（来社枠未割当）"}
+                    {candidate.email ? `（${candidate.email}）` : ""}
                   </MenuItem>
                 ))}
               </TextField>
@@ -247,11 +217,6 @@ export default function TicketIssuePage() {
                   </MenuItem>
                 ))}
               </TextField>
-              {selectedCandidate && !selectedCandidate.assignment && (
-                <Alert severity="warning">
-                  この候補者は来社枠が未割当のため、受験票を発行できません。
-                </Alert>
-              )}
               {selectedCandidate && selectedExamVersion && (
                 <Typography variant="caption" color="text.secondary">
                   選択中: {selectedCandidate.fullName} /{" "}

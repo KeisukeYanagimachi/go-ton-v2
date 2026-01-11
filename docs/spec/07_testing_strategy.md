@@ -149,7 +149,6 @@
 - staff_roles
 - staff_users（E2E 用）
 - candidates
-- visit_slots
 - tickets
 - 試験（Exam / ExamVersion / Modules / Questions）
 

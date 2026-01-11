@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { requireStaffRoleFromRequest } from "@/features/auth/usecase/require-staff-role";
+import { listCandidates } from "@/features/candidates/usecase/list-candidates";
 import { listPublishedExamVersions } from "@/features/exams/usecase/list-published-exam-versions";
 import { buildTicketQrPayload } from "@/features/tickets/domain/ticket-qr";
 import { issueTicket } from "@/features/tickets/usecase/issue-ticket";
-import { listCandidateAssignments } from "@/features/visits/usecase/list-candidate-assignments";
 
 const requestSchema = z.object({
   candidateId: z.string().uuid(),
@@ -23,7 +23,7 @@ export const GET = async (request: Request) => {
   }
 
   const [candidates, examVersions] = await Promise.all([
-    listCandidateAssignments(),
+    listCandidates({}),
     listPublishedExamVersions(),
   ]);
 
@@ -68,7 +68,6 @@ export const POST = async (request: Request) => {
     ticketCode: result.ticketCode,
     candidateId: result.candidateId,
     examVersionId: result.examVersionId,
-    visitSlotId: result.visitSlotId,
     qrPayload,
   });
 };

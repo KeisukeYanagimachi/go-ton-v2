@@ -46,16 +46,6 @@ const createCandidate = async () =>
     },
   });
 
-const createVisitSlot = async () =>
-  prisma.visitSlot.create({
-    data: {
-      id: randomUUID(),
-      startsAt: new Date("2030-01-01T09:00:00Z"),
-      endsAt: new Date("2030-01-01T12:00:00Z"),
-      capacity: 10,
-    },
-  });
-
 const createExam = async () =>
   prisma.exam.create({
     data: {
@@ -175,23 +165,8 @@ describe("data model constraints (integration)", () => {
     );
   });
 
-  test("candidate_slot_assignments requires valid foreign keys", async () => {
-    const visitSlot = await createVisitSlot();
-
-    await expectForeignKeyViolation(
-      prisma.candidateSlotAssignment.create({
-        data: {
-          id: randomUUID(),
-          candidateId: randomUUID(),
-          visitSlotId: visitSlot.id,
-        },
-      }),
-    );
-  });
-
   test("tickets.ticket_code is unique", async () => {
     const candidate = await createCandidate();
-    const visitSlot = await createVisitSlot();
     const exam = await createExam();
     const examVersion = await createExamVersion(exam.id, 1);
     const ticketCode = `TICKET-${randomUUID()}`;
@@ -202,7 +177,6 @@ describe("data model constraints (integration)", () => {
         ticketCode,
         candidateId: candidate.id,
         examVersionId: examVersion.id,
-        visitSlotId: visitSlot.id,
         pinHash: "hashed-pin",
         status: "ACTIVE",
       },
@@ -215,7 +189,6 @@ describe("data model constraints (integration)", () => {
           ticketCode,
           candidateId: candidate.id,
           examVersionId: examVersion.id,
-          visitSlotId: visitSlot.id,
           pinHash: "hashed-pin",
           status: "ACTIVE",
         },
@@ -300,7 +273,6 @@ describe("data model constraints (integration)", () => {
       where: { code: "VERBAL" },
     });
     const candidate = await createCandidate();
-    const visitSlot = await createVisitSlot();
     const exam = await createExam();
     const examVersion = await createExamVersion(exam.id, 1);
     const ticket = await prisma.ticket.create({
@@ -309,7 +281,6 @@ describe("data model constraints (integration)", () => {
         ticketCode: `TICKET-${randomUUID()}`,
         candidateId: candidate.id,
         examVersionId: examVersion.id,
-        visitSlotId: visitSlot.id,
         pinHash: "hashed-pin",
         status: "ACTIVE",
       },
@@ -359,7 +330,6 @@ describe("data model constraints (integration)", () => {
 
   test("attempt_scores are unique per attempt", async () => {
     const candidate = await createCandidate();
-    const visitSlot = await createVisitSlot();
     const exam = await createExam();
     const examVersion = await createExamVersion(exam.id, 1);
     const ticket = await prisma.ticket.create({
@@ -368,7 +338,6 @@ describe("data model constraints (integration)", () => {
         ticketCode: `TICKET-${randomUUID()}`,
         candidateId: candidate.id,
         examVersionId: examVersion.id,
-        visitSlotId: visitSlot.id,
         pinHash: "hashed-pin",
         status: "ACTIVE",
       },

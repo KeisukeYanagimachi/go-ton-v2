@@ -94,34 +94,6 @@ export default function StaffHomePage() {
 
               <Paper
                 component="a"
-                href="/staff/visits/assignments"
-                data-testid="staff-home-visit-assignments-link"
-                sx={cardLinkSx}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  来社割当
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
-                  受験者を来社枠へ割り当てます。
-                </Typography>
-              </Paper>
-
-              <Paper
-                component="a"
-                href="/staff/visits"
-                data-testid="staff-home-visits-link"
-                sx={cardLinkSx}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  来社枠管理
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
-                  来社枠の作成・編集を行います。
-                </Typography>
-              </Paper>
-
-              <Paper
-                component="a"
                 href="/staff/results"
                 data-testid="staff-home-results-link"
                 sx={cardLinkSx}

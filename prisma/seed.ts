@@ -119,17 +119,6 @@ async function main() {
     skipDuplicates: true,
   });
 
-  await prisma.visitSlot.upsert({
-    where: { id: "30000000-0000-0000-0000-000000000001" },
-    update: {},
-    create: {
-      id: "30000000-0000-0000-0000-000000000001",
-      startsAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      endsAt: new Date(Date.now() + 26 * 60 * 60 * 1000),
-      capacity: 20,
-    },
-  });
-
   await prisma.candidate.createMany({
     data: [
       {
@@ -145,22 +134,6 @@ async function main() {
         email: "candidate.two@example.com",
         education: "大学院卒",
         birthDate: new Date("2000-02-02"),
-      },
-    ],
-    skipDuplicates: true,
-  });
-
-  await prisma.candidateSlotAssignment.createMany({
-    data: [
-      {
-        id: "41000000-0000-0000-0000-000000000001",
-        candidateId: "40000000-0000-0000-0000-000000000001",
-        visitSlotId: "30000000-0000-0000-0000-000000000001",
-      },
-      {
-        id: "41000000-0000-0000-0000-000000000002",
-        candidateId: "40000000-0000-0000-0000-000000000002",
-        visitSlotId: "30000000-0000-0000-0000-000000000001",
       },
     ],
     skipDuplicates: true,
@@ -219,7 +192,6 @@ async function main() {
         ticketCode: "TICKET-CAND-001",
         candidateId: "40000000-0000-0000-0000-000000000001",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        visitSlotId: "30000000-0000-0000-0000-000000000001",
         pinHash: hashPin("19990101"),
         status: "ACTIVE",
         createdByStaffUserId: "10000000-0000-0000-0000-000000000003",
@@ -229,7 +201,6 @@ async function main() {
         ticketCode: "TICKET-CAND-002",
         candidateId: "40000000-0000-0000-0000-000000000002",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        visitSlotId: "30000000-0000-0000-0000-000000000001",
         pinHash: hashPin("20000202"),
         status: "ACTIVE",
         createdByStaffUserId: "10000000-0000-0000-0000-000000000003",

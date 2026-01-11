@@ -14,16 +14,6 @@ const createCandidate = async () =>
     },
   });
 
-const createVisitSlot = async () =>
-  prisma.visitSlot.create({
-    data: {
-      id: randomUUID(),
-      startsAt: new Date("2030-01-01T09:00:00Z"),
-      endsAt: new Date("2030-01-01T12:00:00Z"),
-      capacity: 10,
-    },
-  });
-
 const createExamVersion = async () => {
   const exam = await prisma.exam.create({
     data: {
@@ -60,7 +50,6 @@ describe("candidate login route (integration)", () => {
 
   test("returns candidateId and ticketId for valid credentials", async () => {
     const candidate = await createCandidate();
-    const visitSlot = await createVisitSlot();
     const examVersion = await createExamVersion();
     const ticketCode = `TICKET-${randomUUID()}`;
     const pin = "19990101";
@@ -70,7 +59,6 @@ describe("candidate login route (integration)", () => {
         ticketCode,
         candidateId: candidate.id,
         examVersionId: examVersion.id,
-        visitSlotId: visitSlot.id,
         pinHash: hashPin(pin),
         status: "ACTIVE",
       },

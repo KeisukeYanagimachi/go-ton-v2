@@ -38,10 +38,13 @@ test("staff can lock and resume an attempt", async ({ page }) => {
   });
 
   await page.goto("/exam");
+  await page.waitForResponse("**/api/candidate/attempt");
   await expect(page.getByTestId("candidate-exam-page")).toBeVisible({
     timeout: 15000,
   });
-  await expect(page.getByTestId("candidate-locked-alert")).toBeVisible();
+  await expect(page.getByTestId("candidate-locked-alert")).toBeVisible({
+    timeout: 15000,
+  });
 
   const resumeResponse = await page.request.post("/api/staff/attempts/resume", {
     data: { attemptId: startPayload.attemptId },

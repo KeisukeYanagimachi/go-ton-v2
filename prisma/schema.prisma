@@ -109,39 +109,9 @@ model Candidate {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   tickets Ticket[]
-  slots   CandidateSlotAssignment[]
   attempts Attempt[]
 
   @@map("candidates")
-}
-
-model VisitSlot {
-  id        String   @id @default(uuid()) @db.Uuid @map("id")
-  startsAt  DateTime @map("starts_at")
-  endsAt    DateTime @map("ends_at")
-  capacity  Int      @default(0) @map("capacity")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  assignments CandidateSlotAssignment[]
-  tickets     Ticket[]
-
-  @@index([startsAt], map: "idx_visit_slots_starts_at")
-  @@map("visit_slots")
-}
-
-model CandidateSlotAssignment {
-  id          String   @id @default(uuid()) @db.Uuid @map("id")
-  candidateId String   @db.Uuid @map("candidate_id")
-  visitSlotId String   @db.Uuid @map("visit_slot_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  candidate Candidate @relation(fields: [candidateId], references: [id])
-  visitSlot VisitSlot @relation(fields: [visitSlotId], references: [id])
-
-  @@unique([candidateId, visitSlotId])
-  @@index([visitSlotId], map: "idx_candidate_slot_assignments_slot")
-  @@map("candidate_slot_assignments")
 }
 
 model Ticket {
@@ -149,7 +119,6 @@ model Ticket {
   ticketCode           String       @unique @map("ticket_code")
   candidateId          String       @db.Uuid @map("candidate_id")
   examVersionId        String       @db.Uuid @map("exam_version_id")
-  visitSlotId          String?      @db.Uuid @map("visit_slot_id")
   pinHash              String       @map("pin_hash")
   status               TicketStatus @default(ACTIVE) @map("status")
   replacedByTicketId   String?      @db.Uuid @map("replaced_by_ticket_id")
@@ -159,7 +128,6 @@ model Ticket {
 
   candidate       Candidate  @relation(fields: [candidateId], references: [id])
   examVersion     ExamVersion @relation(fields: [examVersionId], references: [id])
-  visitSlot       VisitSlot? @relation(fields: [visitSlotId], references: [id])
   replacedByTicket Ticket?   @relation("TicketReplacement", fields: [replacedByTicketId], references: [id])
   replacesTickets  Ticket[]  @relation("TicketReplacement")
   createdByStaffUser StaffUser? @relation("TicketCreatedBy", fields: [createdByStaffUserId], references: [id])

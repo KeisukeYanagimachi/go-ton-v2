@@ -6,7 +6,6 @@ import { hashPin } from "@/shared/utils/pin-hash";
 
 type IssueTicketError =
   | "CANDIDATE_NOT_FOUND"
-  | "NO_VISIT_SLOT"
   | "EXAM_VERSION_NOT_FOUND"
   | "EXAM_VERSION_NOT_PUBLISHED";
 
@@ -17,7 +16,6 @@ type IssueTicketResult =
       ticketCode: string;
       candidateId: string;
       examVersionId: string;
-      visitSlotId: string;
     }
   | { ok: false; error: IssueTicketError };
 
@@ -38,21 +36,11 @@ const issueTicket = async (
       where: { id: candidateId },
       select: {
         birthDate: true,
-        slots: {
-          orderBy: { createdAt: "desc" },
-          take: 1,
-          select: { visitSlotId: true },
-        },
       },
     });
 
     if (!candidate) {
       return { ok: false, error: "CANDIDATE_NOT_FOUND" };
-    }
-
-    const visitSlotId = candidate.slots[0]?.visitSlotId ?? null;
-    if (!visitSlotId) {
-      return { ok: false, error: "NO_VISIT_SLOT" };
     }
 
     const examVersion = await tx.examVersion.findUnique({
@@ -74,7 +62,6 @@ const issueTicket = async (
         ticketCode: `TICKET-${randomUUID()}`,
         candidateId,
         examVersionId,
-        visitSlotId,
         pinHash: hashPin(pin),
         status: "ACTIVE",
         createdByStaffUserId: staffUserId,
@@ -90,7 +77,6 @@ const issueTicket = async (
         ticketCode: ticket.ticketCode,
         candidateId,
         examVersionId,
-        visitSlotId,
       },
     });
 
@@ -100,10 +86,8 @@ const issueTicket = async (
       ticketCode: ticket.ticketCode,
       candidateId,
       examVersionId,
-      visitSlotId,
     };
   });
 
 export { issueTicket };
 export type { IssueTicketError, IssueTicketResult };
-

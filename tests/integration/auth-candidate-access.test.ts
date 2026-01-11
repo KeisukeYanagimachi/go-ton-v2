@@ -14,16 +14,6 @@ const createCandidate = async () =>
     },
   });
 
-const createVisitSlot = async () =>
-  prisma.visitSlot.create({
-    data: {
-      id: randomUUID(),
-      startsAt: new Date("2030-01-01T09:00:00Z"),
-      endsAt: new Date("2030-01-01T12:00:00Z"),
-      capacity: 10,
-    },
-  });
-
 const createExamVersion = async () => {
   const exam = await prisma.exam.create({
     data: {
@@ -51,7 +41,6 @@ describe("candidate authorization (integration)", () => {
 
   test("returns candidate when ticket and pin are valid", async () => {
     const candidate = await createCandidate();
-    const visitSlot = await createVisitSlot();
     const examVersion = await createExamVersion();
     const pin = "19990101";
     const ticketCode = `TICKET-${randomUUID()}`;
@@ -62,7 +51,6 @@ describe("candidate authorization (integration)", () => {
         ticketCode,
         candidateId: candidate.id,
         examVersionId: examVersion.id,
-        visitSlotId: visitSlot.id,
         pinHash: hashPin(pin),
         status: "ACTIVE",
       },
@@ -76,7 +64,6 @@ describe("candidate authorization (integration)", () => {
 
   test("returns null when pin does not match", async () => {
     const candidate = await createCandidate();
-    const visitSlot = await createVisitSlot();
     const examVersion = await createExamVersion();
     const ticketCode = `TICKET-${randomUUID()}`;
 
@@ -86,7 +73,6 @@ describe("candidate authorization (integration)", () => {
         ticketCode,
         candidateId: candidate.id,
         examVersionId: examVersion.id,
-        visitSlotId: visitSlot.id,
         pinHash: hashPin("19990101"),
         status: "ACTIVE",
       },
@@ -99,7 +85,6 @@ describe("candidate authorization (integration)", () => {
 
   test("returns null when ticket is not active", async () => {
     const candidate = await createCandidate();
-    const visitSlot = await createVisitSlot();
     const examVersion = await createExamVersion();
     const ticketCode = `TICKET-${randomUUID()}`;
 
@@ -109,7 +94,6 @@ describe("candidate authorization (integration)", () => {
         ticketCode,
         candidateId: candidate.id,
         examVersionId: examVersion.id,
-        visitSlotId: visitSlot.id,
         pinHash: hashPin("19990101"),
         status: "REVOKED",
       },
@@ -122,7 +106,6 @@ describe("candidate authorization (integration)", () => {
 
   test("returns null when another attempt is active", async () => {
     const candidate = await createCandidate();
-    const visitSlot = await createVisitSlot();
     const examVersion = await createExamVersion();
     const ticketCode = `TICKET-${randomUUID()}`;
     const ticket = await prisma.ticket.create({
@@ -131,7 +114,6 @@ describe("candidate authorization (integration)", () => {
         ticketCode,
         candidateId: candidate.id,
         examVersionId: examVersion.id,
-        visitSlotId: visitSlot.id,
         pinHash: hashPin("19990101"),
         status: "ACTIVE",
       },

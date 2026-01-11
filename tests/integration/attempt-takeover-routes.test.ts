@@ -2,8 +2,8 @@ import { randomUUID } from "crypto";
 import { afterAll, describe, expect, test } from "vitest";
 
 import {
-    createDevStaffSessionToken,
-    DEV_STAFF_SESSION_COOKIE,
+  createDevStaffSessionToken,
+  DEV_STAFF_SESSION_COOKIE,
 } from "@/features/auth/infra/dev-staff-session";
 import { disconnectPrisma, prisma } from "@/shared/db/prisma";
 import { hashPin } from "@/shared/utils/pin-hash";
@@ -116,16 +116,6 @@ const createCandidate = async () =>
     },
   });
 
-const createVisitSlot = async () =>
-  prisma.visitSlot.create({
-    data: {
-      id: randomUUID(),
-      startsAt: new Date("2030-01-01T09:00:00Z"),
-      endsAt: new Date("2030-01-01T12:00:00Z"),
-      capacity: 10,
-    },
-  });
-
 const createRequest = (url: string, body: unknown, cookie: string) =>
   new Request(url, {
     method: "POST",
@@ -162,7 +152,6 @@ describe("attempt takeover routes (integration)", () => {
     const cookie = `${DEV_STAFF_SESSION_COOKIE}=${token}`;
 
     const candidate = await createCandidate();
-    const visitSlot = await createVisitSlot();
     const { examVersion } = await createExamVersionBundle();
     const pin = "19990101";
     const ticketCode = `TICKET-${randomUUID()}`;
@@ -173,7 +162,6 @@ describe("attempt takeover routes (integration)", () => {
         ticketCode,
         candidateId: candidate.id,
         examVersionId: examVersion.id,
-        visitSlotId: visitSlot.id,
         pinHash: hashPin(pin),
         status: "ACTIVE",
       },

@@ -5,6 +5,7 @@
 - 2026-01-10: schema.sql の内容に合わせてモデル属性と制約を詳細化
 - 2026-01-10: Attempt 作成タイミングと session 取り扱いの補足を追記
 - 2026-01-10: Ticket に exam_version_id を紐づけ、Attempt の選定基準を明文化
+- 2026-01-11: 来社枠・来社割当（visit_slots / candidate_slot_assignments）をスコープ外として削除
 
 ## データモデル仕様（論理設計・不変条件）
 
@@ -105,40 +106,9 @@
 
 ---
 
-## 4. 来社・受験票関連
+## 4. 受験票関連
 
-### 4.1 Visit / Slot
-
-#### visit_slots
-
-- 来社日時の枠
-
-主な属性
-
-- id
-- starts_at / ends_at
-- capacity
-- created_at / updated_at
-
-**不変条件**
-
-- ends_at > starts_at
-- capacity >= 0
-
-#### candidate_slot_assignments
-
-- candidate と visit_slot の紐付け
-
-主な属性
-
-- id
-- candidate_id
-- visit_slot_id
-- created_at
-
----
-
-### 4.2 Ticket（受験票）
+### 4.1 Ticket（受験票）
 
 #### tickets
 
@@ -151,7 +121,6 @@
 - ticket_code（UNIQUE）
 - candidate_id
 - exam_version_id
-- visit_slot_id（NULL 可）
 - pin_hash
 - status（ACTIVE / REVOKED / USED）
 - replaced_by_ticket_id（NULL 可）

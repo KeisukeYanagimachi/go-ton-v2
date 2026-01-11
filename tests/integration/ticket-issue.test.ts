@@ -14,16 +14,6 @@ const createCandidate = async () =>
     },
   });
 
-const createVisitSlot = async () =>
-  prisma.visitSlot.create({
-    data: {
-      id: randomUUID(),
-      startsAt: new Date("2030-01-01T09:00:00Z"),
-      endsAt: new Date("2030-01-01T12:00:00Z"),
-      capacity: 10,
-    },
-  });
-
 const createExamVersion = async (status: "PUBLISHED" | "DRAFT") => {
   const exam = await prisma.exam.create({
     data: {
@@ -59,25 +49,12 @@ describe("ticket issue (integration)", () => {
     await disconnectPrisma();
   });
 
-  test("issues ticket when candidate has visit slot and exam is published", async () => {
+  test("issues ticket when candidate exists and exam is published", async () => {
     const staff = await createStaff();
     const candidate = await createCandidate();
-    const visitSlot = await createVisitSlot();
     const examVersion = await createExamVersion("PUBLISHED");
 
-    await prisma.candidateSlotAssignment.create({
-      data: {
-        id: randomUUID(),
-        candidateId: candidate.id,
-        visitSlotId: visitSlot.id,
-      },
-    });
-
-    const result = await issueTicket(
-      candidate.id,
-      examVersion.id,
-      staff.id,
-    );
+    const result = await issueTicket(candidate.id, examVersion.id, staff.id);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -90,42 +67,12 @@ describe("ticket issue (integration)", () => {
     }
   });
 
-  test("fails when candidate has no visit slot", async () => {
-    const staff = await createStaff();
-    const candidate = await createCandidate();
-    const examVersion = await createExamVersion("PUBLISHED");
-
-    const result = await issueTicket(
-      candidate.id,
-      examVersion.id,
-      staff.id,
-    );
-
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error).toBe("NO_VISIT_SLOT");
-    }
-  });
-
   test("fails when exam version is not published", async () => {
     const staff = await createStaff();
     const candidate = await createCandidate();
-    const visitSlot = await createVisitSlot();
     const examVersion = await createExamVersion("DRAFT");
 
-    await prisma.candidateSlotAssignment.create({
-      data: {
-        id: randomUUID(),
-        candidateId: candidate.id,
-        visitSlotId: visitSlot.id,
-      },
-    });
-
-    const result = await issueTicket(
-      candidate.id,
-      examVersion.id,
-      staff.id,
-    );
+    const result = await issueTicket(candidate.id, examVersion.id, staff.id);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {

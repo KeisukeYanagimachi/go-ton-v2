@@ -143,16 +143,6 @@ const createCandidate = async (fullName: string) =>
     },
   });
 
-const createVisitSlot = async () =>
-  prisma.visitSlot.create({
-    data: {
-      id: randomUUID(),
-      startsAt: new Date("2030-01-01T09:00:00Z"),
-      endsAt: new Date("2030-01-01T12:00:00Z"),
-      capacity: 10,
-    },
-  });
-
 const createRequest = (url: string, body: unknown, cookie?: string) =>
   new Request(url, {
     method: "POST",
@@ -180,7 +170,6 @@ describe("staff results routes (integration)", () => {
     const staff = await createStaffUser(`report-${randomUUID()}@example.com`);
     const candidateName = `Candidate ${randomUUID()}`;
     const candidate = await createCandidate(candidateName);
-    const visitSlot = await createVisitSlot();
     const examVersion = await createExamVersionBundle();
     const pin = "19990101";
     const ticketCode = `TICKET-${randomUUID()}`;
@@ -191,7 +180,6 @@ describe("staff results routes (integration)", () => {
         ticketCode,
         candidateId: candidate.id,
         examVersionId: examVersion.id,
-        visitSlotId: visitSlot.id,
         pinHash: hashPin(pin),
         status: "ACTIVE",
       },

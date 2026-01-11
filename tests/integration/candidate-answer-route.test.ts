@@ -88,16 +88,6 @@ const createCandidate = async () =>
     },
   });
 
-const createVisitSlot = async () =>
-  prisma.visitSlot.create({
-    data: {
-      id: randomUUID(),
-      startsAt: new Date("2030-01-01T09:00:00Z"),
-      endsAt: new Date("2030-01-01T12:00:00Z"),
-      capacity: 10,
-    },
-  });
-
 const createRequest = (url: string, body: unknown) =>
   new Request(url, {
     method: "POST",
@@ -114,7 +104,6 @@ describe("candidate answer route (integration)", () => {
 
   test("stores answer for attempt item", async () => {
     const candidate = await createCandidate();
-    const visitSlot = await createVisitSlot();
     const { examVersion } = await createExamVersionBundle();
     const pin = "19990101";
     const ticketCode = `TICKET-${randomUUID()}`;
@@ -125,7 +114,6 @@ describe("candidate answer route (integration)", () => {
         ticketCode,
         candidateId: candidate.id,
         examVersionId: examVersion.id,
-        visitSlotId: visitSlot.id,
         pinHash: hashPin(pin),
         status: "ACTIVE",
       },
