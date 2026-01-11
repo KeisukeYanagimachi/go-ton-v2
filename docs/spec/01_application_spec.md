@@ -8,6 +8,9 @@
 
 - 2026-01-11: 試験中の全画面化と離脱警告（ベストエフォート）を明文化
 - 2026-01-11: 試験中の画面内注意文言（離脱警告）を明文化
+- 2026-01-11: Staff の Attempt 一覧・検索・引き継ぎ操作の業務要件を明文化
+- 2026-01-11: 受験票再発行の入力・結果表示・エラー条件を明文化
+- 2026-01-11: 試験定義（Exam / ExamVersion / Module）の運用要件を明文化
 
 ---
 
@@ -174,6 +177,13 @@
 - 受験者がメールを見られない、QRを失った等のケースを想定
 - staff は対象 candidate に対して受験票を再発行できる
 - 再発行時、旧チケットは無効化される
+- 再発行は **受験票コード（ticket_code）** によって行う
+- 再発行の対象は **ACTIVE の ticket のみ**とする
+  - REVOKED / USED の ticket は対象外
+- 再発行の結果として以下を表示する
+  - 新しい受験票コード（new ticket code）
+  - 旧チケットが無効化されたこと
+- 再発行操作は **ADMIN / PROCTOR** が実行できる
 
 ---
 
@@ -186,6 +196,43 @@
   - 回答済み内容
   - 残り時間
   - 行動計測データ
+
+### 8.3 Attempt 一覧・検索・引き継ぎ操作（必須要件）
+
+- Staff は、当日運用のために Attempt を一覧で確認できる
+- 一覧から対象 Attempt を特定できること
+  - 必須の検索条件: **受験票コード（ticket_code）**
+  - 併用できる絞り込み: **Attempt 状態（IN_PROGRESS / LOCKED / SUBMITTED 等）**
+- 一覧に表示する必須項目
+  - Attempt ID
+  - Candidate 氏名
+  - 受験票コード（ticket_code）
+  - Attempt 状態
+  - 最終更新日時（updated_at）
+- 一覧から引き継ぎ操作（LOCK / RESUME）を実行できる
+  - LOCK は IN_PROGRESS の Attempt のみ対象
+  - RESUME は LOCKED の Attempt のみ対象
+  - 操作結果は一覧上で即時に確認できる
+
+### 8.4 試験定義の管理（必須要件）
+
+- Staff は試験（Exam）と試験バージョン（ExamVersion）を管理できる
+- ExamVersion は以下の状態を持つ
+  - DRAFT / PUBLISHED / ARCHIVED
+- 遷移は次のみ許可する
+  - DRAFT → PUBLISHED
+  - PUBLISHED → ARCHIVED
+- PUBLISHED の ExamVersion は編集不可
+  - 変更が必要な場合は **新しい ExamVersion を作成**する
+- 試験バージョンは **常に1つの Exam に紐づく**
+
+#### モジュール構成・時間配分（必須）
+
+- ExamVersion ごとにモジュール構成と制限時間を設定できる
+- 必須モジュール
+  - VERBAL / NONVERBAL / ENGLISH / STRUCTURAL
+- モジュール順序は position で固定し、重複は不可
+- 制限時間は module ごとに保持する
 
 ---
 

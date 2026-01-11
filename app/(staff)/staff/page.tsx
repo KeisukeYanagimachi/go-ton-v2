@@ -105,6 +105,22 @@ export default function StaffHomePage() {
                 再発行画面へ
               </Button>
             </Paper>
+            <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                試験定義の管理
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                Exam と ExamVersion を作成し、公開状態を管理します。
+              </Typography>
+              <Button
+                variant="outlined"
+                sx={{ mt: 3, fontWeight: 700 }}
+                href="/staff/exams"
+                data-testid="staff-home-exams-link"
+              >
+                試験定義へ
+              </Button>
+            </Paper>
           </Stack>
         </Stack>
       </Container>

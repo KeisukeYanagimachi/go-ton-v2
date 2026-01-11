@@ -7,20 +7,40 @@ import {
   Chip,
   Container,
   Divider,
+  MenuItem,
   Paper,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type ActionState = "idle" | "submitting" | "success" | "error";
 type MessageCode =
-  | "ATTEMPT_ID_REQUIRED"
   | "REQUEST_FAILED"
   | "NETWORK_ERROR"
   | "ATTEMPT_LOCKED"
-  | "ATTEMPT_RESUMED";
+  | "ATTEMPT_RESUMED"
+  | "LIST_FAILED";
+type AttemptStatus =
+  | "NOT_STARTED"
+  | "IN_PROGRESS"
+  | "LOCKED"
+  | "SUBMITTED"
+  | "SCORED"
+  | "ABORTED";
+type AttemptRow = {
+  attemptId: string;
+  candidateName: string;
+  ticketCode: string;
+  status: AttemptStatus;
+  updatedAt: string;
+};
 
 const baseStyles = {
   minHeight: "100vh",
@@ -29,18 +49,67 @@ const baseStyles = {
 };
 
 export default function StaffAttemptTakeoverPage() {
-  const [attemptId, setAttemptId] = useState("");
   const [deviceId, setDeviceId] = useState("");
+  const [searchTicketCode, setSearchTicketCode] = useState("");
+  const [statusFilter, setStatusFilter] = useState<AttemptStatus | "ALL">(
+    "ALL",
+  );
+  const [attempts, setAttempts] = useState<AttemptRow[]>([]);
   const [message, setMessage] = useState<MessageCode | null>(null);
   const [state, setState] = useState<ActionState>("idle");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAction = async (endpoint: "lock" | "resume") => {
-    if (!attemptId.trim()) {
-      setMessage("ATTEMPT_ID_REQUIRED");
+  const statusOptions: Array<{ label: string; value: AttemptStatus | "ALL" }> =
+    [
+      { label: "すべて", value: "ALL" },
+      { label: "IN_PROGRESS", value: "IN_PROGRESS" },
+      { label: "LOCKED", value: "LOCKED" },
+      { label: "NOT_STARTED", value: "NOT_STARTED" },
+      { label: "SUBMITTED", value: "SUBMITTED" },
+      { label: "SCORED", value: "SCORED" },
+      { label: "ABORTED", value: "ABORTED" },
+    ];
+
+  const fetchAttempts = async () => {
+    setIsLoading(true);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/staff/attempts/search", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          ticketCode: searchTicketCode.trim() || undefined,
+          status: statusFilter === "ALL" ? undefined : statusFilter,
+        }),
+      });
+
+      if (!response.ok) {
+        setMessage("LIST_FAILED");
+        setState("error");
+        return;
+      }
+
+      const payload = (await response.json()) as { attempts: AttemptRow[] };
+      setAttempts(payload.attempts);
+      setState("idle");
+    } catch (requestError) {
+      setMessage("NETWORK_ERROR");
       setState("error");
-      return;
+    } finally {
+      setIsLoading(false);
     }
+  };
 
+  useEffect(() => {
+    void fetchAttempts();
+  }, []);
+
+  const handleAction = async (
+    endpoint: "lock" | "resume",
+    attemptId: string,
+  ) => {
     setState("submitting");
     setMessage(null);
 
@@ -66,6 +135,7 @@ export default function StaffAttemptTakeoverPage() {
       await response.json();
       setMessage(endpoint === "lock" ? "ATTEMPT_LOCKED" : "ATTEMPT_RESUMED");
       setState("success");
+      await fetchAttempts();
     } catch (requestError) {
       setMessage("NETWORK_ERROR");
       setState("error");
@@ -87,11 +157,11 @@ export default function StaffAttemptTakeoverPage() {
           ? "エラー"
           : "待機中";
   const messageLabelMap: Record<MessageCode, string> = {
-    ATTEMPT_ID_REQUIRED: "Attempt ID を入力してください。",
     REQUEST_FAILED: "操作に失敗しました。入力内容を確認してください。",
     NETWORK_ERROR: "通信に失敗しました。再度お試しください。",
     ATTEMPT_LOCKED: "Attempt を LOCKED にしました。",
     ATTEMPT_RESUMED: "Attempt を再開しました。",
+    LIST_FAILED: "Attempt 一覧の取得に失敗しました。",
   };
 
   return (
@@ -236,25 +306,54 @@ export default function StaffAttemptTakeoverPage() {
           <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
             <Stack spacing={3}>
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                操作対象の指定
+                Attempt 一覧・検索
               </Typography>
-              <Stack spacing={2}>
+              <Stack
+                direction={{ xs: "column", md: "row" }}
+                spacing={2}
+                alignItems={{ xs: "stretch", md: "center" }}
+              >
                 <TextField
-                  label="Attempt ID"
-                  value={attemptId}
-                  onChange={(event) => setAttemptId(event.target.value)}
+                  label="受験票コード"
+                  value={searchTicketCode}
+                  onChange={(event) => setSearchTicketCode(event.target.value)}
                   fullWidth
-                  inputProps={{ "data-testid": "staff-attempt-id" }}
+                  inputProps={{ "data-testid": "staff-attempt-search-ticket" }}
                 />
                 <TextField
-                  label="Device ID（任意）"
-                  value={deviceId}
-                  onChange={(event) => setDeviceId(event.target.value)}
+                  select
+                  label="Attempt 状態"
+                  value={statusFilter}
+                  onChange={(event) =>
+                    setStatusFilter(event.target.value as AttemptStatus | "ALL")
+                  }
                   fullWidth
-                  inputProps={{ "data-testid": "staff-device-id" }}
-                  helperText="入力がない場合は端末未指定として記録されます。"
-                />
+                  inputProps={{ "data-testid": "staff-attempt-search-status" }}
+                >
+                  {statusOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <Button
+                  variant="contained"
+                  sx={{ fontWeight: 700, minWidth: 140 }}
+                  onClick={fetchAttempts}
+                  data-testid="staff-attempt-search-submit"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "検索中..." : "検索"}
+                </Button>
               </Stack>
+              <TextField
+                label="Device ID（任意）"
+                value={deviceId}
+                onChange={(event) => setDeviceId(event.target.value)}
+                fullWidth
+                inputProps={{ "data-testid": "staff-device-id" }}
+                helperText="RESUME の際に端末IDを指定する場合に入力してください。"
+              />
 
               {message && alertProps && (
                 <Alert {...alertProps} data-testid="staff-attempt-message">
@@ -289,25 +388,88 @@ export default function StaffAttemptTakeoverPage() {
                     fontWeight: 700,
                   }}
                 />
-                <Button
-                  variant="outlined"
-                  sx={{ fontWeight: 700 }}
-                  data-testid="staff-attempt-lock"
-                  onClick={() => handleAction("lock")}
-                  disabled={state === "submitting"}
-                >
-                  {state === "submitting" ? "処理中..." : "LOCK"}
-                </Button>
-                <Button
-                  variant="contained"
-                  sx={{ fontWeight: 700, bgcolor: "#111418" }}
-                  data-testid="staff-attempt-resume"
-                  onClick={() => handleAction("resume")}
-                  disabled={state === "submitting"}
-                >
-                  {state === "submitting" ? "処理中..." : "RESUME"}
-                </Button>
+                <Typography variant="body2" sx={{ color: "#64748b" }}>
+                  {isLoading ? "一覧更新中..." : `件数: ${attempts.length}`}
+                </Typography>
               </Stack>
+
+              <Table size="small" data-testid="staff-attempt-list">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Attempt ID</TableCell>
+                    <TableCell>Candidate</TableCell>
+                    <TableCell>Ticket</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Updated</TableCell>
+                    <TableCell align="right">操作</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {attempts.map((attempt) => {
+                    const updatedLabel = new Date(
+                      attempt.updatedAt,
+                    ).toLocaleString();
+                    const canLock = attempt.status === "IN_PROGRESS";
+                    const canResume = attempt.status === "LOCKED";
+
+                    return (
+                      <TableRow
+                        key={attempt.attemptId}
+                        data-testid={`staff-attempt-row-${attempt.attemptId}`}
+                      >
+                        <TableCell>{attempt.attemptId}</TableCell>
+                        <TableCell>{attempt.candidateName}</TableCell>
+                        <TableCell>{attempt.ticketCode}</TableCell>
+                        <TableCell>{attempt.status}</TableCell>
+                        <TableCell>{updatedLabel}</TableCell>
+                        <TableCell align="right">
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            justifyContent="flex-end"
+                          >
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              data-testid={`staff-attempt-lock-${attempt.attemptId}`}
+                              onClick={() =>
+                                handleAction("lock", attempt.attemptId)
+                              }
+                              disabled={!canLock || state === "submitting"}
+                            >
+                              LOCK
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              sx={{ bgcolor: "#111418" }}
+                              data-testid={`staff-attempt-resume-${attempt.attemptId}`}
+                              onClick={() =>
+                                handleAction("resume", attempt.attemptId)
+                              }
+                              disabled={!canResume || state === "submitting"}
+                            >
+                              RESUME
+                            </Button>
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {attempts.length === 0 && !isLoading && (
+                    <TableRow>
+                      <TableCell colSpan={6}>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "#64748b", py: 2 }}
+                        >
+                          該当する Attempt がありません。
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </Stack>
           </Paper>
         </Stack>
