@@ -94,6 +94,7 @@ export default function StaffQuestionManagementPage() {
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
+  const [showIds, setShowIds] = useState(false);
   const [formState, setFormState] =
     useState<QuestionDetail>(defaultFormState());
   const [listError, setListError] = useState<string | null>(null);
@@ -110,6 +111,15 @@ export default function StaffQuestionManagementPage() {
     () => [{ categoryId: "all", name: "すべて", code: "ALL" }, ...modules],
     [modules],
   );
+
+  const formatUpdatedAt = (value: string) =>
+    new Date(value).toLocaleString("ja-JP", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   const detailModuleId =
     formState.moduleCategoryId ?? modules[0]?.categoryId ?? "";
@@ -511,6 +521,15 @@ export default function StaffQuestionManagementPage() {
                     ))}
                   </Select>
                 </FormControl>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={showIds}
+                      onChange={(event) => setShowIds(event.target.checked)}
+                    />
+                  }
+                  label="IDを表示"
+                />
                 {listError && <Alert severity="error">{listError}</Alert>}
                 <Stack
                   spacing={1}
@@ -551,6 +570,13 @@ export default function StaffQuestionManagementPage() {
                               }
                               variant="outlined"
                             />
+                            {question.subcategoryName && (
+                              <Chip
+                                label={question.subcategoryName}
+                                size="small"
+                                variant="outlined"
+                              />
+                            )}
                             {!question.isActive && (
                               <Chip label="無効" size="small" color="default" />
                             )}
@@ -565,8 +591,16 @@ export default function StaffQuestionManagementPage() {
                             variant="caption"
                             sx={{ color: "#64748b" }}
                           >
-                            ID: {question.questionId}
+                            最終更新: {formatUpdatedAt(question.updatedAt)}
                           </Typography>
+                          {showIds && (
+                            <Typography
+                              variant="caption"
+                              sx={{ color: "#94a3b8" }}
+                            >
+                              ID: {question.questionId}
+                            </Typography>
+                          )}
                         </Stack>
                         <Button
                           size="small"
