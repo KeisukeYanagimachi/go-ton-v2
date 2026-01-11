@@ -52,9 +52,16 @@ export const GET = async (
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
-  const params = paramsSchema.safeParse(context.params);
+  const questionId =
+    context.params?.questionId ??
+    new URL(request.url).pathname.split("/").pop() ??
+    "";
+  const params = paramsSchema.safeParse({ questionId });
   if (!params.success) {
-    return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400 });
+    return NextResponse.json(
+      { error: "INVALID_REQUEST", message: "問題の指定を確認してください。" },
+      { status: 400 },
+    );
   }
 
   const result = await getQuestionDetail(params.data.questionId);
@@ -78,9 +85,16 @@ export const PATCH = async (
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
-  const params = paramsSchema.safeParse(context.params);
+  const questionId =
+    context.params?.questionId ??
+    new URL(request.url).pathname.split("/").pop() ??
+    "";
+  const params = paramsSchema.safeParse({ questionId });
   if (!params.success) {
-    return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400 });
+    return NextResponse.json(
+      { error: "INVALID_REQUEST", message: "問題の指定を確認してください。" },
+      { status: 400 },
+    );
   }
 
   const payload = updateSchema.safeParse(await request.json());
