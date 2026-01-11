@@ -73,19 +73,27 @@ export default function StaffResultsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const fetchResults = async () => {
+  const fetchResults = async (filters?: {
+    ticketCode?: string;
+    candidateName?: string;
+    statusFilter?: AttemptStatus | "ALL";
+  }) => {
     setIsLoading(true);
     setMessage(null);
     try {
+      const resolvedTicketCode = filters?.ticketCode ?? ticketCode;
+      const resolvedCandidateName = filters?.candidateName ?? candidateName;
+      const resolvedStatusFilter = filters?.statusFilter ?? statusFilter;
       const response = await fetch("/api/staff/results/search", {
         method: "POST",
         headers: {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          ticketCode: ticketCode.trim() || undefined,
-          candidateName: candidateName.trim() || undefined,
-          status: statusFilter === "ALL" ? undefined : statusFilter,
+          ticketCode: resolvedTicketCode.trim() || undefined,
+          candidateName: resolvedCandidateName.trim() || undefined,
+          status:
+            resolvedStatusFilter === "ALL" ? undefined : resolvedStatusFilter,
         }),
       });
 
@@ -116,6 +124,11 @@ export default function StaffResultsPage() {
     setTicketCode("");
     setCandidateName("");
     setStatusFilter("ALL");
+    void fetchResults({
+      ticketCode: "",
+      candidateName: "",
+      statusFilter: "ALL",
+    });
   };
 
   return (

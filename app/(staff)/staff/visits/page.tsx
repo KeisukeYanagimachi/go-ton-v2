@@ -263,6 +263,9 @@ export default function StaffVisitSlotsPage() {
                     </Button>
                   ) : null}
                 </Stack>
+                <Typography variant="caption" color="text.secondary">
+                  来社枠の作成・編集は ADMIN のみが実行できます。
+                </Typography>
 
                 {message ? <Alert severity="success">{message}</Alert> : null}
                 {formError ? <Alert severity="error">{formError}</Alert> : null}

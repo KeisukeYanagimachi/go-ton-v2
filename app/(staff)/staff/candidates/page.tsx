@@ -57,6 +57,7 @@ export default function StaffCandidatesPage() {
     (!isCreating && !selectedCandidateId) ||
     !formState.fullName.trim() ||
     !formState.birthDate.trim();
+  const isFormActive = isCreating || Boolean(selectedCandidateId);
 
   const selectedCandidate = useMemo(
     () =>
@@ -350,125 +351,193 @@ export default function StaffCandidatesPage() {
                   <Typography variant="body2" color="text.secondary">
                     {isCreating
                       ? "候補者情報を入力して登録します。"
-                      : "候補者の情報を確認・編集します。"}
+                      : selectedCandidate
+                        ? "候補者の情報を確認・編集します。"
+                        : "一覧から候補者を選ぶか、新規作成を開始してください。"}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     候補者の作成・編集は ADMIN のみが実行できます。
                   </Typography>
                 </Box>
 
+                {!isFormActive && (
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      borderRadius: 2,
+                      p: 3,
+                      bgcolor: "rgba(148, 163, 184, 0.08)",
+                    }}
+                  >
+                    <Stack spacing={2}>
+                      <Typography variant="body2" color="text.secondary">
+                        候補者が選択されていません。
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        onClick={handleCreate}
+                        sx={{ alignSelf: "flex-start", fontWeight: 700 }}
+                        data-testid="staff-candidates-empty-create"
+                      >
+                        新規候補者を登録する
+                      </Button>
+                    </Stack>
+                  </Paper>
+                )}
+
                 {selectedCandidate && !isCreating && (
-                  <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                    <Paper sx={{ flex: 1, p: 2, borderRadius: 2 }}>
-                      <Typography variant="overline" sx={{ color: "#64748b" }}>
-                        Candidate ID
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {selectedCandidate.candidateId}
-                      </Typography>
-                    </Paper>
-                    <Paper sx={{ flex: 1, p: 2, borderRadius: 2 }}>
-                      <Typography variant="overline" sx={{ color: "#64748b" }}>
-                        更新日時
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {new Date(selectedCandidate.updatedAt).toLocaleString(
-                          "ja-JP",
-                          {
-                            year: "numeric",
-                            month: "2-digit",
-                            day: "2-digit",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          },
-                        )}
-                      </Typography>
+                  <Stack spacing={2}>
+                    <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                      <Paper sx={{ flex: 1, p: 2, borderRadius: 2 }}>
+                        <Typography
+                          variant="overline"
+                          sx={{ color: "#64748b" }}
+                        >
+                          Candidate ID
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {selectedCandidate.candidateId}
+                        </Typography>
+                      </Paper>
+                      <Paper sx={{ flex: 1, p: 2, borderRadius: 2 }}>
+                        <Typography
+                          variant="overline"
+                          sx={{ color: "#64748b" }}
+                        >
+                          更新日時
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {new Date(selectedCandidate.updatedAt).toLocaleString(
+                            "ja-JP",
+                            {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )}
+                        </Typography>
+                      </Paper>
+                    </Stack>
+                    <Paper sx={{ p: 2, borderRadius: 2 }}>
+                      <Stack spacing={1}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 700 }}
+                        >
+                          登録情報
+                        </Typography>
+                        <Typography variant="body2">
+                          氏名: {formState.fullName || "-"}
+                        </Typography>
+                        <Typography variant="body2">
+                          生年月日: {formState.birthDate || "-"}
+                        </Typography>
+                        <Typography variant="body2">
+                          メール: {formState.email || "-"}
+                        </Typography>
+                        <Typography variant="body2">
+                          学歴: {formState.education || "-"}
+                        </Typography>
+                      </Stack>
                     </Paper>
                   </Stack>
                 )}
 
-                <Stack spacing={2}>
-                  <TextField
-                    label="氏名"
-                    value={formState.fullName}
-                    onChange={(event) =>
-                      setFormState((previous) => ({
-                        ...previous,
-                        fullName: event.target.value,
-                      }))
-                    }
-                    fullWidth
-                    required
-                    inputProps={{ "data-testid": "staff-candidate-full-name" }}
-                  />
-                  <TextField
-                    label="メールアドレス"
-                    value={formState.email}
-                    onChange={(event) =>
-                      setFormState((previous) => ({
-                        ...previous,
-                        email: event.target.value,
-                      }))
-                    }
-                    fullWidth
-                    inputProps={{ "data-testid": "staff-candidate-email" }}
-                  />
-                  <TextField
-                    label="学歴"
-                    value={formState.education}
-                    onChange={(event) =>
-                      setFormState((previous) => ({
-                        ...previous,
-                        education: event.target.value,
-                      }))
-                    }
-                    fullWidth
-                    inputProps={{ "data-testid": "staff-candidate-education" }}
-                  />
-                  <TextField
-                    label="生年月日"
-                    type="date"
-                    value={formState.birthDate}
-                    onChange={(event) =>
-                      setFormState((previous) => ({
-                        ...previous,
-                        birthDate: event.target.value,
-                      }))
-                    }
-                    fullWidth
-                    required
-                    InputLabelProps={{ shrink: true }}
-                    inputProps={{
-                      "data-testid": "staff-candidate-birth-date",
-                    }}
-                  />
-                </Stack>
+                {isFormActive && (
+                  <>
+                    <Stack spacing={2}>
+                      <TextField
+                        label="氏名"
+                        value={formState.fullName}
+                        onChange={(event) =>
+                          setFormState((previous) => ({
+                            ...previous,
+                            fullName: event.target.value,
+                          }))
+                        }
+                        fullWidth
+                        required
+                        inputProps={{
+                          "data-testid": "staff-candidate-full-name",
+                        }}
+                      />
+                      <TextField
+                        label="メールアドレス"
+                        value={formState.email}
+                        onChange={(event) =>
+                          setFormState((previous) => ({
+                            ...previous,
+                            email: event.target.value,
+                          }))
+                        }
+                        fullWidth
+                        inputProps={{ "data-testid": "staff-candidate-email" }}
+                      />
+                      <TextField
+                        label="学歴"
+                        value={formState.education}
+                        onChange={(event) =>
+                          setFormState((previous) => ({
+                            ...previous,
+                            education: event.target.value,
+                          }))
+                        }
+                        fullWidth
+                        inputProps={{
+                          "data-testid": "staff-candidate-education",
+                        }}
+                      />
+                      <TextField
+                        label="生年月日"
+                        type="date"
+                        value={formState.birthDate}
+                        onChange={(event) =>
+                          setFormState((previous) => ({
+                            ...previous,
+                            birthDate: event.target.value,
+                          }))
+                        }
+                        fullWidth
+                        required
+                        InputLabelProps={{ shrink: true }}
+                        inputProps={{
+                          "data-testid": "staff-candidate-birth-date",
+                        }}
+                      />
+                    </Stack>
 
-                {formError && (
-                  <Alert severity="error" data-testid="staff-candidate-error">
-                    {formError}
-                  </Alert>
-                )}
-                {formMessage && (
-                  <Alert
-                    severity="success"
-                    data-testid="staff-candidate-message"
-                  >
-                    {formMessage}
-                  </Alert>
-                )}
+                    {formError && (
+                      <Alert
+                        severity="error"
+                        data-testid="staff-candidate-error"
+                      >
+                        {formError}
+                      </Alert>
+                    )}
+                    {formMessage && (
+                      <Alert
+                        severity="success"
+                        data-testid="staff-candidate-message"
+                      >
+                        {formMessage}
+                      </Alert>
+                    )}
 
-                <Box sx={{ display: "flex", gap: 2 }}>
-                  <Button
-                    variant="contained"
-                    onClick={handleSave}
-                    disabled={isSaveDisabled}
-                    data-testid="staff-candidate-save"
-                    sx={{ fontWeight: 700 }}
-                  >
-                    保存
-                  </Button>
-                </Box>
+                    <Box sx={{ display: "flex", gap: 2 }}>
+                      <Button
+                        variant="contained"
+                        onClick={handleSave}
+                        disabled={isSaveDisabled}
+                        data-testid="staff-candidate-save"
+                        sx={{ fontWeight: 700 }}
+                      >
+                        保存
+                      </Button>
+                    </Box>
+                  </>
+                )}
               </Stack>
             </Paper>
           </Box>

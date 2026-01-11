@@ -63,17 +63,24 @@ export default function StaffAuditLogsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const fetchLogs = async () => {
+  const fetchLogs = async (filters?: {
+    actionFilter?: string;
+    fromDate?: string;
+    toDate?: string;
+  }) => {
     setIsLoading(true);
     setMessage(null);
     try {
+      const resolvedAction = filters?.actionFilter ?? actionFilter;
+      const resolvedFrom = filters?.fromDate ?? fromDate;
+      const resolvedTo = filters?.toDate ?? toDate;
       const response = await fetch("/api/staff/audit-logs/search", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          action: actionFilter === "ALL" ? undefined : actionFilter,
-          from: fromDate || undefined,
-          to: toDate || undefined,
+          action: resolvedAction === "ALL" ? undefined : resolvedAction,
+          from: resolvedFrom || undefined,
+          to: resolvedTo || undefined,
         }),
       });
 
@@ -104,6 +111,7 @@ export default function StaffAuditLogsPage() {
     setActionFilter("ALL");
     setFromDate("");
     setToDate("");
+    void fetchLogs({ actionFilter: "ALL", fromDate: "", toDate: "" });
   };
 
   return (

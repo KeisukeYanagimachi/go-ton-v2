@@ -236,8 +236,23 @@ export default function StaffVisitAssignmentsPage() {
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   来社枠の割当
                 </Typography>
+                <Typography variant="body2" sx={{ color: "#64748b" }}>
+                  定員を超える割当は保存できません。既存の割当変更は監査ログに記録されます。
+                </Typography>
                 {message ? <Alert severity="success">{message}</Alert> : null}
                 {formError ? <Alert severity="error">{formError}</Alert> : null}
+                {selectedCandidate ? (
+                  <Alert severity="info">
+                    現在の割当:{" "}
+                    {selectedCandidate.assignment
+                      ? `${formatDateTime(
+                          selectedCandidate.assignment.startsAt,
+                        )} - ${formatDateTime(
+                          selectedCandidate.assignment.endsAt,
+                        )}`
+                      : "未割当"}
+                  </Alert>
+                ) : null}
                 <TextField
                   select
                   label="受験者"

@@ -288,7 +288,7 @@ export default function CandidateLoginPage() {
                   onChange={(event) => handleQrInput(event.target.value)}
                   fullWidth
                   inputProps={{ "data-testid": "candidate-qr-payload" }}
-                  helperText="QRリーダーで読み取った文字列を入力してください。"
+                  helperText="読み取った内容は受験票コード欄に自動で反映されます。"
                 />
                 <Box
                   sx={{
