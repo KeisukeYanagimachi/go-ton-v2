@@ -38,8 +38,23 @@ const listQuestions = async (
   }
 
   if (input.moduleCategoryId) {
+    const moduleCategory = await prisma.questionCategory.findUnique({
+      where: { id: input.moduleCategoryId },
+      select: { id: true },
+    });
+    const subcategories = moduleCategory
+      ? await prisma.questionCategory.findMany({
+          where: { parentId: moduleCategory.id },
+          select: { id: true },
+        })
+      : [];
+    const categoryIds = [
+      input.moduleCategoryId,
+      ...subcategories.map((c) => c.id),
+    ];
+
     where.categories = {
-      some: { categoryId: input.moduleCategoryId },
+      some: { categoryId: { in: categoryIds } },
     };
   }
 
@@ -87,9 +102,11 @@ const listQuestions = async (
         ? moduleCategory.name
         : null;
     const moduleName = moduleCode
-      ? moduleNameByCode.get(moduleCode) ?? moduleCode
+      ? (moduleNameByCode.get(moduleCode) ?? moduleCode)
       : null;
-    const subcategoryName = moduleAssignment?.parent ? moduleAssignment.name : null;
+    const subcategoryName = moduleAssignment?.parent
+      ? moduleAssignment.name
+      : null;
 
     return {
       questionId: question.id,
@@ -105,4 +122,3 @@ const listQuestions = async (
 
 export { listQuestions };
 export type { ListQuestionsInput, QuestionSummary };
-
