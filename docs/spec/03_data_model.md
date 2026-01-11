@@ -98,6 +98,8 @@
 
 - id
 - full_name
+- email
+- education
 - birth_date
 - created_at / updated_at
 
