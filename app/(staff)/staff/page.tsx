@@ -121,6 +121,22 @@ export default function StaffHomePage() {
                 試験定義へ
               </Button>
             </Paper>
+            <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                問題管理
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                問題の作成・編集・検索を行います。
+              </Typography>
+              <Button
+                variant="outlined"
+                sx={{ mt: 3, fontWeight: 700 }}
+                href="/staff/questions"
+                data-testid="staff-home-questions-link"
+              >
+                問題管理へ
+              </Button>
+            </Paper>
           </Stack>
         </Stack>
       </Container>

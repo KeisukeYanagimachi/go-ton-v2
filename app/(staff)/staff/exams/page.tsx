@@ -5,13 +5,13 @@ import {
   Box,
   Button,
   Container,
-  InputAdornment,
   MenuItem,
   Paper,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 type ModuleMaster = {
@@ -52,6 +52,27 @@ type ExamResponse = {
 };
 
 const REQUIRED_CODES = ["VERBAL", "NONVERBAL", "ENGLISH", "STRUCTURAL"];
+
+const assignmentErrorMessage = (code?: string) => {
+  switch (code) {
+    case "EXAM_VERSION_NOT_FOUND":
+      return "試験バージョンが見つかりません。";
+    case "INVALID_STATE":
+      return "DRAFT の試験バージョンのみ割当を変更できます。";
+    case "MODULE_NOT_IN_VERSION":
+      return "対象のモジュールが試験バージョンに含まれていません。";
+    case "QUESTION_NOT_FOUND":
+      return "対象の問題が見つかりません。";
+    case "DUPLICATE_QUESTION":
+      return "同じ問題はすでに割り当て済みです。";
+    case "DUPLICATE_POSITION":
+      return "同じ順序はすでに使用されています。";
+    case "NOT_FOUND":
+      return "対象の割当が見つかりません。";
+    default:
+      return "出題割当に失敗しました。";
+  }
+};
 
 export default function StaffExamManagementPage() {
   const [exams, setExams] = useState<ExamSummary[]>([]);
@@ -228,7 +249,9 @@ export default function StaffExamManagementPage() {
 
   const fetchQuestions = async () => {
     try {
-      const response = await fetch("/api/staff/questions", { method: "GET" });
+      const response = await fetch("/api/staff/questions/active", {
+        method: "GET",
+      });
       if (!response.ok) {
         return;
       }
@@ -473,7 +496,7 @@ export default function StaffExamManagementPage() {
 
       if (!response.ok) {
         const payload = (await response.json()) as { error?: string };
-        setAssignmentError(payload.error ?? "出題割当に失敗しました。");
+        setAssignmentError(assignmentErrorMessage(payload.error));
         return;
       }
 
@@ -496,7 +519,7 @@ export default function StaffExamManagementPage() {
 
       if (!response.ok) {
         const payload = (await response.json()) as { error?: string };
-        setAssignmentError(payload.error ?? "削除に失敗しました。");
+        setAssignmentError(assignmentErrorMessage(payload.error));
         return;
       }
 
@@ -586,7 +609,16 @@ export default function StaffExamManagementPage() {
                   fullWidth
                   inputProps={{ "data-testid": "exam-search" }}
                 />
-                <Stack spacing={1} sx={{ flex: 1, overflow: "auto", pr: 1 }}>
+                <Stack
+                  spacing={1}
+                  sx={{
+                    flex: 1,
+                    minHeight: 0,
+                    overflowY: "auto",
+                    pr: 1,
+                    maxHeight: { xs: 420, lg: "calc(100vh - 360px)" },
+                  }}
+                >
                   {filteredExams.map((exam) => {
                     const isSelected = exam.examId === selectedExamId;
                     return (
@@ -919,9 +951,10 @@ export default function StaffExamManagementPage() {
                   <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                     <Stack spacing={2}>
                       <Stack
-                        direction={{ xs: "column", md: "row" }}
+                        direction="row"
                         spacing={2}
-                        alignItems={{ xs: "stretch", md: "flex-end" }}
+                        alignItems="center"
+                        sx={{ flexWrap: { xs: "wrap", sm: "nowrap" } }}
                       >
                         <TextField
                           label="問題を検索（選択モジュール内）"
@@ -931,22 +964,20 @@ export default function StaffExamManagementPage() {
                           }
                           fullWidth
                           inputProps={{ "data-testid": "exam-question-search" }}
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <Button
-                                  size="small"
-                                  variant="outlined"
-                                  onClick={() => setQuestionSearch("")}
-                                >
-                                  クリア
-                                </Button>
-                              </InputAdornment>
-                            ),
-                          }}
-                          helperText="空欄で全件表示されます。"
+                          sx={{ flex: 1, minWidth: 240 }}
                         />
+                        <Button
+                          variant="outlined"
+                          onClick={() => setQuestionSearch("")}
+                          data-testid="exam-question-search-clear"
+                          sx={{ height: 56, whiteSpace: "nowrap" }}
+                        >
+                          検索をクリア
+                        </Button>
                       </Stack>
+                      <Typography variant="caption" sx={{ color: "#64748b" }}>
+                        空欄で全件表示されます。
+                      </Typography>
                       <TextField
                         select
                         label="問題"
@@ -1113,6 +1144,15 @@ export default function StaffExamManagementPage() {
                                     <Typography variant="body2">
                                       配点: {question.points}
                                     </Typography>
+                                    <Button
+                                      size="small"
+                                      variant="text"
+                                      component={Link}
+                                      href={`/staff/questions?questionId=${question.questionId}`}
+                                      data-testid={`exam-question-detail-${question.examVersionQuestionId}`}
+                                    >
+                                      詳細
+                                    </Button>
                                     <Button
                                       size="small"
                                       variant="outlined"

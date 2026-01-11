@@ -2,14 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { requireStaffRoleFromRequest } from "@/features/auth/usecase/require-staff-role";
-import { createQuestion } from "@/features/questions/usecase/create-question";
-import { listQuestionCategories } from "@/features/questions/usecase/list-question-categories";
-import { listQuestions } from "@/features/questions/usecase/list-questions";
+import { getQuestionDetail } from "@/features/questions/usecase/get-question-detail";
+import { updateQuestion } from "@/features/questions/usecase/update-question";
 
-const querySchema = z.object({
-  keyword: z.string().optional(),
-  moduleCategoryId: z.string().optional(),
-  status: z.enum(["all", "active", "inactive"]).optional(),
+const paramsSchema = z.object({
+  questionId: z.string().min(1),
 });
 
 const optionSchema = z.object({
@@ -17,7 +14,7 @@ const optionSchema = z.object({
   isCorrect: z.boolean(),
 });
 
-const createSchema = z.object({
+const updateSchema = z.object({
   stem: z.string().min(1),
   explanation: z.string().optional().nullable(),
   isActive: z.boolean(),
@@ -28,6 +25,8 @@ const createSchema = z.object({
 
 const errorMessage = (code?: string) => {
   switch (code) {
+    case "QUESTION_NOT_FOUND":
+      return "対象の問題が見つかりません。";
     case "MODULE_REQUIRED":
       return "モジュールを選択してください。";
     case "SUBCATEGORY_INVALID":
@@ -39,53 +38,58 @@ const errorMessage = (code?: string) => {
     case "MULTIPLE_CORRECT":
       return "正解は1つだけ選択してください。";
     default:
-      return "問題の作成に失敗しました。";
+      return "問題の更新に失敗しました。";
   }
 };
 
-export const GET = async (request: Request) => {
+export const GET = async (
+  request: Request,
+  context: { params: { questionId: string } },
+) => {
   const staff = await requireStaffRoleFromRequest(request, ["ADMIN", "AUTHOR"]);
 
   if (!staff) {
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
-  const url = new URL(request.url);
-  const payload = querySchema.safeParse({
-    keyword: url.searchParams.get("keyword") ?? undefined,
-    moduleCategoryId: url.searchParams.get("moduleCategoryId") ?? undefined,
-    status: url.searchParams.get("status") ?? undefined,
-  });
-
-  if (!payload.success) {
+  const params = paramsSchema.safeParse(context.params);
+  if (!params.success) {
     return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400 });
   }
 
-  const [questions, categories] = await Promise.all([
-    listQuestions(payload.data),
-    listQuestionCategories(),
-  ]);
+  const result = await getQuestionDetail(params.data.questionId);
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: result.error, message: errorMessage(result.error) },
+      { status: 404 },
+    );
+  }
 
-  return NextResponse.json({
-    questions,
-    modules: categories.modules,
-    subcategories: categories.subcategories,
-  });
+  return NextResponse.json(result);
 };
 
-export const POST = async (request: Request) => {
+export const PATCH = async (
+  request: Request,
+  context: { params: { questionId: string } },
+) => {
   const staff = await requireStaffRoleFromRequest(request, ["ADMIN", "AUTHOR"]);
 
   if (!staff) {
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
-  const payload = createSchema.safeParse(await request.json());
+  const params = paramsSchema.safeParse(context.params);
+  if (!params.success) {
+    return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400 });
+  }
+
+  const payload = updateSchema.safeParse(await request.json());
   if (!payload.success) {
     return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400 });
   }
 
-  const result = await createQuestion({
+  const result = await updateQuestion({
+    questionId: params.data.questionId,
     stem: payload.data.stem,
     explanation: payload.data.explanation ?? null,
     isActive: payload.data.isActive,
