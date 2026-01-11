@@ -27,7 +27,7 @@ const parseBirthDate = (value: string) => {
 
 export const GET = async (
   request: Request,
-  { params }: { params: { candidateId: string } },
+  context?: { params?: { candidateId?: string } },
 ) => {
   const staff = await requireStaffRoleFromRequest(request, ["ADMIN"]);
 
@@ -35,7 +35,15 @@ export const GET = async (
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
-  const candidate = await getCandidate(params.candidateId);
+  const candidateId =
+    context?.params?.candidateId ??
+    new URL(request.url).pathname.split("/").pop() ??
+    "";
+  if (!candidateId) {
+    return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400 });
+  }
+
+  const candidate = await getCandidate(candidateId);
   if (!candidate) {
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   }
@@ -54,7 +62,7 @@ export const GET = async (
 
 export const PATCH = async (
   request: Request,
-  { params }: { params: { candidateId: string } },
+  context?: { params?: { candidateId?: string } },
 ) => {
   const staff = await requireStaffRoleFromRequest(request, ["ADMIN"]);
 
@@ -72,7 +80,15 @@ export const PATCH = async (
     return NextResponse.json({ error: "INVALID_BIRTH_DATE" }, { status: 400 });
   }
 
-  const result = await updateCandidate(params.candidateId, {
+  const candidateId =
+    context?.params?.candidateId ??
+    new URL(request.url).pathname.split("/").pop() ??
+    "";
+  if (!candidateId) {
+    return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400 });
+  }
+
+  const result = await updateCandidate(candidateId, {
     fullName: payload.data.fullName.trim(),
     email: normalizeOptional(payload.data.email),
     education: normalizeOptional(payload.data.education),

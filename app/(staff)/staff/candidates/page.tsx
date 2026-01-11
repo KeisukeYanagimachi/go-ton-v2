@@ -74,9 +74,14 @@ export default function StaffCandidatesPage() {
       }
       const response = await fetch(
         `/api/staff/candidates?${params.toString()}`,
+        { credentials: "include" },
       );
       if (!response.ok) {
-        setListError("候補者一覧の取得に失敗しました。");
+        setListError(
+          response.status === 403
+            ? "候補者一覧の権限がありません。"
+            : "候補者一覧の取得に失敗しました。",
+        );
         return;
       }
       const payload = (await response.json()) as {
@@ -90,11 +95,18 @@ export default function StaffCandidatesPage() {
 
   const loadCandidateDetail = async (candidateId: string) => {
     setFormError(null);
-    setFormMessage(null);
     try {
-      const response = await fetch(`/api/staff/candidates/${candidateId}`);
+      const response = await fetch(`/api/staff/candidates/${candidateId}`, {
+        credentials: "include",
+      });
       if (!response.ok) {
-        setFormError("候補者の取得に失敗しました。");
+        setFormError(
+          response.status === 404
+            ? "候補者が見つかりません。"
+            : response.status === 403
+              ? "候補者の権限がありません。"
+              : "候補者の取得に失敗しました。",
+        );
         return;
       }
       const payload = (await response.json()) as { candidate: CandidateDetail };
@@ -126,6 +138,8 @@ export default function StaffCandidatesPage() {
 
   const handleSelectCandidate = (candidateId: string) => {
     setIsCreating(false);
+    setFormError(null);
+    setFormMessage(null);
     setSelectedCandidateId(candidateId);
   };
 
@@ -162,6 +176,7 @@ export default function StaffCandidatesPage() {
       const response = await fetch(endpoint, {
         method,
         headers: { "content-type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
       if (!response.ok) {
