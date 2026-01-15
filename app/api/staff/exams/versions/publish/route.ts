@@ -8,6 +8,7 @@ const requestSchema = z.object({
   examVersionId: z.string().min(1),
 });
 
+/** 試験バージョンを公開するAPI。 */
 export const POST = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, [
     "ADMIN",

@@ -22,6 +22,7 @@ const removeSchema = z.object({
   examVersionQuestionId: z.string().min(1),
 });
 
+/** 試験バージョンの出題割当一覧を取得するAPI。 */
 export const GET = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, [
     "ADMIN",
@@ -45,6 +46,7 @@ export const GET = async (request: Request) => {
   return NextResponse.json({ questions });
 };
 
+/** 試験バージョンへ問題を割り当てるAPI。 */
 export const POST = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, [
     "ADMIN",
@@ -68,6 +70,7 @@ export const POST = async (request: Request) => {
   return NextResponse.json(result);
 };
 
+/** 試験バージョンの出題割当を削除するAPI。 */
 export const DELETE = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, [
     "ADMIN",

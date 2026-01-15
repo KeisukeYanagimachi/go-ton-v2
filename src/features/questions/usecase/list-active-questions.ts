@@ -1,3 +1,5 @@
+/** 有効な問題一覧を取得するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 const MODULE_CODES = [

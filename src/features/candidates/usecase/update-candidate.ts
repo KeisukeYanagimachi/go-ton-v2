@@ -1,3 +1,5 @@
+/** 候補者情報を更新するユースケース。 */
+
 import {
   updateCandidate as updateCandidateInfra,
   type CandidateInput,

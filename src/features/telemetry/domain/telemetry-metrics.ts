@@ -1,3 +1,5 @@
+/** 行動計測指標の集計ロジック。 */
+
 type TelemetryEventType =
   | "VIEW"
   | "HIDE"

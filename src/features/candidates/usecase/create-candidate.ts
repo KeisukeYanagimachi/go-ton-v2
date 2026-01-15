@@ -1,3 +1,5 @@
+/** 候補者を作成するユースケース。 */
+
 import {
   createCandidate as createCandidateInfra,
   type CandidateInput,

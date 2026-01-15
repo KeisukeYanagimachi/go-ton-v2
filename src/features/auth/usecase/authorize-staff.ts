@@ -1,3 +1,5 @@
+/** スタッフの認証を行うユースケース。 */
+
 import {
   StaffAuthRecord,
   isStaffLoginAllowed,

@@ -1,3 +1,5 @@
+/** 試験バージョンを作成するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type ExamVersionModuleInput = {

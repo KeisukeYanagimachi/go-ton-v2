@@ -1,9 +1,54 @@
 "use client";
 
 import { Alert, Box, Button, TextField, Typography } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+const Hero = styled(Box)({
+  marginBottom: 32,
+});
+
+const RoleBadge = styled(Box)({
+  width: 48,
+  height: 48,
+  borderRadius: 8,
+  backgroundColor: "rgba(19, 127, 236, 0.12)",
+  color: "#137fec",
+  display: "grid",
+  placeItems: "center",
+  fontWeight: 700,
+  marginBottom: 16,
+  fontSize: 12,
+  lineHeight: 1,
+  letterSpacing: 0.6,
+});
+
+const Title = styled(Typography)({
+  fontWeight: 800,
+});
+
+const Subtitle = styled(Typography)({
+  marginTop: 8,
+});
+
+const Form = styled(Box)({
+  display: "grid",
+  gap: 16,
+});
+
+const SubmitButton = styled(Button)({
+  paddingTop: 11,
+  paddingBottom: 11,
+  fontWeight: 700,
+  backgroundColor: "#137fec",
+});
+
+const ErrorAlert = styled(Alert)({
+  marginTop: 24,
+});
+
+/** 開発用スタッフログインフォーム。 */
 export default function StaffDevLoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -51,37 +96,19 @@ export default function StaffDevLoginForm() {
 
   return (
     <>
-      <Box sx={{ mb: 4 }}>
-        <Box
-          sx={{
-            width: 48,
-            height: 48,
-            borderRadius: 2,
-            bgcolor: "rgba(19, 127, 236, 0.12)",
-            color: "#137fec",
-            display: "grid",
-            placeItems: "center",
-            fontWeight: 700,
-            mb: 2,
-            fontSize: 12,
-            lineHeight: 1,
-            letterSpacing: 0.6,
-          }}
-        >
-          ADMIN
-        </Box>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 800 }}>
+      <Hero>
+        <RoleBadge>ADMIN</RoleBadge>
+        <Title variant="h4" component="h1">
           管理者ログイン
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+        </Title>
+        <Subtitle variant="body2" color="text.secondary">
           開発環境限定のログインです。スタッフのメールアドレスを入力してください。
-        </Typography>
-      </Box>
+        </Subtitle>
+      </Hero>
 
-      <Box
+      <Form
         component="form"
         onSubmit={handleSubmit}
-        sx={{ display: "grid", gap: 2 }}
         data-testid="staff-dev-login-form"
         data-hydrated={isHydrated ? "true" : "false"}
       >
@@ -94,25 +121,20 @@ export default function StaffDevLoginForm() {
           fullWidth
           inputProps={{ "data-testid": "staff-dev-email" }}
         />
-        <Button
+        <SubmitButton
           type="submit"
           variant="contained"
           disabled={isSubmitting}
           data-testid="staff-dev-login-submit"
-          sx={{ py: 1.4, fontWeight: 700, bgcolor: "#137fec" }}
         >
           {isSubmitting ? "確認中..." : "ログイン"}
-        </Button>
-      </Box>
+        </SubmitButton>
+      </Form>
 
       {error && (
-        <Alert
-          severity="error"
-          sx={{ mt: 3 }}
-          data-testid="staff-dev-login-error"
-        >
+        <ErrorAlert severity="error" data-testid="staff-dev-login-error">
           {error}
-        </Alert>
+        </ErrorAlert>
       )}
     </>
   );

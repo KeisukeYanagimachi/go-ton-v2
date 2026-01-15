@@ -23,6 +23,7 @@ const requestSchema = z.object({
   metadata: z.record(z.unknown()).optional(),
 });
 
+/** 行動計測イベントを記録するAPI。 */
 export const POST = async (request: Request) => {
   const payload = requestSchema.safeParse(await request.json());
 

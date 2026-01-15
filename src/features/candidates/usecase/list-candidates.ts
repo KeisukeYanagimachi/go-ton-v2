@@ -1,3 +1,5 @@
+/** 候補者一覧を取得するユースケース。 */
+
 import {
   listCandidates as listCandidatesInfra,
   type CandidateRecord,

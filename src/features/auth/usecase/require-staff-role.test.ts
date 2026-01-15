@@ -1,3 +1,5 @@
+/** スタッフロール検証のテスト。 */
+
 import { describe, expect, it } from "vitest";
 
 import { resolveStaffRole } from "@/features/auth/usecase/resolve-staff-role";

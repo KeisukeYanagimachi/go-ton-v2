@@ -9,6 +9,7 @@ const requestSchema = z.object({
   deviceId: z.string().min(1).optional(),
 });
 
+/** Attempt を再開するAPI。 */
 export const POST = async (request: Request) => {
   const staffSession = await requireStaffRoleFromRequest(request, [
     "ADMIN",

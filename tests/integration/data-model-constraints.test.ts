@@ -94,14 +94,6 @@ const expectUniqueViolation = async (promise: Promise<unknown>) => {
   });
 };
 
-const expectForeignKeyViolation = async (promise: Promise<unknown>) => {
-  await expect(
-    promise,
-  ).rejects.toMatchObject<Prisma.PrismaClientKnownRequestError>({
-    code: "P2003",
-  });
-};
-
 describe("data model constraints (integration)", () => {
   beforeAll(async () => {
     await ensureStaffRole();

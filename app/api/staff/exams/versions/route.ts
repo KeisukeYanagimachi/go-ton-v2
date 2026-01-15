@@ -18,6 +18,7 @@ const requestSchema = z.object({
     .min(1),
 });
 
+/** 試験バージョンを作成するAPI。 */
 export const POST = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, [
     "ADMIN",

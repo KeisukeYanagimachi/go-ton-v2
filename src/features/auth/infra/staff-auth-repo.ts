@@ -1,3 +1,5 @@
+/** スタッフ認証の永続化アクセスを提供するリポジトリ。 */
+
 import {
   StaffAuthRecord,
   StaffRoleCode,

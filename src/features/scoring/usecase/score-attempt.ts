@@ -1,3 +1,5 @@
+/** 採点結果を確定するユースケース。 */
+
 import { Prisma } from "@prisma/client";
 
 type ScoreAttemptResult =

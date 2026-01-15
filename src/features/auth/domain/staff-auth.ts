@@ -1,3 +1,5 @@
+/** スタッフ認証のドメインロジック。 */
+
 type StaffRoleCode = "ADMIN" | "AUTHOR" | "PROCTOR" | "REPORT_VIEWER";
 
 type StaffAuthRecord = {

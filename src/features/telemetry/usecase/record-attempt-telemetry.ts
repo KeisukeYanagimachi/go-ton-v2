@@ -1,3 +1,5 @@
+/** 行動計測イベントを記録するユースケース。 */
+
 import { authorizeCandidateAccess } from "@/features/auth/usecase/authorize-candidate-access";
 import { computeAttemptItemMetrics } from "@/features/telemetry/domain/telemetry-metrics";
 import { prisma } from "@/shared/db/prisma";

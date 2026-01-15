@@ -1,3 +1,5 @@
+/** 試験提出を確定するユースケース。 */
+
 import { recordAuditLog } from "@/features/audit/usecase/record-audit-log";
 import { authorizeCandidateAccess } from "@/features/auth/usecase/authorize-candidate-access";
 import { scoreAttempt } from "@/features/scoring/usecase/score-attempt";

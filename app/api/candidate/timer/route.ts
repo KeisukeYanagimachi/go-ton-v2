@@ -10,6 +10,7 @@ const requestSchema = z.object({
   elapsedSeconds: z.number().int().nonnegative(),
 });
 
+/** モジュールの残り時間を更新するAPI。 */
 export const POST = async (request: Request) => {
   const payload = requestSchema.safeParse(await request.json());
 

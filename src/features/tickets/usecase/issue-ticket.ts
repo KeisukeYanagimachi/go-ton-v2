@@ -1,3 +1,5 @@
+/** 受験票を発行するユースケース。 */
+
 import { randomUUID } from "crypto";
 
 import { recordAuditLog } from "@/features/audit/usecase/record-audit-log";

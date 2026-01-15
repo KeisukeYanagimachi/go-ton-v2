@@ -12,6 +12,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import QRCode from "qrcode";
 import { useEffect, useMemo, useState } from "react";
 
@@ -41,12 +42,65 @@ type IssueErrorCode =
   | "FAILED"
   | "NETWORK_ERROR";
 
-const baseStyles = {
+const Root = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
-  bgcolor: "#f6f7f8",
+  backgroundColor: "#f6f7f8",
   color: "#111418",
-};
+  paddingTop: theme.spacing(4),
+  paddingBottom: theme.spacing(4),
+  [theme.breakpoints.up("md")]: {
+    paddingTop: theme.spacing(6),
+    paddingBottom: theme.spacing(6),
+  },
+}));
 
+const Panel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(3),
+  [theme.breakpoints.up("md")]: {
+    padding: theme.spacing(4),
+  },
+}));
+
+const Title = styled(Typography)({
+  fontWeight: 800,
+});
+
+const Subtitle = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  marginTop: theme.spacing(1),
+}));
+
+const FormGrid = styled(Box)(({ theme }) => ({
+  display: "grid",
+  gap: theme.spacing(2),
+}));
+
+const SubmitButton = styled(Button)({
+  paddingTop: 9.6,
+  paddingBottom: 9.6,
+  fontWeight: 700,
+});
+
+const ResultTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const ResultLabel = styled(Typography)({
+  fontWeight: 600,
+});
+
+const ResultDivider = styled(Divider)(({ theme }) => ({
+  marginTop: theme.spacing(1.5),
+  marginBottom: theme.spacing(1.5),
+}));
+
+const QrImage = styled(Box)({
+  width: 200,
+  height: 200,
+});
+
+/** 受験票の発行とQRコード生成を行うスタッフ画面。 */
 export default function TicketIssuePage() {
   const [candidates, setCandidates] = useState<CandidateAssignment[]>([]);
   const [examVersions, setExamVersions] = useState<ExamVersionOption[]>([]);
@@ -162,125 +216,122 @@ export default function TicketIssuePage() {
   const canSubmit = Boolean(candidateId) && Boolean(examVersionId);
 
   return (
-    <Box sx={baseStyles}>
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
+    <Root>
+      <Container maxWidth="md">
+        <Panel>
           <Stack spacing={2}>
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                受験票の発行
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+              <Title variant="h5">受験票の発行</Title>
+              <Subtitle variant="body2">
                 候補者と試験バージョンを選択し、受験票コードとQRを発行します。
-              </Typography>
+              </Subtitle>
             </Box>
 
             <Box
               component="form"
               onSubmit={handleIssue}
-              sx={{ display: "grid", gap: 2 }}
               data-testid="ticket-issue-form"
             >
-              <TextField
-                select
-                label="候補者"
-                value={candidateId}
-                onChange={(event) => setCandidateId(event.target.value)}
-                fullWidth
-                SelectProps={{
-                  inputProps: { "data-testid": "ticket-issue-candidate" },
-                }}
-              >
-                {candidates.map((candidate) => (
-                  <MenuItem key={candidate.id} value={candidate.id}>
-                    {candidate.fullName}
-                    {candidate.email ? `（${candidate.email}）` : ""}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                select
-                label="試験バージョン"
-                value={examVersionId}
-                onChange={(event) => setExamVersionId(event.target.value)}
-                fullWidth
-                SelectProps={{
-                  inputProps: { "data-testid": "ticket-issue-exam-version" },
-                }}
-              >
-                {examVersions.map((version) => (
-                  <MenuItem
-                    key={version.examVersionId}
-                    value={version.examVersionId}
-                  >
-                    {version.examName} / v{version.versionNumber}
-                  </MenuItem>
-                ))}
-              </TextField>
-              {selectedCandidate && selectedExamVersion && (
-                <Typography variant="caption" color="text.secondary">
-                  選択中: {selectedCandidate.fullName} /{" "}
-                  {selectedExamVersion.examName} v
-                  {selectedExamVersion.versionNumber}
-                </Typography>
-              )}
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={!canSubmit || isSubmitting}
-                data-testid="ticket-issue-submit"
-                sx={{ py: 1.2, fontWeight: 700 }}
-              >
-                {isSubmitting ? "発行中..." : "受験票を発行"}
-              </Button>
-              {issueError && (
-                <Alert severity="error" data-testid="ticket-issue-error">
-                  {issueError}
-                </Alert>
-              )}
-              {issueResult && (
-                <Alert severity="success" data-testid="ticket-issue-success">
-                  <Stack spacing={0.5}>
-                    <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                      受験票を発行しました。
-                    </Typography>
-                    <Typography variant="body2">
-                      受験票コード: {issueResult.ticketCode}
-                    </Typography>
-                    <Divider sx={{ my: 1.5 }} />
-                    <Stack spacing={1} alignItems="flex-start">
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        QRコード（紙配布用）
+              <FormGrid>
+                <TextField
+                  select
+                  label="候補者"
+                  value={candidateId}
+                  onChange={(event) => setCandidateId(event.target.value)}
+                  fullWidth
+                  SelectProps={{
+                    inputProps: { "data-testid": "ticket-issue-candidate" },
+                  }}
+                >
+                  {candidates.map((candidate) => (
+                    <MenuItem key={candidate.id} value={candidate.id}>
+                      {candidate.fullName}
+                      {candidate.email ? `（${candidate.email}）` : ""}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  select
+                  label="試験バージョン"
+                  value={examVersionId}
+                  onChange={(event) => setExamVersionId(event.target.value)}
+                  fullWidth
+                  SelectProps={{
+                    inputProps: { "data-testid": "ticket-issue-exam-version" },
+                  }}
+                >
+                  {examVersions.map((version) => (
+                    <MenuItem
+                      key={version.examVersionId}
+                      value={version.examVersionId}
+                    >
+                      {version.examName} / v{version.versionNumber}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                {selectedCandidate && selectedExamVersion && (
+                  <Typography variant="caption" color="text.secondary">
+                    選択中: {selectedCandidate.fullName} /{" "}
+                    {selectedExamVersion.examName} v
+                    {selectedExamVersion.versionNumber}
+                  </Typography>
+                )}
+                <SubmitButton
+                  type="submit"
+                  variant="contained"
+                  disabled={!canSubmit || isSubmitting}
+                  data-testid="ticket-issue-submit"
+                >
+                  {isSubmitting ? "発行中..." : "受験票を発行"}
+                </SubmitButton>
+                {issueError && (
+                  <Alert severity="error" data-testid="ticket-issue-error">
+                    {issueError}
+                  </Alert>
+                )}
+                {issueResult && (
+                  <Alert severity="success" data-testid="ticket-issue-success">
+                    <Stack spacing={0.5}>
+                      <ResultTitle variant="body2">
+                        受験票を発行しました。
+                      </ResultTitle>
+                      <Typography variant="body2">
+                        受験票コード: {issueResult.ticketCode}
                       </Typography>
-                      {qrDataUrl ? (
-                        <Box
-                          component="img"
-                          src={qrDataUrl}
-                          alt="ticket QR"
-                          sx={{ width: 200, height: 200 }}
-                          data-testid="ticket-issue-qr"
-                        />
-                      ) : (
-                        <Typography variant="caption" color="text.secondary">
-                          QRコードを生成しています...
-                        </Typography>
-                      )}
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => window.print()}
-                        data-testid="ticket-issue-print"
-                      >
-                        印刷する
-                      </Button>
+                      <ResultDivider />
+                      <Stack spacing={1} alignItems="flex-start">
+                        <ResultLabel variant="body2">
+                          QRコード（紙配布用）
+                        </ResultLabel>
+                        {qrDataUrl ? (
+                          <QrImage
+                            component="img"
+                            src={qrDataUrl}
+                            alt="ticket QR"
+                            data-testid="ticket-issue-qr"
+                          />
+                        ) : (
+                          <Typography variant="caption" color="text.secondary">
+                            QRコードを生成しています...
+                          </Typography>
+                        )}
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => window.print()}
+                          data-testid="ticket-issue-print"
+                        >
+                          印刷する
+                        </Button>
+                      </Stack>
                     </Stack>
-                  </Stack>
-                </Alert>
-              )}
+                  </Alert>
+                )}
+              </FormGrid>
             </Box>
           </Stack>
-        </Paper>
+        </Panel>
       </Container>
-    </Box>
+    </Root>
   );
 }

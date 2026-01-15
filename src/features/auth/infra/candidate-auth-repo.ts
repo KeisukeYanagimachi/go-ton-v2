@@ -1,3 +1,5 @@
+/** 受験者認証の永続化アクセスを提供するリポジトリ。 */
+
 import { AttemptStatus } from "@prisma/client";
 
 import {

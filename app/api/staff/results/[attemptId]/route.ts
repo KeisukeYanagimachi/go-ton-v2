@@ -8,6 +8,7 @@ const paramsSchema = z.object({
   attemptId: z.string().min(1),
 });
 
+/** 試験結果の詳細を取得するAPI。 */
 export const GET = async (
   request: Request,
   context: { params: { attemptId: string } },

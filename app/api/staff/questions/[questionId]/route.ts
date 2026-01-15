@@ -42,6 +42,7 @@ const errorMessage = (code?: string) => {
   }
 };
 
+/** 問題詳細を取得するAPI。 */
 export const GET = async (
   request: Request,
   context: { params: { questionId: string } },
@@ -75,6 +76,7 @@ export const GET = async (
   return NextResponse.json(result);
 };
 
+/** 問題を更新するAPI。 */
 export const PATCH = async (
   request: Request,
   context: { params: { questionId: string } },

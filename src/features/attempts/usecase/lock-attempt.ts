@@ -1,3 +1,5 @@
+/** Attempt をロックするユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type LockAttemptResult = {

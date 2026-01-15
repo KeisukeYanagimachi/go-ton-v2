@@ -1,3 +1,5 @@
+/** スタッフロールを解決するユースケース。 */
+
 import { StaffRoleCode } from "@/features/auth/domain/staff-auth";
 import { getStaffSessionByEmail } from "@/features/auth/usecase/get-staff-session";
 

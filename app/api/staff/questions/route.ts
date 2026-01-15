@@ -43,6 +43,7 @@ const errorMessage = (code?: string) => {
   }
 };
 
+/** 問題一覧を取得するAPI。 */
 export const GET = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, ["ADMIN", "AUTHOR"]);
 
@@ -73,6 +74,7 @@ export const GET = async (request: Request) => {
   });
 };
 
+/** 問題を作成するAPI。 */
 export const POST = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, ["ADMIN", "AUTHOR"]);
 

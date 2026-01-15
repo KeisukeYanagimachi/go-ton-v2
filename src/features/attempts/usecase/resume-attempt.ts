@@ -1,3 +1,5 @@
+/** Attempt を再開するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type ResumeAttemptResult = {

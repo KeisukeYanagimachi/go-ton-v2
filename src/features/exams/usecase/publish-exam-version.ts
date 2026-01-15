@@ -1,3 +1,5 @@
+/** 試験バージョンを公開するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type PublishExamVersionResult =

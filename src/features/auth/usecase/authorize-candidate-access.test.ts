@@ -1,3 +1,5 @@
+/** 受験者アクセス認可のテスト。 */
+
 import { describe, expect, test } from "vitest";
 
 import { hashPin } from "@/shared/utils/pin-hash";

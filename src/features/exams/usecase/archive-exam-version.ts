@@ -1,3 +1,5 @@
+/** 試験バージョンをアーカイブするユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type ArchiveExamVersionResult =

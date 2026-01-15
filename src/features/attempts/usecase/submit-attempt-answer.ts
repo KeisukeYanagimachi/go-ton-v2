@@ -1,3 +1,5 @@
+/** 回答を保存するユースケース。 */
+
 import { authorizeCandidateAccess } from "@/features/auth/usecase/authorize-candidate-access";
 import { prisma } from "@/shared/db/prisma";
 

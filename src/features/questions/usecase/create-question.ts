@@ -1,3 +1,5 @@
+/** 問題を作成するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type QuestionOptionInput = {

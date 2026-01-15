@@ -25,8 +25,7 @@ test-integration:
 	docker compose exec app npm run test:integration
 
 test-e2e:
-	docker compose up -d app-e2e
-	docker compose exec app-e2e npm ci --force
+	docker compose up -d --build app-e2e
 	docker compose restart app-e2e
 	docker compose exec app-e2e npm run db:generate
 	docker compose run --rm e2e

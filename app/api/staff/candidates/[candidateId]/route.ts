@@ -25,6 +25,7 @@ const parseBirthDate = (value: string) => {
   return parsed;
 };
 
+/** 候補者詳細を取得するAPI。 */
 export const GET = async (
   request: Request,
   context?: { params?: { candidateId?: string } },
@@ -60,6 +61,7 @@ export const GET = async (
   });
 };
 
+/** 候補者情報を更新するAPI。 */
 export const PATCH = async (
   request: Request,
   context?: { params?: { candidateId?: string } },

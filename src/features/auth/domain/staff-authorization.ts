@@ -1,3 +1,5 @@
+/** スタッフ認可のドメインロジック。 */
+
 import { StaffRoleCode } from "@/features/auth/domain/staff-auth";
 
 const hasRequiredStaffRole = (

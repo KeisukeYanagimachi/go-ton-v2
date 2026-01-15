@@ -1,3 +1,5 @@
+/** Attempt を開始するユースケース。 */
+
 import { authorizeCandidate } from "@/features/auth/usecase/authorize-candidate";
 import { prisma } from "@/shared/db/prisma";
 

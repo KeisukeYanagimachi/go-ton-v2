@@ -1,3 +1,5 @@
+/** 試験結果詳細を取得するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type AttemptResultDetail =

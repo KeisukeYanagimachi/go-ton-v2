@@ -14,6 +14,7 @@ const requestSchema = z
     message: "ticketCode or qrPayload is required",
   });
 
+/** 受験票コードとPINでログインするAPI。 */
 export const POST = async (request: Request) => {
   const payload = requestSchema.safeParse(await request.json());
 

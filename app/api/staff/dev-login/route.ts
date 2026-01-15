@@ -11,6 +11,7 @@ const requestSchema = z.object({
   email: z.string().email(),
 });
 
+/** 開発用スタッフログインを行うAPI。 */
 export const POST = async (request: Request) => {
   if (process.env.NODE_ENV === "production") {
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });

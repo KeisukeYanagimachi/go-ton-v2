@@ -1,3 +1,5 @@
+/** 公開済み試験バージョンを取得するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type PublishedExamVersion = {

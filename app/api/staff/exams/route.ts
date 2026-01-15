@@ -10,6 +10,7 @@ const createSchema = z.object({
   description: z.string().optional(),
 });
 
+/** 試験一覧を取得するAPI。 */
 export const GET = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, [
     "ADMIN",
@@ -24,6 +25,7 @@ export const GET = async (request: Request) => {
   return NextResponse.json(payload);
 };
 
+/** 試験マスタを作成するAPI。 */
 export const POST = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, [
     "ADMIN",

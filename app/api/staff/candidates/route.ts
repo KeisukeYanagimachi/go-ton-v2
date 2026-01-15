@@ -30,6 +30,7 @@ const parseBirthDate = (value: string) => {
   return parsed;
 };
 
+/** 候補者一覧を取得するAPI。 */
 export const GET = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, ["ADMIN"]);
 
@@ -64,6 +65,7 @@ export const GET = async (request: Request) => {
   });
 };
 
+/** 候補者を新規作成するAPI。 */
 export const POST = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, ["ADMIN"]);
 

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Sans_JP } from "next/font/google";
 
+import "./globals.css";
+
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
@@ -17,6 +19,7 @@ export const metadata: Metadata = {
   description: "Internal SPI exam platform",
 };
 
+/** アプリ全体の共通レイアウトとグローバルフォント設定。 */
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,12 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body
-        className={`${inter.variable} ${notoSansJp.variable}`}
-        style={{
-          fontFamily: "var(--font-inter), var(--font-noto-sans-jp), sans-serif",
-        }}
-      >
+      <body className={`app-body ${inter.variable} ${notoSansJp.variable}`}>
         {children}
       </body>
     </html>

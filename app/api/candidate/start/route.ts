@@ -8,6 +8,7 @@ const requestSchema = z.object({
   pin: z.string().min(1)
 });
 
+/** 受験開始処理を実行するAPI。 */
 export const POST = async (request: Request) => {
   const payload = requestSchema.safeParse(await request.json());
 

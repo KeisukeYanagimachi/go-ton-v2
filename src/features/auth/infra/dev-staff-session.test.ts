@@ -1,3 +1,5 @@
+/** 開発用スタッフセッション実装のテスト。 */
+
 import { describe, expect, it } from "vitest";
 
 import {

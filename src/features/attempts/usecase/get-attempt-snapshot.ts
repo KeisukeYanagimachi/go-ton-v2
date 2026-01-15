@@ -1,3 +1,5 @@
+/** 受験中スナップショットを取得するユースケース。 */
+
 import { authorizeCandidateAccess } from "@/features/auth/usecase/authorize-candidate-access";
 import { prisma } from "@/shared/db/prisma";
 

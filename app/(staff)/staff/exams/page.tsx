@@ -11,6 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -53,6 +54,254 @@ type ExamResponse = {
 
 const REQUIRED_CODES = ["VERBAL", "NONVERBAL", "ENGLISH", "STRUCTURAL"];
 
+const Root = styled(Box)({
+  minHeight: "100vh",
+  backgroundColor: "#f6f7f8",
+  color: "#111418",
+});
+
+const PageContainer = styled(Container)(({ theme }) => ({
+  paddingTop: theme.spacing(3),
+  paddingBottom: theme.spacing(3),
+  [theme.breakpoints.up("md")]: {
+    paddingTop: theme.spacing(5),
+    paddingBottom: theme.spacing(5),
+  },
+}));
+
+const HeaderPanel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2.5),
+  borderRadius: theme.spacing(3),
+  [theme.breakpoints.up("md")]: {
+    padding: theme.spacing(3),
+  },
+}));
+
+const HeaderLabel = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const HeaderTitle = styled(Typography)({
+  fontWeight: 800,
+});
+
+const HeaderDescription = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const SectionPanel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(3),
+}));
+
+const SectionTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const SectionTitleWithMargin = styled(SectionTitle)(({ theme }) => ({
+  marginBottom: theme.spacing(2),
+}));
+
+const SectionSubtitle = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  marginBottom: theme.spacing(2),
+}));
+
+const CreateButton = styled(Button)({
+  alignSelf: "flex-start",
+});
+
+const ExamGrid = styled(Stack)(({ theme }) => ({
+  [theme.breakpoints.up("lg")]: {
+    flexDirection: "row",
+  },
+}));
+
+const SidebarPanel = styled(Paper)(({ theme }) => ({
+  width: "100%",
+  padding: theme.spacing(2.5),
+  borderRadius: theme.spacing(3),
+  display: "flex",
+  flexDirection: "column",
+  [theme.breakpoints.up("lg")]: {
+    width: 360,
+    minHeight: "calc(100vh - 280px)",
+  },
+}));
+
+const SidebarContent = styled(Stack)({
+  flex: 1,
+  minHeight: 0,
+});
+
+const ExamListScroll = styled(Stack)(({ theme }) => ({
+  flex: 1,
+  minHeight: 0,
+  overflowY: "auto",
+  paddingRight: theme.spacing(1),
+  maxHeight: 420,
+  [theme.breakpoints.up("lg")]: {
+    maxHeight: "calc(100vh - 360px)",
+  },
+}));
+
+const ExamCard = styled(Paper, {
+  shouldForwardProp: (prop) => prop !== "selected",
+})<{ selected: boolean }>(({ theme, selected }) => ({
+  padding: theme.spacing(1.5),
+  borderRadius: theme.spacing(2),
+  borderColor: selected ? "#1d4ed8" : undefined,
+  backgroundColor: selected ? "#eff6ff" : "#fff",
+}));
+
+const ExamCardTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const MutedCaption = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const ExamSelectButton = styled(Button)(({ theme }) => ({
+  marginTop: theme.spacing(1),
+}));
+
+const DetailColumn = styled(Stack)(({ theme }) => ({
+  flex: 1,
+  minWidth: 0,
+  [theme.breakpoints.up("lg")]: {
+    marginLeft: theme.spacing(3),
+  },
+}));
+
+const DetailTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const DetailDescription = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  marginTop: theme.spacing(1),
+}));
+
+const InlineNote = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  display: "block",
+  marginTop: theme.spacing(1),
+}));
+
+const VersionCard = styled(Paper, {
+  shouldForwardProp: (prop) => prop !== "selected",
+})<{ selected: boolean }>(({ theme, selected }) => ({
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(2),
+  borderColor: selected ? "#1d4ed8" : theme.palette.divider,
+}));
+
+const VersionTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const VersionStatus = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const ArchiveButton = styled(Button)({
+  backgroundColor: "#111418",
+});
+
+const ModuleBadgeRow = styled(Stack)(({ theme }) => ({
+  marginTop: theme.spacing(1.5),
+}));
+
+const ModuleBadge = styled(Box)(({ theme }) => ({
+  paddingLeft: theme.spacing(1.5),
+  paddingRight: theme.spacing(1.5),
+  paddingTop: theme.spacing(0.5),
+  paddingBottom: theme.spacing(0.5),
+  borderRadius: 999,
+  backgroundColor: "#f1f5f9",
+  fontSize: 12,
+}));
+
+const EmptyNotice = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const AssignmentAlert = styled(Alert)(({ theme }) => ({
+  marginBottom: theme.spacing(2),
+}));
+
+const AssignmentCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(2),
+}));
+
+const SearchRow = styled(Stack)({
+  flexWrap: "wrap",
+});
+
+const SearchField = styled(TextField)({
+  flex: 1,
+  minWidth: 240,
+});
+
+const ClearButton = styled(Button)({
+  height: 56,
+  whiteSpace: "nowrap",
+});
+
+const AssignButton = styled(Button)({
+  minWidth: 120,
+});
+
+const SelectedQuestionBox = styled(Box)(({ theme }) => ({
+  borderRadius: theme.spacing(2),
+  backgroundColor: "#f8fafc",
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  paddingTop: theme.spacing(1.5),
+  paddingBottom: theme.spacing(1.5),
+}));
+
+const SelectedQuestionLabel = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const SelectedQuestionText = styled(Typography)({
+  fontWeight: 600,
+});
+
+const ModulePanel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(2),
+}));
+
+const ModuleTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const ModuleCaption = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const ModuleQuestionStack = styled(Stack)(({ theme }) => ({
+  marginTop: theme.spacing(1.5),
+}));
+
+const QuestionCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(1.5),
+  borderRadius: theme.spacing(2),
+}));
+
+const QuestionTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const QuestionStem = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+/** 出題割当のエラーメッセージを返す。 */
 const assignmentErrorMessage = (code?: string) => {
   switch (code) {
     case "EXAM_VERSION_NOT_FOUND":
@@ -74,6 +323,7 @@ const assignmentErrorMessage = (code?: string) => {
   }
 };
 
+/** 試験定義と出題割当を管理するスタッフ画面。 */
 export default function StaffExamManagementPage() {
   const [exams, setExams] = useState<ExamSummary[]>([]);
   const [modules, setModules] = useState<ModuleMaster[]>([]);
@@ -531,22 +781,18 @@ export default function StaffExamManagementPage() {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f6f7f8", color: "#111418" }}>
-      <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
+    <Root>
+      <PageContainer maxWidth="xl">
         <Stack spacing={3}>
-          <Paper sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3 }}>
+          <HeaderPanel>
             <Stack spacing={1}>
-              <Typography variant="body2" sx={{ color: "#64748b" }}>
-                Staff / 試験定義
-              </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 800 }}>
-                試験定義の管理
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#64748b" }}>
+              <HeaderLabel variant="body2">Staff / 試験定義</HeaderLabel>
+              <HeaderTitle variant="h4">試験定義の管理</HeaderTitle>
+              <HeaderDescription variant="body2">
                 まず左の一覧から試験を選択し、右側で詳細・バージョン・出題割当を操作します。
-              </Typography>
+              </HeaderDescription>
             </Stack>
-          </Paper>
+          </HeaderPanel>
 
           {(pageError || pageMessage) && (
             <Alert severity={pageError ? "error" : "success"}>
@@ -554,13 +800,11 @@ export default function StaffExamManagementPage() {
             </Alert>
           )}
 
-          <Paper sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-              新規作成
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#64748b", mb: 2 }}>
+          <SectionPanel>
+            <SectionTitle variant="h6">新規作成</SectionTitle>
+            <SectionSubtitle variant="body2">
               既存の試験に関係なく、新しく試験マスタを作成します。
-            </Typography>
+            </SectionSubtitle>
             <Stack spacing={2}>
               <TextField
                 label="試験名"
@@ -576,32 +820,20 @@ export default function StaffExamManagementPage() {
                 fullWidth
                 inputProps={{ "data-testid": "exam-create-description" }}
               />
-              <Button
+              <CreateButton
                 variant="contained"
                 onClick={handleCreateExam}
                 data-testid="exam-create-submit"
-                sx={{ alignSelf: "flex-start" }}
               >
                 作成
-              </Button>
+              </CreateButton>
             </Stack>
-          </Paper>
+          </SectionPanel>
 
-          <Stack direction={{ xs: "column", lg: "row" }} spacing={3}>
-            <Paper
-              sx={{
-                width: { xs: "100%", lg: 360 },
-                p: 2.5,
-                borderRadius: 3,
-                display: "flex",
-                flexDirection: "column",
-                minHeight: { xs: "auto", lg: "calc(100vh - 280px)" },
-              }}
-            >
-              <Stack spacing={2} sx={{ flex: 1, minHeight: 0 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                  試験一覧
-                </Typography>
+          <ExamGrid direction={{ xs: "column", lg: "row" }} spacing={3}>
+            <SidebarPanel>
+              <SidebarContent spacing={2}>
+                <SectionTitle variant="subtitle1">試験一覧</SectionTitle>
                 <TextField
                   label="試験名・IDで検索"
                   value={examSearch}
@@ -609,98 +841,68 @@ export default function StaffExamManagementPage() {
                   fullWidth
                   inputProps={{ "data-testid": "exam-search" }}
                 />
-                <Stack
-                  spacing={1}
-                  sx={{
-                    flex: 1,
-                    minHeight: 0,
-                    overflowY: "auto",
-                    pr: 1,
-                    maxHeight: { xs: 420, lg: "calc(100vh - 360px)" },
-                  }}
-                >
+                <ExamListScroll spacing={1}>
                   {filteredExams.map((exam) => {
                     const isSelected = exam.examId === selectedExamId;
                     return (
-                      <Paper
+                      <ExamCard
                         key={exam.examId}
                         variant={isSelected ? "outlined" : "elevation"}
-                        sx={{
-                          p: 1.5,
-                          borderRadius: 2,
-                          borderColor: isSelected ? "#1d4ed8" : undefined,
-                          bgcolor: isSelected ? "#eff6ff" : "#fff",
-                        }}
+                        selected={isSelected}
                       >
                         <Stack spacing={0.5}>
-                          <Typography
-                            variant="subtitle2"
-                            sx={{ fontWeight: 700 }}
-                          >
+                          <ExamCardTitle variant="subtitle2">
                             {exam.name}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{ color: "#64748b" }}
-                          >
+                          </ExamCardTitle>
+                          <MutedCaption variant="caption">
                             ID: {exam.examId}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{ color: "#64748b" }}
-                          >
+                          </MutedCaption>
+                          <MutedCaption variant="caption">
                             バージョン数: {exam.versions.length}
-                          </Typography>
+                          </MutedCaption>
                         </Stack>
-                        <Button
+                        <ExamSelectButton
                           size="small"
                           variant={isSelected ? "contained" : "outlined"}
-                          sx={{ mt: 1 }}
                           onClick={() => setSelectedExamId(exam.examId)}
                           data-testid={`exam-select-${exam.examId}`}
                         >
                           {isSelected ? "選択中" : "詳細を見る"}
-                        </Button>
-                      </Paper>
+                        </ExamSelectButton>
+                      </ExamCard>
                     );
                   })}
                   {filteredExams.length === 0 && (
-                    <Typography variant="body2" sx={{ color: "#64748b" }}>
+                    <EmptyNotice variant="body2">
                       該当する試験がありません。
-                    </Typography>
+                    </EmptyNotice>
                   )}
-                </Stack>
-              </Stack>
-            </Paper>
+                </ExamListScroll>
+              </SidebarContent>
+            </SidebarPanel>
 
-            <Stack spacing={3} sx={{ flex: 1, minWidth: 0 }}>
-              <Paper sx={{ p: 3, borderRadius: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+            <DetailColumn spacing={3}>
+              <SectionPanel>
+                <SectionTitleWithMargin variant="h6">
                   試験詳細
-                </Typography>
+                </SectionTitleWithMargin>
                 {selectedExam ? (
                   <Stack spacing={2}>
                     <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                      <DetailTitle variant="subtitle1">
                         {selectedExam.name}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: "#64748b" }}>
+                      </DetailTitle>
+                      <MutedCaption variant="caption">
                         ID: {selectedExam.examId}
-                      </Typography>
+                      </MutedCaption>
                       {selectedExam.description && (
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#64748b", mt: 1 }}
-                        >
+                        <DetailDescription variant="body2">
                           {selectedExam.description}
-                        </Typography>
+                        </DetailDescription>
                       )}
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "#64748b", display: "block", mt: 1 }}
-                      >
+                      <InlineNote variant="caption">
                         編集は新しいバージョンを追加する操作です。
-                      </Typography>
+                      </InlineNote>
                     </Box>
                     <Stack
                       direction={{ xs: "column", sm: "row" }}
@@ -708,9 +910,7 @@ export default function StaffExamManagementPage() {
                       justifyContent="space-between"
                       alignItems={{ xs: "flex-start", sm: "center" }}
                     >
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                        バージョン
-                      </Typography>
+                      <DetailTitle variant="subtitle2">バージョン</DetailTitle>
                       <Button
                         size="small"
                         variant="outlined"
@@ -723,17 +923,10 @@ export default function StaffExamManagementPage() {
                     </Stack>
                     <Stack spacing={1.5}>
                       {visibleVersions.map((version) => (
-                        <Paper
+                        <VersionCard
                           key={version.examVersionId}
                           variant="outlined"
-                          sx={{
-                            p: 2,
-                            borderRadius: 2,
-                            borderColor:
-                              version.examVersionId === selectedVersionId
-                                ? "#1d4ed8"
-                                : "divider",
-                          }}
+                          selected={version.examVersionId === selectedVersionId}
                         >
                           <Stack
                             direction={{ xs: "column", md: "row" }}
@@ -742,18 +935,12 @@ export default function StaffExamManagementPage() {
                             alignItems={{ xs: "flex-start", md: "center" }}
                           >
                             <Box>
-                              <Typography
-                                variant="body1"
-                                sx={{ fontWeight: 700 }}
-                              >
+                              <VersionTitle variant="body1">
                                 Version {version.versionNumber}
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                sx={{ color: "#64748b" }}
-                              >
+                              </VersionTitle>
+                              <VersionStatus variant="body2">
                                 状態: {version.status}
-                              </Typography>
+                              </VersionStatus>
                             </Box>
                             <Stack direction="row" spacing={1}>
                               <Button
@@ -781,63 +968,52 @@ export default function StaffExamManagementPage() {
                               >
                                 公開
                               </Button>
-                              <Button
+                              <ArchiveButton
                                 size="small"
                                 variant="contained"
-                                sx={{ bgcolor: "#111418" }}
                                 onClick={() =>
                                   handleArchive(version.examVersionId)
                                 }
                                 disabled={version.status !== "PUBLISHED"}
                               >
                                 アーカイブ
-                              </Button>
+                              </ArchiveButton>
                             </Stack>
                           </Stack>
-                          <Stack
+                          <ModuleBadgeRow
                             direction={{ xs: "column", sm: "row" }}
                             spacing={1}
-                            sx={{ mt: 1.5 }}
                           >
                             {version.modules.map((module) => (
-                              <Box
-                                key={module.moduleId}
-                                sx={{
-                                  px: 1.5,
-                                  py: 0.5,
-                                  borderRadius: 999,
-                                  bgcolor: "#f1f5f9",
-                                  fontSize: 12,
-                                }}
-                              >
+                              <ModuleBadge key={module.moduleId}>
                                 {module.code} ·{" "}
                                 {Math.round(module.durationSeconds / 60)}分
-                              </Box>
+                              </ModuleBadge>
                             ))}
-                          </Stack>
-                        </Paper>
+                          </ModuleBadgeRow>
+                        </VersionCard>
                       ))}
                       {selectedExam.versions.length === 0 && (
-                        <Typography variant="body2" sx={{ color: "#64748b" }}>
+                        <EmptyNotice variant="body2">
                           該当するバージョンがありません。
-                        </Typography>
+                        </EmptyNotice>
                       )}
                     </Stack>
                   </Stack>
                 ) : (
-                  <Typography variant="body2" sx={{ color: "#64748b" }}>
+                  <EmptyNotice variant="body2">
                     左の一覧から試験を選択してください。
-                  </Typography>
+                  </EmptyNotice>
                 )}
-              </Paper>
+              </SectionPanel>
 
-              <Paper sx={{ p: 3, borderRadius: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+              <SectionPanel>
+                <SectionTitle variant="h6">
                   既存試験の更新（バージョン追加）
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#64748b", mb: 2 }}>
+                </SectionTitle>
+                <SectionSubtitle variant="body2">
                   試験詳細から対象試験を選択し、新しいバージョンを追加します。
-                </Typography>
+                </SectionSubtitle>
                 <Stack spacing={2}>
                   <TextField
                     select
@@ -887,28 +1063,26 @@ export default function StaffExamManagementPage() {
                       />
                     ))}
                   </Stack>
-                  <Button
+                  <CreateButton
                     variant="contained"
                     onClick={handleCreateVersion}
                     data-testid="exam-version-create-submit"
-                    sx={{ alignSelf: "flex-start" }}
                   >
                     バージョン追加
-                  </Button>
+                  </CreateButton>
                 </Stack>
-              </Paper>
+              </SectionPanel>
 
-              <Paper sx={{ p: 3, borderRadius: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+              <SectionPanel>
+                <SectionTitleWithMargin variant="h6">
                   出題割当（DRAFT のみ）
-                </Typography>
+                </SectionTitleWithMargin>
                 {(assignmentError || assignmentMessage) && (
-                  <Alert
+                  <AssignmentAlert
                     severity={assignmentError ? "error" : "success"}
-                    sx={{ mb: 2 }}
                   >
                     {assignmentError ?? assignmentMessage}
-                  </Alert>
+                  </AssignmentAlert>
                 )}
                 <Stack spacing={2}>
                   <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
@@ -948,15 +1122,14 @@ export default function StaffExamManagementPage() {
                       ))}
                     </TextField>
                   </Stack>
-                  <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                  <AssignmentCard variant="outlined">
                     <Stack spacing={2}>
-                      <Stack
+                      <SearchRow
                         direction="row"
                         spacing={2}
                         alignItems="center"
-                        sx={{ flexWrap: { xs: "wrap", sm: "nowrap" } }}
                       >
-                        <TextField
+                        <SearchField
                           label="問題を検索（選択モジュール内）"
                           value={questionSearch}
                           onChange={(event) =>
@@ -964,20 +1137,18 @@ export default function StaffExamManagementPage() {
                           }
                           fullWidth
                           inputProps={{ "data-testid": "exam-question-search" }}
-                          sx={{ flex: 1, minWidth: 240 }}
                         />
-                        <Button
+                        <ClearButton
                           variant="outlined"
                           onClick={() => setQuestionSearch("")}
                           data-testid="exam-question-search-clear"
-                          sx={{ height: 56, whiteSpace: "nowrap" }}
                         >
                           検索をクリア
-                        </Button>
-                      </Stack>
-                      <Typography variant="caption" sx={{ color: "#64748b" }}>
+                        </ClearButton>
+                      </SearchRow>
+                      <MutedCaption variant="caption">
                         空欄で全件表示されます。
-                      </Typography>
+                      </MutedCaption>
                       <TextField
                         select
                         label="問題"
@@ -1034,45 +1205,34 @@ export default function StaffExamManagementPage() {
                             "data-testid": "exam-question-points",
                           }}
                         />
-                        <Button
+                        <AssignButton
                           variant="contained"
                           onClick={handleAssignQuestion}
                           disabled={selectedVersion?.status !== "DRAFT"}
                           data-testid="exam-question-assign"
-                          sx={{ minWidth: 120 }}
                         >
                           追加
-                        </Button>
+                        </AssignButton>
                       </Stack>
                       {selectedQuestionId ? (
-                        <Box
-                          sx={{
-                            borderRadius: 2,
-                            bgcolor: "#f8fafc",
-                            px: 2,
-                            py: 1.5,
-                          }}
-                        >
-                          <Typography
-                            variant="caption"
-                            sx={{ color: "#64748b" }}
-                          >
+                        <SelectedQuestionBox>
+                          <SelectedQuestionLabel variant="caption">
                             選択中の問題
-                          </Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          </SelectedQuestionLabel>
+                          <SelectedQuestionText variant="body2">
                             {filteredQuestions.find(
                               (question) =>
                                 question.questionId === selectedQuestionId,
                             )?.stem ?? "問題が選択されていません。"}
-                          </Typography>
-                        </Box>
+                          </SelectedQuestionText>
+                        </SelectedQuestionBox>
                       ) : (
-                        <Typography variant="body2" sx={{ color: "#64748b" }}>
+                        <EmptyNotice variant="body2">
                           問題を選択してください。
-                        </Typography>
+                        </EmptyNotice>
                       )}
                     </Stack>
-                  </Paper>
+                  </AssignmentCard>
                   <Stack spacing={2}>
                     {selectedVersionModules.map((module) => {
                       const moduleQuestions = assignedQuestions
@@ -1081,37 +1241,26 @@ export default function StaffExamManagementPage() {
                         )
                         .sort((a, b) => a.position - b.position);
                       return (
-                        <Paper
-                          key={module.moduleId}
-                          variant="outlined"
-                          sx={{ p: 2, borderRadius: 2 }}
-                        >
+                        <ModulePanel key={module.moduleId} variant="outlined">
                           <Stack
                             direction={{ xs: "column", md: "row" }}
                             spacing={1}
                             justifyContent="space-between"
                           >
                             <Box>
-                              <Typography
-                                variant="subtitle2"
-                                sx={{ fontWeight: 700 }}
-                              >
+                              <ModuleTitle variant="subtitle2">
                                 {module.code}（{module.name}）
-                              </Typography>
-                              <Typography
-                                variant="caption"
-                                sx={{ color: "#64748b" }}
-                              >
+                              </ModuleTitle>
+                              <ModuleCaption variant="caption">
                                 出題数: {moduleQuestions.length}
-                              </Typography>
+                              </ModuleCaption>
                             </Box>
                           </Stack>
-                          <Stack spacing={1} sx={{ mt: 1.5 }}>
+                          <ModuleQuestionStack spacing={1}>
                             {moduleQuestions.map((question) => (
-                              <Paper
+                              <QuestionCard
                                 key={question.examVersionQuestionId}
                                 variant="outlined"
-                                sx={{ p: 1.5, borderRadius: 2 }}
                               >
                                 <Stack
                                   direction={{ xs: "column", md: "row" }}
@@ -1123,18 +1272,12 @@ export default function StaffExamManagementPage() {
                                   justifyContent="space-between"
                                 >
                                   <Box>
-                                    <Typography
-                                      variant="body2"
-                                      sx={{ fontWeight: 700 }}
-                                    >
+                                    <QuestionTitle variant="body2">
                                       問 {question.position}
-                                    </Typography>
-                                    <Typography
-                                      variant="body2"
-                                      sx={{ color: "#64748b" }}
-                                    >
+                                    </QuestionTitle>
+                                    <QuestionStem variant="body2">
                                       {question.questionStem}
-                                    </Typography>
+                                    </QuestionStem>
                                   </Box>
                                   <Stack
                                     direction="row"
@@ -1170,27 +1313,24 @@ export default function StaffExamManagementPage() {
                                     </Button>
                                   </Stack>
                                 </Stack>
-                              </Paper>
+                              </QuestionCard>
                             ))}
                             {moduleQuestions.length === 0 && (
-                              <Typography
-                                variant="body2"
-                                sx={{ color: "#64748b" }}
-                              >
+                              <EmptyNotice variant="body2">
                                 出題がまだ割り当てられていません。
-                              </Typography>
+                              </EmptyNotice>
                             )}
-                          </Stack>
-                        </Paper>
+                          </ModuleQuestionStack>
+                        </ModulePanel>
                       );
                     })}
                   </Stack>
                 </Stack>
-              </Paper>
-            </Stack>
-          </Stack>
+              </SectionPanel>
+            </DetailColumn>
+          </ExamGrid>
         </Stack>
-      </Container>
-    </Box>
+      </PageContainer>
+    </Root>
   );
 }

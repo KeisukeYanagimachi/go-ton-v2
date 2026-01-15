@@ -11,10 +11,159 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import type { BrowserMultiFormatReader } from "@zxing/browser";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+const Root = styled(Box)({
+  height: "100vh",
+  backgroundColor: "#f6f7f8",
+  color: "#111418",
+  display: "flex",
+  flexDirection: "column",
+  overflow: "hidden",
+  boxSizing: "border-box",
+});
+
+const Header = styled(Box)(({ theme }) => ({
+  position: "sticky",
+  top: 0,
+  zIndex: 10,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  paddingTop: 12,
+  paddingBottom: 12,
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  backgroundColor: "#ffffff",
+  borderBottom: "1px solid #e2e8f0",
+  width: "100%",
+  boxSizing: "border-box",
+  overflow: "hidden",
+  [theme.breakpoints.up("md")]: {
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4),
+  },
+}));
+
+const HeaderBrand = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: theme.spacing(1.5),
+  minWidth: 0,
+}));
+
+const BrandBadge = styled(Box)({
+  width: 36,
+  height: 36,
+  borderRadius: 8,
+  backgroundColor: "rgba(19, 127, 236, 0.15)",
+  display: "grid",
+  placeItems: "center",
+  color: "#137fec",
+  fontWeight: 700,
+});
+
+const BrandTitle = styled(Typography)({
+  fontWeight: 700,
+  whiteSpace: "nowrap",
+});
+
+const SupportButton = styled(Button)({
+  backgroundColor: "#f1f5f9",
+  color: "#111418",
+  fontWeight: 700,
+  boxShadow: "none",
+  "&:hover": {
+    backgroundColor: "#e2e8f0",
+    boxShadow: "none",
+  },
+});
+
+const Main = styled(Box)(({ theme }) => ({
+  flex: 1,
+  minHeight: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  paddingTop: theme.spacing(2),
+  paddingBottom: theme.spacing(2),
+  overflow: "hidden",
+  boxSizing: "border-box",
+  [theme.breakpoints.up("sm")]: {
+    paddingLeft: theme.spacing(6),
+    paddingRight: theme.spacing(6),
+    paddingTop: theme.spacing(4),
+    paddingBottom: theme.spacing(4),
+  },
+}));
+
+const Card = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  borderRadius: theme.shape.borderRadius * 3,
+  backgroundColor: "#ffffff",
+  boxShadow: "0 12px 30px rgba(15, 23, 42, 0.08)",
+  [theme.breakpoints.up("sm")]: {
+    padding: theme.spacing(4),
+  },
+}));
+
+const CardHeader = styled(Box)({
+  marginBottom: 24,
+});
+
+const Title = styled(Typography)({
+  fontWeight: 700,
+});
+
+const Form = styled(Box)({
+  display: "grid",
+  gap: 16,
+});
+
+const QrToggleRow = styled(Box)(({ theme }) => ({
+  display: "grid",
+  gap: theme.spacing(1),
+  alignItems: "center",
+  gridTemplateColumns: "1fr",
+  [theme.breakpoints.up("sm")]: {
+    gridTemplateColumns: "auto 1fr",
+  },
+}));
+
+const QrVideoFrame = styled(Box)({
+  borderRadius: 8,
+  border: "1px solid #e2e8f0",
+  overflow: "hidden",
+  backgroundColor: "#0f172a",
+});
+
+const QrVideo = styled(Box)({
+  width: "100%",
+  display: "block",
+});
+
+const SubmitButton = styled(Button)({
+  paddingTop: 11,
+  paddingBottom: 11,
+  fontWeight: 700,
+  backgroundColor: "#137fec",
+});
+
+const ErrorAlert = styled(Alert)({
+  marginTop: 24,
+});
+
+const FooterDivider = styled(Divider)({
+  marginTop: 24,
+  marginBottom: 24,
+});
+
+/** 受験者ログイン画面。QR入力補助とPIN検証を行う。 */
 export default function CandidateLoginPage() {
   const router = useRouter();
   const [ticketCode, setTicketCode] = useState("");
@@ -169,115 +318,28 @@ export default function CandidateLoginPage() {
   };
 
   return (
-    <Box
-      sx={{
-        height: "100vh",
-        bgcolor: "#f6f7f8",
-        color: "#111418",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        boxSizing: "border-box",
-      }}
-    >
-      <Box
-        component="header"
-        sx={{
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          px: { xs: 2, md: 4 },
-          py: 1.5,
-          bgcolor: "#ffffff",
-          borderBottom: "1px solid #e2e8f0",
-          width: "100%",
-          boxSizing: "border-box",
-          overflow: "hidden",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1.5,
-            minWidth: 0,
-          }}
-        >
-          <Box
-            sx={{
-              width: 36,
-              height: 36,
-              borderRadius: 2,
-              bgcolor: "rgba(19, 127, 236, 0.15)",
-              display: "grid",
-              placeItems: "center",
-              color: "#137fec",
-              fontWeight: 700,
-            }}
-          >
-            SPI
-          </Box>
-          <Typography
-            variant="subtitle1"
-            sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
-          >
-            SPI採用ポータル
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          sx={{
-            bgcolor: "#f1f5f9",
-            color: "#111418",
-            fontWeight: 700,
-            boxShadow: "none",
-            "&:hover": { bgcolor: "#e2e8f0", boxShadow: "none" },
-          }}
-        >
-          お問い合わせ
-        </Button>
-      </Box>
+    <Root>
+      <Header component="header">
+        <HeaderBrand>
+          <BrandBadge>SPI</BrandBadge>
+          <BrandTitle variant="subtitle1">SPI採用ポータル</BrandTitle>
+        </HeaderBrand>
+        <SupportButton variant="contained">お問い合わせ</SupportButton>
+      </Header>
 
-      <Box
-        component="main"
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          px: { xs: 2, sm: 6 },
-          py: { xs: 2, sm: 4 },
-          overflow: "hidden",
-          boxSizing: "border-box",
-        }}
-      >
+      <Main component="main">
         <Container maxWidth="sm">
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 3, sm: 4 },
-              borderRadius: 3,
-              bgcolor: "#ffffff",
-              boxShadow: "0 12px 30px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                受験者ログイン
-              </Typography>
+          <Card elevation={0}>
+            <CardHeader>
+              <Title variant="h5">受験者ログイン</Title>
               <Typography variant="body2" color="text.secondary">
                 受験票コードとPINを入力してください。
               </Typography>
-            </Box>
+            </CardHeader>
 
-            <Box
+            <Form
               component="form"
               onSubmit={handleSubmit}
-              sx={{ display: "grid", gap: 2 }}
               data-testid="candidate-login-form"
               data-hydrated={isHydrated ? "true" : "false"}
             >
@@ -290,14 +352,7 @@ export default function CandidateLoginPage() {
                   inputProps={{ "data-testid": "candidate-qr-payload" }}
                   helperText="読み取った内容は受験票コード欄に自動で反映されます。"
                 />
-                <Box
-                  sx={{
-                    display: "grid",
-                    gap: 1,
-                    alignItems: "center",
-                    gridTemplateColumns: { xs: "1fr", sm: "auto 1fr" },
-                  }}
-                >
+                <QrToggleRow>
                   <Button
                     variant="outlined"
                     onClick={() => setIsScanning((current) => !current)}
@@ -311,23 +366,15 @@ export default function CandidateLoginPage() {
                       ? "カメラにQRをかざしてください。"
                       : "カメラが使えない場合は手入力してください。"}
                   </Typography>
-                </Box>
+                </QrToggleRow>
                 {isScanning && (
-                  <Box
-                    sx={{
-                      borderRadius: 2,
-                      border: "1px solid #e2e8f0",
-                      overflow: "hidden",
-                      bgcolor: "#0f172a",
-                    }}
-                  >
-                    <Box
+                  <QrVideoFrame>
+                    <QrVideo
                       component="video"
                       ref={videoRef}
-                      sx={{ width: "100%", display: "block" }}
                       data-testid="candidate-qr-video"
                     />
-                  </Box>
+                  </QrVideoFrame>
                 )}
                 {scanError && (
                   <Typography variant="caption" color="error">
@@ -351,7 +398,7 @@ export default function CandidateLoginPage() {
                 fullWidth
                 inputProps={{ "data-testid": "candidate-pin" }}
               />
-              <Button
+              <SubmitButton
                 type="submit"
                 variant="contained"
                 disabled={
@@ -360,28 +407,23 @@ export default function CandidateLoginPage() {
                   !pin.trim()
                 }
                 data-testid="candidate-login-submit"
-                sx={{ py: 1.4, fontWeight: 700, bgcolor: "#137fec" }}
               >
                 {isSubmitting ? "確認中..." : "ログイン"}
-              </Button>
-            </Box>
+              </SubmitButton>
+            </Form>
 
             {error && (
-              <Alert
-                severity="error"
-                sx={{ mt: 3 }}
-                data-testid="candidate-login-error"
-              >
+              <ErrorAlert severity="error" data-testid="candidate-login-error">
                 {error}
-              </Alert>
+              </ErrorAlert>
             )}
-            <Divider sx={{ my: 3 }} />
+            <FooterDivider />
             <Typography variant="body2" color="text.secondary">
               受験票が見つからない場合は、当日スタッフまでご連絡ください。
             </Typography>
-          </Paper>
+          </Card>
         </Container>
-      </Box>
-    </Box>
+      </Main>
+    </Root>
   );
 }

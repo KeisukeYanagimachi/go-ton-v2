@@ -1,3 +1,5 @@
+/** 候補者詳細を取得するユースケース。 */
+
 import {
   findCandidateById,
   type CandidateRecord,

@@ -1,3 +1,5 @@
+/** スタッフセッションを取得するユースケース。 */
+
 import {
     isStaffLoginAllowed,
     StaffRoleCode,

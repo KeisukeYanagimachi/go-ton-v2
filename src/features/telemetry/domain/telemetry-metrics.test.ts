@@ -1,3 +1,5 @@
+/** 行動計測集計ロジックのテスト。 */
+
 import { describe, expect, test } from "vitest";
 
 import { computeAttemptItemMetrics } from "./telemetry-metrics";

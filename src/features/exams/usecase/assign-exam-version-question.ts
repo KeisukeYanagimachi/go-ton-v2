@@ -1,3 +1,5 @@
+/** 出題割当を追加するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type AssignExamVersionQuestionInput = {

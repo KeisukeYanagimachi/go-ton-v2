@@ -1,3 +1,5 @@
+/** スタッフの識別情報を取得するユースケース。 */
+
 import { auth } from "@/features/auth/infra/auth";
 import {
     DEV_STAFF_SESSION_COOKIE,

@@ -18,6 +18,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -57,12 +58,144 @@ type QuestionDetail = {
   }[];
 };
 
+const Root = styled(Box)({
+  minHeight: "100vh",
+  backgroundColor: "#f6f7f8",
+  color: "#111418",
+});
+
+const PageContainer = styled(Container)(({ theme }) => ({
+  paddingTop: theme.spacing(3),
+  paddingBottom: theme.spacing(3),
+  [theme.breakpoints.up("md")]: {
+    paddingTop: theme.spacing(5),
+    paddingBottom: theme.spacing(5),
+  },
+}));
+
+const HeaderPanel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2.5),
+  borderRadius: theme.spacing(3),
+  [theme.breakpoints.up("md")]: {
+    padding: theme.spacing(3),
+  },
+}));
+
+const HeaderLabel = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const HeaderTitle = styled(Typography)({
+  fontWeight: 800,
+});
+
+const HeaderDescription = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const SidebarPanel = styled(Paper)(({ theme }) => ({
+  width: "100%",
+  padding: theme.spacing(2.5),
+  borderRadius: theme.spacing(3),
+  display: "flex",
+  flexDirection: "column",
+  [theme.breakpoints.up("lg")]: {
+    width: 380,
+    minHeight: "calc(100vh - 240px)",
+  },
+}));
+
+const SidebarContent = styled(Stack)({
+  flex: 1,
+  minHeight: 0,
+});
+
+const SidebarTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const ListScroll = styled(Stack)(({ theme }) => ({
+  flex: 1,
+  minHeight: 0,
+  overflowY: "auto",
+  paddingRight: theme.spacing(1),
+  maxHeight: 420,
+  [theme.breakpoints.up("lg")]: {
+    maxHeight: "calc(100vh - 420px)",
+  },
+}));
+
+const QuestionCard = styled(Paper, {
+  shouldForwardProp: (prop) => prop !== "selected",
+})<{ selected: boolean }>(({ theme, selected }) => ({
+  padding: theme.spacing(1.5),
+  borderRadius: theme.spacing(2),
+  borderColor: selected ? "#1d4ed8" : undefined,
+  backgroundColor: selected ? "#eff6ff" : "#fff",
+}));
+
+const QuestionTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const QuestionMeta = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const QuestionIdText = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[400],
+}));
+
+const QuestionSelectButton = styled(Button)(({ theme }) => ({
+  marginTop: theme.spacing(1),
+}));
+
+const DetailPanel = styled(Paper)(({ theme }) => ({
+  flex: 1,
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(3),
+}));
+
+const DetailTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const DetailDescription = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const OptionTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const OptionHint = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const OptionNote = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const RemoveOptionButton = styled(Button)({
+  minWidth: 96,
+});
+
+const AddOptionButton = styled(Button)({
+  alignSelf: "flex-start",
+});
+
+const EmptyNotice = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+/** 選択肢入力の初期配列を返す。 */
 const emptyOptions = () =>
   Array.from({ length: 4 }).map(() => ({
     optionText: "",
     isCorrect: false,
   }));
 
+/** 新規作成時のフォーム初期値を返す。 */
 const defaultFormState = (): QuestionDetail => ({
   questionId: "",
   stem: "",
@@ -76,6 +209,7 @@ const defaultFormState = (): QuestionDetail => ({
   })),
 });
 
+/** 問題管理の作成・編集・検索を行うスタッフ画面。 */
 export default function StaffQuestionManagementPage() {
   const searchParams = useSearchParams();
 
@@ -107,6 +241,7 @@ export default function StaffQuestionManagementPage() {
     [modules],
   );
 
+  /** 更新日時を表示用に整形する。 */
   const formatUpdatedAt = (value: string) =>
     new Date(value).toLocaleString("ja-JP", {
       year: "numeric",
@@ -436,10 +571,10 @@ export default function StaffQuestionManagementPage() {
   }, [detailModuleId, formState.subcategoryId, subcategories]);
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f6f7f8", color: "#111418" }}>
-      <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
+    <Root>
+      <PageContainer maxWidth="xl">
         <Stack spacing={3}>
-          <Paper sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3 }}>
+          <HeaderPanel>
             <Stack
               direction={{ xs: "column", sm: "row" }}
               spacing={2}
@@ -447,15 +582,11 @@ export default function StaffQuestionManagementPage() {
               alignItems={{ xs: "flex-start", sm: "center" }}
             >
               <Box>
-                <Typography variant="body2" sx={{ color: "#64748b" }}>
-                  Staff / 問題管理
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800 }}>
-                  問題管理
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#64748b" }}>
+                <HeaderLabel variant="body2">Staff / 問題管理</HeaderLabel>
+                <HeaderTitle variant="h4">問題管理</HeaderTitle>
+                <HeaderDescription variant="body2">
                   問題の検索・作成・編集をここで行います。
-                </Typography>
+                </HeaderDescription>
               </Box>
               <Button
                 variant="contained"
@@ -465,23 +596,12 @@ export default function StaffQuestionManagementPage() {
                 新規問題作成
               </Button>
             </Stack>
-          </Paper>
+          </HeaderPanel>
 
           <Stack direction={{ xs: "column", lg: "row" }} spacing={3}>
-            <Paper
-              sx={{
-                width: { xs: "100%", lg: 380 },
-                p: 2.5,
-                borderRadius: 3,
-                display: "flex",
-                flexDirection: "column",
-                minHeight: { xs: "auto", lg: "calc(100vh - 240px)" },
-              }}
-            >
-              <Stack spacing={2} sx={{ flex: 1, minHeight: 0 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                  問題一覧
-                </Typography>
+            <SidebarPanel>
+              <SidebarContent spacing={2}>
+                <SidebarTitle variant="subtitle1">問題一覧</SidebarTitle>
                 <TextField
                   label="キーワード/IDで検索"
                   value={keyword}
@@ -539,30 +659,16 @@ export default function StaffQuestionManagementPage() {
                   label="IDを表示"
                 />
                 {listError && <Alert severity="error">{listError}</Alert>}
-                <Stack
-                  spacing={1}
-                  sx={{
-                    flex: 1,
-                    minHeight: 0,
-                    overflowY: "auto",
-                    pr: 1,
-                    maxHeight: { xs: 420, lg: "calc(100vh - 420px)" },
-                  }}
-                >
+                <ListScroll spacing={1}>
                   {questions.map((question) => {
                     const isSelected =
                       question.questionId === selectedQuestionId;
                     return (
-                      <Paper
+                      <QuestionCard
                         key={question.questionId}
                         id={`question-row-${question.questionId}`}
                         variant={isSelected ? "outlined" : "elevation"}
-                        sx={{
-                          p: 1.5,
-                          borderRadius: 2,
-                          borderColor: isSelected ? "#1d4ed8" : undefined,
-                          bgcolor: isSelected ? "#eff6ff" : "#fff",
-                        }}
+                        selected={isSelected}
                       >
                         <Stack spacing={1}>
                           <Stack
@@ -590,63 +696,53 @@ export default function StaffQuestionManagementPage() {
                               <Chip label="無効" size="small" color="default" />
                             )}
                           </Stack>
-                          <Typography
-                            variant="subtitle2"
-                            sx={{ fontWeight: 700 }}
-                          >
+                          <QuestionTitle variant="subtitle2">
                             {question.stem}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{ color: "#64748b" }}
-                          >
+                          </QuestionTitle>
+                          <QuestionMeta variant="caption">
                             最終更新: {formatUpdatedAt(question.updatedAt)}
-                          </Typography>
+                          </QuestionMeta>
                           {showIds && (
-                            <Typography
-                              variant="caption"
-                              sx={{ color: "#94a3b8" }}
-                            >
+                            <QuestionIdText variant="caption">
                               ID: {question.questionId}
-                            </Typography>
+                            </QuestionIdText>
                           )}
                         </Stack>
-                        <Button
+                        <QuestionSelectButton
                           size="small"
                           variant={isSelected ? "contained" : "outlined"}
-                          sx={{ mt: 1 }}
                           onClick={() =>
                             handleSelectQuestion(question.questionId)
                           }
                           data-testid={`question-select-${question.questionId}`}
                         >
                           {isSelected ? "選択中" : "詳細を見る"}
-                        </Button>
-                      </Paper>
+                        </QuestionSelectButton>
+                      </QuestionCard>
                     );
                   })}
                   {questions.length === 0 && (
-                    <Typography variant="body2" sx={{ color: "#64748b" }}>
+                    <EmptyNotice variant="body2">
                       該当する問題がありません。
-                    </Typography>
+                    </EmptyNotice>
                   )}
-                </Stack>
-              </Stack>
-            </Paper>
+                </ListScroll>
+              </SidebarContent>
+            </SidebarPanel>
 
-            <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
+            <DetailPanel>
               <Stack spacing={2}>
                 <Stack spacing={0.5}>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  <DetailTitle variant="h6">
                     {isCreating ? "新規問題作成" : "問題詳細"}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#64748b" }}>
+                  </DetailTitle>
+                  <DetailDescription variant="body2">
                     {isCreating
                       ? "新しい問題を登録します。"
                       : selectedQuestionId
                         ? `ID: ${selectedQuestionId}`
                         : "左の一覧から問題を選択してください。"}
-                  </Typography>
+                  </DetailDescription>
                 </Stack>
 
                 {(formError || formMessage) && (
@@ -765,12 +861,12 @@ export default function StaffQuestionManagementPage() {
                     label="有効"
                   />
                   <Stack spacing={1}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                    <OptionTitle variant="subtitle2">
                       選択肢（正解は1つ）
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: "#64748b" }}>
+                    </OptionTitle>
+                    <OptionHint variant="caption">
                       2択以上・正解は1つのみ保存できます。
-                    </Typography>
+                    </OptionHint>
                     {formState.options.map((option, index) => (
                       <Stack
                         key={`option-${index}`}
@@ -814,15 +910,14 @@ export default function StaffQuestionManagementPage() {
                             下へ
                           </Button>
                         </Stack>
-                        <Button
+                        <RemoveOptionButton
                           variant="outlined"
                           onClick={() => handleRemoveOption(index)}
                           disabled={formState.options.length <= 2}
                           data-testid={`question-option-remove-${index}`}
-                          sx={{ minWidth: 96 }}
                         >
                           削除
-                        </Button>
+                        </RemoveOptionButton>
                       </Stack>
                     ))}
                     {fieldErrors.options && (
@@ -830,17 +925,16 @@ export default function StaffQuestionManagementPage() {
                         {fieldErrors.options}
                       </Typography>
                     )}
-                    <Typography variant="caption" sx={{ color: "#64748b" }}>
+                    <OptionNote variant="caption">
                       並び替えは保存時に反映されます。削除で正解が外れた場合は再指定してください。
-                    </Typography>
-                    <Button
+                    </OptionNote>
+                    <AddOptionButton
                       variant="outlined"
                       onClick={handleAddOption}
                       data-testid="question-option-add"
-                      sx={{ alignSelf: "flex-start" }}
                     >
                       選択肢を追加
-                    </Button>
+                    </AddOptionButton>
                   </Stack>
                   <Stack direction="row" spacing={2}>
                     <Button
@@ -863,10 +957,10 @@ export default function StaffQuestionManagementPage() {
                   </Stack>
                 </Stack>
               </Stack>
-            </Paper>
+            </DetailPanel>
           </Stack>
         </Stack>
-      </Container>
-    </Box>
+      </PageContainer>
+    </Root>
   );
 }

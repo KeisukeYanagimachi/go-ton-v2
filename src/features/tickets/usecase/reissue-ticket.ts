@@ -1,3 +1,5 @@
+/** 受験票を再発行するユースケース。 */
+
 import { randomUUID } from "crypto";
 
 import { prisma } from "@/shared/db/prisma";

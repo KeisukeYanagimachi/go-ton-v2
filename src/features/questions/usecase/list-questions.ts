@@ -1,3 +1,5 @@
+/** 問題一覧を取得するユースケース。 */
+
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/shared/db/prisma";

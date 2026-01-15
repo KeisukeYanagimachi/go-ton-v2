@@ -8,6 +8,7 @@ const requestSchema = z.object({
   attemptId: z.string().min(1),
 });
 
+/** Attempt をロックするAPI。 */
 export const POST = async (request: Request) => {
   const staffSession = await requireStaffRoleFromRequest(request, [
     "ADMIN",

@@ -12,6 +12,7 @@ const requestSchema = z.object({
   examVersionId: z.string().uuid(),
 });
 
+/** 受験票発行に必要な候補者・試験情報を取得するAPI。 */
 export const GET = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, [
     "ADMIN",
@@ -30,6 +31,7 @@ export const GET = async (request: Request) => {
   return NextResponse.json({ candidates, examVersions });
 };
 
+/** 受験票を発行するAPI。 */
 export const POST = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, [
     "ADMIN",

@@ -1,3 +1,5 @@
+/** 問題モジュールコードの定義。 */
+
 const QUESTION_MODULE_CODES = [
   "VERBAL",
   "NONVERBAL",

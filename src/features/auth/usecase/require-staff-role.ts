@@ -1,3 +1,5 @@
+/** スタッフロール要件を検証するユースケース。 */
+
 import { StaffRoleCode } from "@/features/auth/domain/staff-auth";
 import {
   DEV_STAFF_SESSION_COOKIE,

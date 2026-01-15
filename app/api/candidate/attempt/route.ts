@@ -8,6 +8,7 @@ const requestSchema = z.object({
   pin: z.string().min(1),
 });
 
+/** 受験中の試験スナップショットを取得するAPI。 */
 export const POST = async (request: Request) => {
   const payload = requestSchema.safeParse(await request.json());
 

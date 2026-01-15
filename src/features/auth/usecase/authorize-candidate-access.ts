@@ -1,3 +1,5 @@
+/** 受験者のアクセス権限を確認するユースケース。 */
+
 import {
     CandidateAuthRecord,
     isCandidateAccessAllowed,

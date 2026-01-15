@@ -1,3 +1,5 @@
+/** 出題割当を削除するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type RemoveExamVersionQuestionResult =

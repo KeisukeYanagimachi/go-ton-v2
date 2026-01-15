@@ -1,3 +1,5 @@
+/** スタッフ認可ドメインのテスト。 */
+
 import { describe, expect, test } from "vitest";
 
 import { hasRequiredStaffRole } from "@/features/auth/domain/staff-authorization";

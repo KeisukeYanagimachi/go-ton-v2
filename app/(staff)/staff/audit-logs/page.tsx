@@ -16,6 +16,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 
 type AuditLogRow = {
@@ -30,12 +31,65 @@ type AuditLogRow = {
   } | null;
 };
 
-const baseStyles = {
+const Root = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
-  bgcolor: "#f6f7f8",
+  backgroundColor: "#f6f7f8",
   color: "#111418",
-};
+  paddingTop: theme.spacing(4),
+  paddingBottom: theme.spacing(4),
+  [theme.breakpoints.up("md")]: {
+    paddingTop: theme.spacing(6),
+    paddingBottom: theme.spacing(6),
+  },
+}));
 
+const PageTitle = styled(Typography)({
+  fontWeight: 800,
+});
+
+const BreadcrumbText = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const BreadcrumbSeparator = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[400],
+}));
+
+const BreadcrumbCurrent = styled(Typography)({
+  fontWeight: 700,
+});
+
+const Panel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(3),
+}));
+
+const PanelDescription = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  marginTop: theme.spacing(1),
+}));
+
+const FilterField = styled(TextField)({
+  minWidth: 220,
+});
+
+const ActionButton = styled(Button)({
+  fontWeight: 700,
+});
+
+const SectionTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const SectionMeta = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const EmptyNotice = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+/** 監査ログの日時を読みやすい形式へ整形する。 */
 const formatDateTime = (value: string) =>
   new Date(value).toLocaleString("ja-JP", {
     year: "numeric",
@@ -55,6 +109,7 @@ const actionOptions = [
   { value: "TICKET_REISSUED", label: "TICKET_REISSUED" },
 ];
 
+/** 監査ログの検索と一覧表示を行うスタッフ画面。 */
 export default function StaffAuditLogsPage() {
   const [actionFilter, setActionFilter] = useState("ALL");
   const [fromDate, setFromDate] = useState("");
@@ -115,30 +170,22 @@ export default function StaffAuditLogsPage() {
   };
 
   return (
-    <Box sx={baseStyles}>
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+    <Root>
+      <Container maxWidth="lg">
         <Stack spacing={3}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="body2" sx={{ color: "#64748b" }}>
-              ホーム
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#94a3b8" }}>
-              /
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 700 }}>
-              監査ログ
-            </Typography>
+            <BreadcrumbText variant="body2">ホーム</BreadcrumbText>
+            <BreadcrumbSeparator variant="body2">/</BreadcrumbSeparator>
+            <BreadcrumbCurrent variant="body2">監査ログ</BreadcrumbCurrent>
           </Stack>
 
-          <Paper sx={{ p: 3, borderRadius: 3 }}>
+          <Panel>
             <Stack spacing={2}>
               <Box>
-                <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                  監査ログ一覧
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                <PageTitle variant="h5">監査ログ一覧</PageTitle>
+                <PanelDescription variant="body2">
                   操作履歴は最新200件まで表示されます。
-                </Typography>
+                </PanelDescription>
               </Box>
 
               <Stack
@@ -146,12 +193,11 @@ export default function StaffAuditLogsPage() {
                 spacing={2}
                 alignItems={{ xs: "stretch", md: "center" }}
               >
-                <TextField
+                <FilterField
                   select
                   label="アクション"
                   value={actionFilter}
                   onChange={(event) => setActionFilter(event.target.value)}
-                  sx={{ minWidth: 220 }}
                   inputProps={{ "data-testid": "staff-audit-action" }}
                 >
                   {actionOptions.map((option) => (
@@ -159,56 +205,50 @@ export default function StaffAuditLogsPage() {
                       {option.label}
                     </MenuItem>
                   ))}
-                </TextField>
-                <TextField
+                </FilterField>
+                <FilterField
                   type="datetime-local"
                   label="開始日時"
                   value={fromDate}
                   onChange={(event) => setFromDate(event.target.value)}
-                  sx={{ minWidth: 220 }}
                   inputProps={{ "data-testid": "staff-audit-from" }}
                   InputLabelProps={{ shrink: true }}
                 />
-                <TextField
+                <FilterField
                   type="datetime-local"
                   label="終了日時"
                   value={toDate}
                   onChange={(event) => setToDate(event.target.value)}
-                  sx={{ minWidth: 220 }}
                   inputProps={{ "data-testid": "staff-audit-to" }}
                   InputLabelProps={{ shrink: true }}
                 />
                 <Stack direction="row" spacing={1}>
-                  <Button
+                  <ActionButton
                     variant="contained"
-                    sx={{ fontWeight: 700 }}
                     onClick={fetchLogs}
                     data-testid="staff-audit-search"
                   >
                     検索
-                  </Button>
-                  <Button
+                  </ActionButton>
+                  <ActionButton
                     variant="text"
-                    sx={{ fontWeight: 700 }}
                     onClick={handleClear}
                     data-testid="staff-audit-clear"
                   >
                     クリア
-                  </Button>
+                  </ActionButton>
                 </Stack>
               </Stack>
             </Stack>
-          </Paper>
+          </Panel>
 
-          <Paper sx={{ p: 3, borderRadius: 3 }}>
+          <Panel>
             <Stack spacing={2}>
               <Stack direction="row" justifyContent="space-between">
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  記録一覧
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#64748b" }}>
+                <SectionTitle variant="h6">記録一覧</SectionTitle>
+                <SectionMeta variant="body2">
                   {isLoading ? "読み込み中..." : `${logs.length} 件`}
-                </Typography>
+                </SectionMeta>
               </Stack>
 
               {message ? <Alert severity="error">{message}</Alert> : null}
@@ -243,18 +283,18 @@ export default function StaffAuditLogsPage() {
                   {logs.length === 0 && !isLoading ? (
                     <TableRow>
                       <TableCell colSpan={5}>
-                        <Typography variant="body2" sx={{ color: "#64748b" }}>
+                        <EmptyNotice variant="body2">
                           該当する監査ログがありません。
-                        </Typography>
+                        </EmptyNotice>
                       </TableCell>
                     </TableRow>
                   ) : null}
                 </TableBody>
               </Table>
             </Stack>
-          </Paper>
+          </Panel>
         </Stack>
       </Container>
-    </Box>
+    </Root>
   );
 }

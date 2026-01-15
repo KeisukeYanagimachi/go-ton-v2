@@ -16,6 +16,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -42,11 +43,95 @@ type AttemptResultDetail = {
   }[];
 };
 
-const baseStyles = {
+const Root = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
-  bgcolor: "#f6f7f8",
+  backgroundColor: "#f6f7f8",
   color: "#111418",
-};
+  paddingTop: theme.spacing(4),
+  paddingBottom: theme.spacing(4),
+  [theme.breakpoints.up("md")]: {
+    paddingTop: theme.spacing(6),
+    paddingBottom: theme.spacing(6),
+  },
+}));
+
+const BreadcrumbText = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const BreadcrumbSeparator = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[400],
+}));
+
+const BreadcrumbCurrent = styled(Typography)({
+  fontWeight: 700,
+});
+
+const Panel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(3),
+}));
+
+const Title = styled(Typography)({
+  fontWeight: 800,
+});
+
+const Description = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  marginTop: theme.spacing(1),
+}));
+
+const BackButton = styled(Button)({
+  fontWeight: 700,
+});
+
+const EmptyNotice = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const InfoCard = styled(Paper)(({ theme }) => ({
+  flex: 1,
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(2),
+}));
+
+const InfoLabel = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const InfoTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const InfoMeta = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const ScorePanel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(2),
+}));
+
+const SectionTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const ScoreValue = styled(Typography)(({ theme }) => ({
+  marginTop: theme.spacing(1),
+}));
+
+const ScoreMeta = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  marginTop: theme.spacing(1),
+}));
+
+const ScoreTable = styled(Table)(({ theme }) => ({
+  marginTop: theme.spacing(1),
+}));
+
+const TableEmptyNotice = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
 
 const statusLabelMap: Record<string, string> = {
   NOT_STARTED: "未開始",
@@ -64,6 +149,7 @@ const statusChipColor = (status: string) => {
   return "default";
 };
 
+/** 日時の表示用フォーマットを返す。 */
 const formatDateTime = (value: string | null) =>
   value
     ? new Date(value).toLocaleString("ja-JP", {
@@ -75,6 +161,7 @@ const formatDateTime = (value: string | null) =>
       })
     : "-";
 
+/** 試験結果の詳細情報を表示するスタッフ画面。 */
 export default function StaffResultDetailPage() {
   const params = useParams();
   const attemptId = Array.isArray(params.attemptId)
@@ -134,41 +221,27 @@ export default function StaffResultDetailPage() {
   }, [resolvedAttemptId]);
 
   return (
-    <Box sx={baseStyles}>
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+    <Root>
+      <Container maxWidth="lg">
         <Stack spacing={3}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="body2" sx={{ color: "#64748b" }}>
-              ホーム
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#94a3b8" }}>
-              /
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#64748b" }}>
-              結果閲覧
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#94a3b8" }}>
-              /
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 700 }}>
-              詳細
-            </Typography>
+            <BreadcrumbText variant="body2">ホーム</BreadcrumbText>
+            <BreadcrumbSeparator variant="body2">/</BreadcrumbSeparator>
+            <BreadcrumbText variant="body2">結果閲覧</BreadcrumbText>
+            <BreadcrumbSeparator variant="body2">/</BreadcrumbSeparator>
+            <BreadcrumbCurrent variant="body2">詳細</BreadcrumbCurrent>
           </Stack>
 
-          <Paper sx={{ p: 3, borderRadius: 3 }}>
+          <Panel>
             <Stack spacing={2}>
               <Stack direction="row" justifyContent="space-between">
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                    結果詳細
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                  <Title variant="h5">結果詳細</Title>
+                  <Description variant="body2">
                     採点結果とモジュール別の内訳を確認します。
-                  </Typography>
+                  </Description>
                 </Box>
-                <Button href="/staff/results" sx={{ fontWeight: 700 }}>
-                  一覧へ戻る
-                </Button>
+                <BackButton href="/staff/results">一覧へ戻る</BackButton>
               </Stack>
 
               {message ? <Alert severity="error">{message}</Alert> : null}
@@ -176,78 +249,61 @@ export default function StaffResultDetailPage() {
               <Divider />
 
               {!detail && !isLoading ? (
-                <Typography variant="body2" sx={{ color: "#64748b" }}>
+                <EmptyNotice variant="body2">
                   結果が見つかりません。
-                </Typography>
+                </EmptyNotice>
               ) : null}
 
               {detail ? (
                 <Stack spacing={3} data-testid="staff-result-detail">
                   <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                    <Paper sx={{ flex: 1, p: 2, borderRadius: 2 }}>
-                      <Typography variant="overline" sx={{ color: "#64748b" }}>
-                        受験者
-                      </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                        {detail.candidateName}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "#64748b" }}>
+                    <InfoCard>
+                      <InfoLabel variant="overline">受験者</InfoLabel>
+                      <InfoTitle variant="h6">{detail.candidateName}</InfoTitle>
+                      <InfoMeta variant="body2">
                         受験票コード: {detail.ticketCode}
-                      </Typography>
-                    </Paper>
-                    <Paper sx={{ flex: 1, p: 2, borderRadius: 2 }}>
-                      <Typography variant="overline" sx={{ color: "#64748b" }}>
-                        試験情報
-                      </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                        {detail.examName}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "#64748b" }}>
+                      </InfoMeta>
+                    </InfoCard>
+                    <InfoCard>
+                      <InfoLabel variant="overline">試験情報</InfoLabel>
+                      <InfoTitle variant="h6">{detail.examName}</InfoTitle>
+                      <InfoMeta variant="body2">
                         バージョン: {detail.examVersion}
-                      </Typography>
-                    </Paper>
-                    <Paper sx={{ flex: 1, p: 2, borderRadius: 2 }}>
-                      <Typography variant="overline" sx={{ color: "#64748b" }}>
-                        ステータス
-                      </Typography>
+                      </InfoMeta>
+                    </InfoCard>
+                    <InfoCard>
+                      <InfoLabel variant="overline">ステータス</InfoLabel>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Chip
                           label={statusLabelMap[detail.status] ?? detail.status}
                           color={statusChipColor(detail.status)}
                         />
-                        <Typography variant="body2" sx={{ color: "#64748b" }}>
+                        <InfoMeta variant="body2">
                           提出: {formatDateTime(detail.submittedAt)}
-                        </Typography>
+                        </InfoMeta>
                       </Stack>
-                      <Typography variant="body2" sx={{ color: "#64748b" }}>
+                      <InfoMeta variant="body2">
                         更新: {formatDateTime(detail.updatedAt)}
-                      </Typography>
-                    </Paper>
+                      </InfoMeta>
+                    </InfoCard>
                   </Stack>
 
-                  <Paper sx={{ p: 2, borderRadius: 2 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      総合スコア
-                    </Typography>
-                    <Typography variant="body1" sx={{ mt: 1 }}>
+                  <ScorePanel>
+                    <SectionTitle variant="h6">総合スコア</SectionTitle>
+                    <ScoreValue variant="body1">
                       {detail.totalScore
                         ? `${detail.totalScore.rawScore} / ${detail.totalScore.maxScore}`
                         : "未採点"}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "#64748b", mt: 1 }}
-                    >
+                    </ScoreValue>
+                    <ScoreMeta variant="body2">
                       採点日時:{" "}
                       {formatDateTime(detail.totalScore?.scoredAt ?? null)}
-                    </Typography>
-                  </Paper>
+                    </ScoreMeta>
+                  </ScorePanel>
 
-                  <Paper sx={{ p: 2, borderRadius: 2 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      モジュール別スコア
-                    </Typography>
-                    <Table size="small" sx={{ mt: 1 }}>
+                  <ScorePanel>
+                    <SectionTitle variant="h6">モジュール別スコア</SectionTitle>
+                    <ScoreTable size="small">
                       <TableHead>
                         <TableRow>
                           <TableCell>モジュール</TableCell>
@@ -272,24 +328,21 @@ export default function StaffResultDetailPage() {
                         {detail.moduleScores.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={3}>
-                              <Typography
-                                variant="body2"
-                                sx={{ color: "#64748b" }}
-                              >
+                              <TableEmptyNotice variant="body2">
                                 モジュール別スコアがありません。
-                              </Typography>
+                              </TableEmptyNotice>
                             </TableCell>
                           </TableRow>
                         ) : null}
                       </TableBody>
-                    </Table>
-                  </Paper>
+                    </ScoreTable>
+                  </ScorePanel>
                 </Stack>
               ) : null}
             </Stack>
-          </Paper>
+          </Panel>
         </Stack>
       </Container>
-    </Box>
+    </Root>
   );
 }

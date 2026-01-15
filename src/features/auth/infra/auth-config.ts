@@ -1,3 +1,5 @@
+/** Auth.js の設定と環境別の定義。 */
+
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 

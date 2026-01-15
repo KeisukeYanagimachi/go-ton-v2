@@ -1,3 +1,5 @@
+/** 候補者データの永続化アクセスをまとめたリポジトリ。 */
+
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/shared/db/prisma";

@@ -18,6 +18,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 
 type ActionState = "idle" | "submitting" | "success" | "error";
@@ -42,12 +43,122 @@ type AttemptRow = {
   updatedAt: string;
 };
 
-const baseStyles = {
+const Root = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
-  bgcolor: "#f6f7f8",
+  backgroundColor: "#f6f7f8",
   color: "#111418",
-};
+  paddingTop: theme.spacing(4),
+  paddingBottom: theme.spacing(4),
+  [theme.breakpoints.up("md")]: {
+    paddingTop: theme.spacing(6),
+    paddingBottom: theme.spacing(6),
+  },
+}));
 
+const BreadcrumbText = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const BreadcrumbSeparator = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[400],
+}));
+
+const BreadcrumbCurrent = styled(Typography)({
+  fontWeight: 700,
+});
+
+const PageTitle = styled(Typography)({
+  fontWeight: 900,
+});
+
+const PageSubtitle = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  marginTop: theme.spacing(1),
+}));
+
+const RoleChip = styled(Chip)({
+  backgroundColor: "rgba(19, 127, 236, 0.12)",
+  color: "#137fec",
+  fontWeight: 700,
+});
+
+const InfoCard = styled(Paper)(({ theme }) => ({
+  flex: 1,
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(3),
+}));
+
+const InfoTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const InfoText = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  marginTop: theme.spacing(1),
+}));
+
+const GuidePanel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(3),
+  [theme.breakpoints.up("md")]: {
+    padding: theme.spacing(4),
+  },
+}));
+
+const GuideTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const GuideStep = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[700],
+}));
+
+const SearchPanel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(3),
+  [theme.breakpoints.up("md")]: {
+    padding: theme.spacing(4),
+  },
+}));
+
+const SearchTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const SearchButton = styled(Button)({
+  fontWeight: 700,
+  minWidth: 140,
+});
+
+const StatusChip = styled(Chip, {
+  shouldForwardProp: (prop) => prop !== "tone",
+})<{ tone: "idle" | "success" | "error" }>(({ tone }) => ({
+  backgroundColor:
+    tone === "error"
+      ? "rgba(239, 68, 68, 0.1)"
+      : tone === "success"
+        ? "rgba(34, 197, 94, 0.12)"
+        : "rgba(148, 163, 184, 0.2)",
+  color:
+    tone === "error" ? "#b91c1c" : tone === "success" ? "#15803d" : "#475569",
+  fontWeight: 700,
+}));
+
+const StatusMeta = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const ResumeButton = styled(Button)({
+  backgroundColor: "#111418",
+});
+
+const EmptyNotice = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  paddingTop: theme.spacing(2),
+  paddingBottom: theme.spacing(2),
+}));
+
+/** 受験中Attemptのロック/再開を扱うスタッフ画面。 */
 export default function StaffAttemptTakeoverPage() {
   const [deviceId, setDeviceId] = useState("");
   const [searchTicketCode, setSearchTicketCode] = useState("");
@@ -165,19 +276,13 @@ export default function StaffAttemptTakeoverPage() {
   };
 
   return (
-    <Box sx={baseStyles}>
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+    <Root>
+      <Container maxWidth="lg">
         <Stack spacing={3}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="body2" sx={{ color: "#64748b" }}>
-              ホーム
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#94a3b8" }}>
-              /
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 700 }}>
-              引き継ぎ操作
-            </Typography>
+            <BreadcrumbText variant="body2">ホーム</BreadcrumbText>
+            <BreadcrumbSeparator variant="body2">/</BreadcrumbSeparator>
+            <BreadcrumbCurrent variant="body2">引き継ぎ操作</BreadcrumbCurrent>
           </Stack>
 
           <Stack
@@ -187,69 +292,52 @@ export default function StaffAttemptTakeoverPage() {
             alignItems={{ xs: "flex-start", md: "center" }}
           >
             <Box>
-              <Typography variant="h4" sx={{ fontWeight: 900 }}>
-                受験引き継ぎ操作
-              </Typography>
-              <Typography variant="body1" sx={{ color: "#64748b", mt: 1 }}>
+              <PageTitle variant="h4">受験引き継ぎ操作</PageTitle>
+              <PageSubtitle variant="body1">
                 Attempt をロックして一時停止、または新端末で再開します。
-              </Typography>
+              </PageSubtitle>
             </Box>
-            <Chip
-              label="PROCTOR 専用"
-              sx={{
-                bgcolor: "rgba(19, 127, 236, 0.12)",
-                color: "#137fec",
-                fontWeight: 700,
-              }}
-            />
+            <RoleChip label="PROCTOR 専用" />
           </Stack>
 
           <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-            <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                LOCK 操作
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+            <InfoCard>
+              <InfoTitle variant="subtitle1">LOCK 操作</InfoTitle>
+              <InfoText variant="body2">
                 進行中の Attempt を LOCKED に変更し、端末を切り替えます。
-              </Typography>
-            </Paper>
-            <Paper sx={{ flex: 1, p: 3, borderRadius: 3 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                RESUME 操作
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+              </InfoText>
+            </InfoCard>
+            <InfoCard>
+              <InfoTitle variant="subtitle1">RESUME 操作</InfoTitle>
+              <InfoText variant="body2">
                 新端末で Attempt を再開し、セッションを発行します。
-              </Typography>
-            </Paper>
+              </InfoText>
+            </InfoCard>
           </Stack>
 
-          <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
+          <GuidePanel>
             <Stack spacing={2}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                手順の目安
-              </Typography>
+              <GuideTitle variant="h6">手順の目安</GuideTitle>
               <Stack spacing={1} data-testid="staff-takeover-steps">
-                <Typography variant="body2" sx={{ color: "#475569" }}>
+                <GuideStep variant="body2">
                   1. 対象 Attempt を LOCK して受験者の操作を停止
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#475569" }}>
+                </GuideStep>
+                <GuideStep variant="body2">
                   2. 新端末で Candidate がログイン
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#475569" }}>
+                </GuideStep>
+                <GuideStep variant="body2">
                   3. RESUME で新しいセッションを発行
-                </Typography>
+                </GuideStep>
               </Stack>
               <Alert severity="warning" data-testid="staff-takeover-note">
                 LOCK 中は Candidate の画面操作がブロックされます。
               </Alert>
             </Stack>
-          </Paper>
+          </GuidePanel>
 
-          <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
+          <SearchPanel>
             <Stack spacing={3}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                Attempt 一覧・検索
-              </Typography>
+              <SearchTitle variant="h6">Attempt 一覧・検索</SearchTitle>
               <Stack
                 direction={{ xs: "column", md: "row" }}
                 spacing={2}
@@ -278,15 +366,14 @@ export default function StaffAttemptTakeoverPage() {
                     </MenuItem>
                   ))}
                 </TextField>
-                <Button
+                <SearchButton
                   variant="contained"
-                  sx={{ fontWeight: 700, minWidth: 140 }}
                   onClick={fetchAttempts}
                   data-testid="staff-attempt-search-submit"
                   disabled={isLoading}
                 >
                   {isLoading ? "検索中..." : "検索"}
-                </Button>
+                </SearchButton>
               </Stack>
               <TextField
                 label="Device ID（任意）"
@@ -311,28 +398,20 @@ export default function StaffAttemptTakeoverPage() {
                 alignItems="center"
                 justifyContent="space-between"
               >
-                <Chip
+                <StatusChip
                   label={`状態: ${statusLabel}`}
                   data-testid="staff-takeover-status"
-                  sx={{
-                    bgcolor:
-                      state === "error"
-                        ? "rgba(239, 68, 68, 0.1)"
-                        : state === "success"
-                          ? "rgba(34, 197, 94, 0.12)"
-                          : "rgba(148, 163, 184, 0.2)",
-                    color:
-                      state === "error"
-                        ? "#b91c1c"
-                        : state === "success"
-                          ? "#15803d"
-                          : "#475569",
-                    fontWeight: 700,
-                  }}
+                  tone={
+                    state === "error"
+                      ? "error"
+                      : state === "success"
+                        ? "success"
+                        : "idle"
+                  }
                 />
-                <Typography variant="body2" sx={{ color: "#64748b" }}>
+                <StatusMeta variant="body2">
                   {isLoading ? "一覧更新中..." : `件数: ${attempts.length}`}
-                </Typography>
+                </StatusMeta>
               </Stack>
 
               <Table size="small" data-testid="staff-attempt-list">
@@ -381,10 +460,9 @@ export default function StaffAttemptTakeoverPage() {
                             >
                               LOCK
                             </Button>
-                            <Button
+                            <ResumeButton
                               size="small"
                               variant="contained"
-                              sx={{ bgcolor: "#111418" }}
                               data-testid={`staff-attempt-resume-${attempt.attemptId}`}
                               onClick={() =>
                                 handleAction("resume", attempt.attemptId)
@@ -392,7 +470,7 @@ export default function StaffAttemptTakeoverPage() {
                               disabled={!canResume || state === "submitting"}
                             >
                               RESUME
-                            </Button>
+                            </ResumeButton>
                           </Stack>
                         </TableCell>
                       </TableRow>
@@ -401,21 +479,18 @@ export default function StaffAttemptTakeoverPage() {
                   {attempts.length === 0 && !isLoading && (
                     <TableRow>
                       <TableCell colSpan={6}>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#64748b", py: 2 }}
-                        >
+                        <EmptyNotice variant="body2">
                           該当する Attempt がありません。
-                        </Typography>
+                        </EmptyNotice>
                       </TableCell>
                     </TableRow>
                   )}
                 </TableBody>
               </Table>
             </Stack>
-          </Paper>
+          </SearchPanel>
         </Stack>
       </Container>
-    </Box>
+    </Root>
   );
 }

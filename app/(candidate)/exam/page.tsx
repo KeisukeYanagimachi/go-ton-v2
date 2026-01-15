@@ -16,6 +16,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -63,6 +64,379 @@ type TelemetryEventType =
   | "IDLE_START"
   | "IDLE_END";
 
+const Root = styled(Box)({
+  height: "100vh",
+  backgroundColor: "#f6f7f8",
+  color: "#111418",
+  overflow: "hidden",
+});
+
+const Header = styled(Box)(({ theme }) => ({
+  position: "sticky",
+  top: 0,
+  zIndex: 10,
+  display: "grid",
+  alignItems: "center",
+  gridTemplateColumns: "1fr",
+  columnGap: theme.spacing(2),
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  paddingTop: theme.spacing(1.5),
+  paddingBottom: theme.spacing(1.5),
+  backgroundColor: "#ffffff",
+  borderBottom: "1px solid #e2e8f0",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.05)",
+  width: "100%",
+  boxSizing: "border-box",
+  overflow: "hidden",
+  [theme.breakpoints.up("md")]: {
+    gridTemplateColumns: "1fr auto 1fr",
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4),
+  },
+}));
+
+const HeaderLeft = styled(Stack)({
+  minWidth: 0,
+});
+
+const BrandBadge = styled(Box)({
+  width: 40,
+  height: 40,
+  borderRadius: 8,
+  backgroundColor: "rgba(19, 127, 236, 0.12)",
+  display: "grid",
+  placeItems: "center",
+  color: "#137fec",
+  fontWeight: 700,
+});
+
+const HeaderTitle = styled(Typography)({
+  fontWeight: 700,
+  whiteSpace: "nowrap",
+});
+
+const HeaderSubtitle = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  maxWidth: 220,
+  display: "block",
+  [theme.breakpoints.up("md")]: {
+    maxWidth: 360,
+  },
+}));
+
+const HeaderCenter = styled(Box)(({ theme }) => ({
+  display: "none",
+  alignItems: "center",
+  gap: theme.spacing(2),
+  flexShrink: 0,
+  justifySelf: "center",
+  [theme.breakpoints.up("md")]: {
+    display: "flex",
+  },
+}));
+
+const TimerChip = styled(Paper)(({ theme }) => ({
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  paddingTop: theme.spacing(0.75),
+  paddingBottom: theme.spacing(0.75),
+  borderRadius: 999,
+  backgroundColor: "#f1f5f9",
+  border: "1px solid #e2e8f0",
+  display: "flex",
+  alignItems: "center",
+  gap: theme.spacing(1),
+  flexShrink: 0,
+}));
+
+const TimerLabel = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  whiteSpace: "nowrap",
+}));
+
+const TimerValue = styled(Typography)({
+  fontWeight: 700,
+  letterSpacing: 1,
+  whiteSpace: "nowrap",
+});
+
+const WarningChip = styled(Chip)({
+  backgroundColor: "rgba(251, 146, 60, 0.15)",
+  color: "#c2410c",
+  fontWeight: 700,
+});
+
+const HeaderSpacer = styled(Box)(({ theme }) => ({
+  display: "none",
+  [theme.breakpoints.up("md")]: {
+    display: "block",
+  },
+}));
+
+const MainShell = styled(Box)({
+  height: "calc(100vh - 72px)",
+  overflow: "hidden",
+  boxSizing: "border-box",
+});
+
+const MainContent = styled(Box)(({ theme }) => ({
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  paddingTop: theme.spacing(2),
+  paddingBottom: theme.spacing(2),
+  height: "100%",
+  boxSizing: "border-box",
+  [theme.breakpoints.up("md")]: {
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4),
+    paddingTop: theme.spacing(3),
+  },
+  [theme.breakpoints.up("lg")]: {
+    paddingLeft: theme.spacing(6),
+    paddingRight: theme.spacing(6),
+  },
+}));
+
+const MainStack = styled(Stack)({
+  height: "100%",
+});
+
+const CenteredLoader = styled(Box)(({ theme }) => ({
+  display: "flex",
+  justifyContent: "center",
+  paddingTop: theme.spacing(8),
+  paddingBottom: theme.spacing(8),
+}));
+
+const ErrorCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(4),
+  borderRadius: theme.spacing(3),
+}));
+
+const ErrorAlert = styled(Alert)(({ theme }) => ({
+  marginBottom: theme.spacing(3),
+}));
+
+const BackButton = styled(Button)({
+  fontWeight: 700,
+  backgroundColor: "#111418",
+});
+
+const ExamLayout = styled(Box)(({ theme }) => ({
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: theme.spacing(2),
+  height: "100%",
+  minHeight: 0,
+  [theme.breakpoints.up("lg")]: {
+    gridTemplateColumns: "320px minmax(0, 1fr)",
+    gap: theme.spacing(3),
+  },
+}));
+
+const ModulePanel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2.5),
+  borderRadius: theme.spacing(3),
+  height: "100%",
+}));
+
+const ModuleTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const ModuleCount = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const ModuleRow = styled(Stack, {
+  shouldForwardProp: (prop) => prop !== "status",
+})<{ status: "current" | "complete" | "pending" }>(({ status, theme }) => ({
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  paddingTop: theme.spacing(1),
+  paddingBottom: theme.spacing(1),
+  borderRadius: theme.spacing(2),
+  backgroundColor:
+    status === "current" ? "rgba(19, 127, 236, 0.08)" : "#f8fafc",
+  border: "1px solid #e2e8f0",
+}));
+
+const ModuleName = styled(Typography)({
+  fontWeight: 700,
+});
+
+const ModuleTime = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const ModuleStatusChip = styled(Chip, {
+  shouldForwardProp: (prop) => prop !== "status",
+})<{ status: "current" | "complete" | "pending" }>(({ status }) => ({
+  backgroundColor:
+    status === "current"
+      ? "rgba(19, 127, 236, 0.12)"
+      : status === "complete"
+        ? "rgba(16, 185, 129, 0.12)"
+        : "rgba(148, 163, 184, 0.2)",
+  color:
+    status === "current"
+      ? "#137fec"
+      : status === "complete"
+        ? "#047857"
+        : "#475569",
+  fontWeight: 700,
+}));
+
+const ExamContent = styled(Box)(({ theme }) => ({
+  display: "grid",
+  gridTemplateRows: "auto auto auto 1fr auto",
+  gap: theme.spacing(2),
+  minHeight: 0,
+}));
+
+const ExitAlert = styled(Alert)(({ theme }) => ({
+  borderRadius: theme.spacing(2),
+}));
+
+const ProgressTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const ProgressCount = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const ProgressText = styled(Typography)({
+  color: "#137fec",
+});
+
+const ProgressBar = styled(LinearProgress)(({ theme }) => ({
+  marginTop: theme.spacing(1),
+  height: 8,
+  borderRadius: 999,
+  backgroundColor: "#e2e8f0",
+  "& .MuiLinearProgress-bar": {
+    backgroundColor: "#137fec",
+  },
+}));
+
+const QuestionCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2.5),
+  borderRadius: theme.spacing(3),
+  border: "1px solid #e2e8f0",
+  boxShadow: "0 10px 20px rgba(15, 23, 42, 0.08)",
+  [theme.breakpoints.up("md")]: {
+    padding: theme.spacing(3),
+  },
+}));
+
+const QuestionTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const InstructionText = styled(Typography)({
+  color: "#475569",
+  lineHeight: 1.7,
+});
+
+const AnswerCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2.5),
+  borderRadius: theme.spacing(3),
+  border: "1px solid #e2e8f0",
+  [theme.breakpoints.up("md")]: {
+    padding: theme.spacing(3),
+  },
+}));
+
+const AnswerLabel = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const OptionCard = styled(Paper, {
+  shouldForwardProp: (prop) => prop !== "selected" && prop !== "locked",
+})<{ selected: boolean; locked: boolean }>(({ theme, selected, locked }) => ({
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(2),
+  borderColor: selected ? "#137fec" : "#e2e8f0",
+  backgroundColor: selected ? "rgba(19, 127, 236, 0.08)" : "#fff",
+  display: "flex",
+  gap: theme.spacing(2),
+  alignItems: "flex-start",
+  cursor: locked ? "not-allowed" : "pointer",
+  opacity: locked ? 0.6 : 1,
+}));
+
+const OptionIndicator = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "selected",
+})<{ selected: boolean }>(({ selected }) => ({
+  width: 18,
+  height: 18,
+  borderRadius: "50%",
+  border: "2px solid",
+  borderColor: selected ? "#137fec" : "#cbd5f5",
+  display: "grid",
+  placeItems: "center",
+  marginTop: 2,
+}));
+
+const OptionText = styled(Typography)({
+  color: "#1f2937",
+  lineHeight: 1.6,
+});
+
+const PrevButton = styled(Button)({
+  borderColor: "#cbd5f5",
+  color: "#1f2937",
+  fontWeight: 700,
+  "&:hover": {
+    backgroundColor: "#eff6ff",
+    borderColor: "#93c5fd",
+  },
+});
+
+const SubmitButton = styled(Button)({
+  backgroundColor: "#111418",
+  fontWeight: 700,
+  boxShadow: "none",
+  "&:hover": {
+    backgroundColor: "#1f2937",
+    boxShadow: "none",
+  },
+});
+
+const NextButton = styled(Button)({
+  backgroundColor: "#137fec",
+  fontWeight: 700,
+  boxShadow: "none",
+  "&:hover": {
+    backgroundColor: "#1068c2",
+    boxShadow: "none",
+  },
+});
+
+const ConfirmActions = styled(DialogActions)(({ theme }) => ({
+  paddingLeft: theme.spacing(3),
+  paddingRight: theme.spacing(3),
+  paddingBottom: theme.spacing(2),
+}));
+
+const ConfirmText = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const ModuleAdvanceButton = styled(Button)({
+  backgroundColor: "#137fec",
+});
+
+const SubmitConfirmButton = styled(Button)({
+  backgroundColor: "#111418",
+});
+
+/** 秒数を表示用のHH:MM:SSに整形する。 */
 const formatSeconds = (seconds: number) => {
   const safeSeconds = Math.max(0, seconds);
   const hours = Math.floor(safeSeconds / 3600);
@@ -73,6 +447,7 @@ const formatSeconds = (seconds: number) => {
   return `${pad(hours)}:${pad(minutes)}:${pad(remaining)}`;
 };
 
+/** 試験本番画面（Candidate）を表示する。 */
 export default function CandidateExamPage() {
   const router = useRouter();
   const [snapshot, setSnapshot] = useState<AttemptSnapshot | null>(null);
@@ -620,170 +995,55 @@ export default function CandidateExamPage() {
   };
 
   return (
-    <Box
-      data-testid="candidate-exam-page"
-      sx={{
-        height: "100vh",
-        bgcolor: "#f6f7f8",
-        color: "#111418",
-        overflow: "hidden",
-      }}
-    >
-      <Box
-        component="header"
-        sx={{
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-          display: "grid",
-          alignItems: "center",
-          gridTemplateColumns: { xs: "1fr", md: "1fr auto 1fr" },
-          columnGap: 2,
-          px: { xs: 2, md: 4 },
-          py: 1.5,
-          bgcolor: "#ffffff",
-          borderBottom: "1px solid #e2e8f0",
-          boxShadow: "0 1px 2px rgba(15, 23, 42, 0.05)",
-          width: "100%",
-          boxSizing: "border-box",
-          overflow: "hidden",
-        }}
-      >
-        <Stack
-          direction="row"
-          spacing={2}
-          alignItems="center"
-          sx={{ minWidth: 0 }}
-        >
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: 2,
-              bgcolor: "rgba(19, 127, 236, 0.12)",
-              display: "grid",
-              placeItems: "center",
-              color: "#137fec",
-              fontWeight: 700,
-            }}
-          >
-            SPI
-          </Box>
+    <Root data-testid="candidate-exam-page">
+      <Header component="header">
+        <HeaderLeft direction="row" spacing={2} alignItems="center">
+          <BrandBadge>SPI</BrandBadge>
           <Box>
-            <Typography
-              variant="subtitle1"
-              sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
-            >
-              SPI 採用適性検査
-            </Typography>
-            <Typography
+            <HeaderTitle variant="subtitle1">SPI 採用適性検査</HeaderTitle>
+            <HeaderSubtitle
               variant="caption"
-              sx={{
-                color: "#64748b",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                maxWidth: { xs: 220, md: 360 },
-                display: "block",
-              }}
               data-testid="candidate-current-module"
             >
               {currentModule
                 ? `${currentModule.name}・セクション ${currentModule.position} / ${snapshot?.modules.length ?? 0}`
                 : "試験準備中"}
-            </Typography>
+            </HeaderSubtitle>
           </Box>
-        </Stack>
-        <Box
-          sx={{
-            display: { xs: "none", md: "flex" },
-            alignItems: "center",
-            gap: 2,
-            flexShrink: 0,
-            justifySelf: "center",
-          }}
-        >
-          <Paper
-            elevation={0}
-            sx={{
-              px: 2,
-              py: 0.75,
-              borderRadius: 999,
-              bgcolor: "#f1f5f9",
-              border: "1px solid #e2e8f0",
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              flexShrink: 0,
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{ color: "#64748b", whiteSpace: "nowrap" }}
-            >
-              残り時間
-            </Typography>
-            <Typography
-              variant="subtitle1"
-              sx={{
-                fontWeight: 700,
-                letterSpacing: 1,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {timerLabel}
-            </Typography>
-          </Paper>
+        </HeaderLeft>
+        <HeaderCenter>
+          <TimerChip elevation={0}>
+            <TimerLabel variant="body2">残り時間</TimerLabel>
+            <TimerValue variant="subtitle1">{timerLabel}</TimerValue>
+          </TimerChip>
           {currentModule && currentModule.remainingSeconds <= 300 && (
-            <Chip
-              label="残り時間わずか"
-              sx={{
-                bgcolor: "rgba(251, 146, 60, 0.15)",
-                color: "#c2410c",
-                fontWeight: 700,
-              }}
-            />
+            <WarningChip label="残り時間わずか" />
           )}
-        </Box>
-        <Box sx={{ display: { xs: "none", md: "block" } }} />
-      </Box>
+        </HeaderCenter>
+        <HeaderSpacer />
+      </Header>
 
-      <Box
-        sx={{
-          height: "calc(100vh - 72px)",
-          overflow: "hidden",
-          boxSizing: "border-box",
-        }}
-      >
-        <Box
-          component="main"
-          sx={{
-            px: { xs: 2, md: 4, lg: 6 },
-            py: { xs: 2, md: 3 },
-            height: "100%",
-            boxSizing: "border-box",
-          }}
-        >
-          <Stack spacing={2} sx={{ height: "100%" }}>
+      <MainShell>
+        <MainContent component="main">
+          <MainStack spacing={2}>
             {isLoading && (
-              <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+              <CenteredLoader>
                 <CircularProgress />
-              </Box>
+              </CenteredLoader>
             )}
 
             {!isLoading && error && (
-              <Paper sx={{ p: 4, borderRadius: 3 }}>
-                <Alert severity="error" sx={{ mb: 3 }}>
+              <ErrorCard>
+                <ErrorAlert severity="error">
                   {errorMessageMap[error] ?? "試験情報を取得できませんでした。"}
-                </Alert>
-                <Button
+                </ErrorAlert>
+                <BackButton
                   variant="contained"
-                  sx={{ fontWeight: 700, bgcolor: "#111418" }}
                   onClick={() => router.push("/candidate-login")}
                 >
                   ログイン画面に戻る
-                </Button>
-              </Paper>
+                </BackButton>
+              </ErrorCard>
             )}
 
             {!isLoading && !error && snapshot && activeItem && (
@@ -804,66 +1064,45 @@ export default function CandidateExamPage() {
                   }
                   anchorOrigin={{ vertical: "top", horizontal: "center" }}
                 />
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: {
-                      xs: "1fr",
-                      lg: "320px minmax(0, 1fr)",
-                    },
-                    gap: { xs: 2, lg: 3 },
-                    height: "100%",
-                    minHeight: 0,
-                  }}
-                >
-                  <Paper sx={{ p: 2.5, borderRadius: 3, height: "100%" }}>
+                <ExamLayout>
+                  <ModulePanel>
                     <Stack spacing={1}>
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography
-                          variant="subtitle1"
-                          sx={{ fontWeight: 700 }}
-                        >
+                        <ModuleTitle variant="subtitle1">
                           モジュール構成
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "#64748b" }}>
+                        </ModuleTitle>
+                        <ModuleCount variant="caption">
                           全{modules.length}件
-                        </Typography>
+                        </ModuleCount>
                       </Stack>
                       <Stack spacing={1}>
                         {modules.map((module, index) => {
                           const isCurrent = index === moduleIndex;
                           const isComplete = index < moduleIndex;
+                          const status = isCurrent
+                            ? "current"
+                            : isComplete
+                              ? "complete"
+                              : "pending";
 
                           return (
-                            <Stack
+                            <ModuleRow
                               key={module.moduleId}
                               direction="row"
                               alignItems="center"
                               justifyContent="space-between"
-                              sx={{
-                                px: 2,
-                                py: 1,
-                                borderRadius: 2,
-                                bgcolor: isCurrent
-                                  ? "rgba(19, 127, 236, 0.08)"
-                                  : "#f8fafc",
-                                border: "1px solid #e2e8f0",
-                              }}
+                              status={status}
                               data-testid={`candidate-module-${module.code}`}
                             >
                               <Stack>
-                                <Typography sx={{ fontWeight: 700 }}>
-                                  {module.name}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  sx={{ color: "#64748b" }}
-                                >
+                                <ModuleName>{module.name}</ModuleName>
+                                <ModuleTime variant="caption">
                                   目安時間:{" "}
                                   {Math.ceil(module.durationSeconds / 60)}分
-                                </Typography>
+                                </ModuleTime>
                               </Stack>
-                              <Chip
+                              <ModuleStatusChip
+                                status={status}
                                 label={
                                   isCurrent
                                     ? "実施中"
@@ -871,41 +1110,20 @@ export default function CandidateExamPage() {
                                       ? "完了"
                                       : "未開始"
                                 }
-                                sx={{
-                                  bgcolor: isCurrent
-                                    ? "rgba(19, 127, 236, 0.12)"
-                                    : isComplete
-                                      ? "rgba(16, 185, 129, 0.12)"
-                                      : "rgba(148, 163, 184, 0.2)",
-                                  color: isCurrent
-                                    ? "#137fec"
-                                    : isComplete
-                                      ? "#047857"
-                                      : "#475569",
-                                  fontWeight: 700,
-                                }}
                               />
-                            </Stack>
+                            </ModuleRow>
                           );
                         })}
                       </Stack>
                     </Stack>
-                  </Paper>
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateRows: "auto auto auto 1fr auto",
-                      gap: 2,
-                      minHeight: 0,
-                    }}
-                  >
-                    <Alert
+                  </ModulePanel>
+                  <ExamContent>
+                    <ExitAlert
                       severity="info"
-                      sx={{ borderRadius: 2 }}
                       data-testid="candidate-exit-warning"
                     >
                       試験中は画面を閉じないでください。終了や移動を行うと、回答内容が失われる可能性があります。
-                    </Alert>
+                    </ExitAlert>
                     {isLocked && (
                       <Alert
                         severity="warning"
@@ -925,69 +1143,43 @@ export default function CandidateExamPage() {
                           spacing={1}
                           alignItems="baseline"
                         >
-                          <Typography
+                          <ProgressTitle
                             variant="h5"
-                            sx={{ fontWeight: 700 }}
                             data-testid="candidate-current-question"
                           >
                             問 {activeIndex + 1}
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: "#64748b" }}>
+                          </ProgressTitle>
+                          <ProgressCount variant="body2">
                             / {moduleItems.length}
-                          </Typography>
+                          </ProgressCount>
                         </Stack>
-                        <Typography variant="body2" sx={{ color: "#137fec" }}>
+                        <ProgressText variant="body2">
                           {progressValue}% 完了
-                        </Typography>
+                        </ProgressText>
                       </Stack>
-                      <LinearProgress
+                      <ProgressBar
                         variant="determinate"
                         value={progressValue}
-                        sx={{
-                          mt: 1,
-                          height: 8,
-                          borderRadius: 999,
-                          bgcolor: "#e2e8f0",
-                          "& .MuiLinearProgress-bar": {
-                            bgcolor: "#137fec",
-                          },
-                        }}
                       />
                     </Box>
 
-                    <Paper
-                      sx={{
-                        p: { xs: 2.5, md: 3 },
-                        borderRadius: 3,
-                        border: "1px solid #e2e8f0",
-                        boxShadow: "0 10px 20px rgba(15, 23, 42, 0.08)",
-                      }}
-                    >
+                    <QuestionCard>
                       <Stack spacing={2}>
-                        <Typography
+                        <QuestionTitle
                           variant="h6"
-                          sx={{ fontWeight: 700 }}
                           data-testid="candidate-question-stem"
                         >
                           {activeItem.question.stem}
-                        </Typography>
-                        <Typography sx={{ color: "#475569", lineHeight: 1.7 }}>
+                        </QuestionTitle>
+                        <InstructionText>
                           問題文を読み、最も適切な選択肢を選んでください。
-                        </Typography>
+                        </InstructionText>
                       </Stack>
-                    </Paper>
+                    </QuestionCard>
 
-                    <Paper
-                      sx={{
-                        p: { xs: 2.5, md: 3 },
-                        borderRadius: 3,
-                        border: "1px solid #e2e8f0",
-                      }}
-                    >
+                    <AnswerCard>
                       <Stack spacing={2}>
-                        <Typography variant="caption" sx={{ color: "#64748b" }}>
-                          選択肢
-                        </Typography>
+                        <AnswerLabel variant="caption">選択肢</AnswerLabel>
                         {hasAttemptedAdvance && saveError && (
                           <Alert severity="warning">
                             回答を選択してください。
@@ -1001,102 +1193,47 @@ export default function CandidateExamPage() {
                             answers[activeItem.attemptItemId] === option.id;
 
                           return (
-                            <Paper
+                            <OptionCard
                               key={option.id}
                               variant="outlined"
-                              sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                borderColor: isSelected ? "#137fec" : "#e2e8f0",
-                                bgcolor: isSelected
-                                  ? "rgba(19, 127, 236, 0.08)"
-                                  : "#fff",
-                                display: "flex",
-                                gap: 2,
-                                alignItems: "flex-start",
-                                cursor: isLocked ? "not-allowed" : "pointer",
-                                opacity: isLocked ? 0.6 : 1,
-                              }}
+                              selected={isSelected}
+                              locked={isLocked}
                               data-testid={`candidate-option-${option.position}`}
                               onClick={() => handleSelectOption(option.id)}
                             >
-                              <Box
-                                sx={{
-                                  width: 18,
-                                  height: 18,
-                                  borderRadius: "50%",
-                                  border: "2px solid",
-                                  borderColor: isSelected
-                                    ? "#137fec"
-                                    : "#cbd5f5",
-                                  display: "grid",
-                                  placeItems: "center",
-                                  mt: 0.3,
-                                }}
-                              />
-                              <Typography
-                                sx={{ color: "#1f2937", lineHeight: 1.6 }}
-                              >
-                                {option.optionText}
-                              </Typography>
-                            </Paper>
+                              <OptionIndicator selected={isSelected} />
+                              <OptionText>{option.optionText}</OptionText>
+                            </OptionCard>
                           );
                         })}
                       </Stack>
-                    </Paper>
+                    </AnswerCard>
 
                     <Stack
                       direction="row"
                       spacing={2}
                       justifyContent="flex-end"
                     >
-                      <Button
+                      <PrevButton
                         variant="outlined"
-                        sx={{
-                          borderColor: "#cbd5f5",
-                          color: "#1f2937",
-                          fontWeight: 700,
-                          "&:hover": {
-                            bgcolor: "#eff6ff",
-                            borderColor: "#93c5fd",
-                          },
-                        }}
                         data-testid="candidate-prev-question"
                         onClick={handlePrev}
                         disabled={isSaving || activeIndex === 0 || isLocked}
                       >
                         {isSaving ? "保存中..." : "前の問題"}
-                      </Button>
+                      </PrevButton>
                       {isLastQuestion && isLastModule ? (
-                        <Button
+                        <SubmitButton
                           variant="contained"
-                          sx={{
-                            bgcolor: "#111418",
-                            fontWeight: 700,
-                            boxShadow: "none",
-                            "&:hover": {
-                              bgcolor: "#1f2937",
-                              boxShadow: "none",
-                            },
-                          }}
                           data-testid="candidate-submit-exam"
                           onClick={() => setIsSubmitConfirmOpen(true)}
                           disabled={isSaving || isSubmitting || isLocked}
                         >
                           {isSubmitting ? "提出中..." : "提出する"}
-                        </Button>
+                        </SubmitButton>
                       ) : (
-                        <Button
+                        <NextButton
                           variant="contained"
-                          sx={{
-                            bgcolor: "#137fec",
-                            fontWeight: 700,
-                            boxShadow: "none",
-                            "&:hover": {
-                              bgcolor: "#1068c2",
-                              boxShadow: "none",
-                            },
-                          }}
                           data-testid="candidate-next-question"
                           onClick={handleNext}
                           disabled={isSaving || isLocked}
@@ -1106,11 +1243,11 @@ export default function CandidateExamPage() {
                             : isLastQuestion
                               ? "次のモジュールへ"
                               : "次の問題へ"}
-                        </Button>
+                        </NextButton>
                       )}
                     </Stack>
-                  </Box>
-                </Box>
+                  </ExamContent>
+                </ExamLayout>
                 <Dialog
                   open={isModuleConfirmOpen}
                   onClose={() => setIsModuleConfirmOpen(false)}
@@ -1118,11 +1255,11 @@ export default function CandidateExamPage() {
                 >
                   <DialogTitle>次のモジュールへ進みますか？</DialogTitle>
                   <DialogContent>
-                    <Typography variant="body2" sx={{ color: "#64748b" }}>
+                    <ConfirmText variant="body2">
                       次のモジュールに進むと、前のモジュールには戻れません。
-                    </Typography>
+                    </ConfirmText>
                   </DialogContent>
-                  <DialogActions sx={{ px: 3, pb: 2 }}>
+                  <ConfirmActions>
                     <Button
                       variant="outlined"
                       onClick={() => setIsModuleConfirmOpen(false)}
@@ -1130,15 +1267,14 @@ export default function CandidateExamPage() {
                     >
                       キャンセル
                     </Button>
-                    <Button
+                    <ModuleAdvanceButton
                       variant="contained"
-                      sx={{ bgcolor: "#137fec" }}
                       onClick={handleModuleAdvance}
                       data-testid="candidate-module-confirm-advance"
                     >
                       進む
-                    </Button>
-                  </DialogActions>
+                    </ModuleAdvanceButton>
+                  </ConfirmActions>
                 </Dialog>
                 <Dialog
                   open={isSubmitConfirmOpen}
@@ -1147,11 +1283,11 @@ export default function CandidateExamPage() {
                 >
                   <DialogTitle>試験を提出しますか？</DialogTitle>
                   <DialogContent>
-                    <Typography variant="body2" sx={{ color: "#64748b" }}>
+                    <ConfirmText variant="body2">
                       提出すると回答は確定され、再編集はできません。
-                    </Typography>
+                    </ConfirmText>
                   </DialogContent>
-                  <DialogActions sx={{ px: 3, pb: 2 }}>
+                  <ConfirmActions>
                     <Button
                       variant="outlined"
                       onClick={() => setIsSubmitConfirmOpen(false)}
@@ -1159,21 +1295,20 @@ export default function CandidateExamPage() {
                     >
                       キャンセル
                     </Button>
-                    <Button
+                    <SubmitConfirmButton
                       variant="contained"
-                      sx={{ bgcolor: "#111418" }}
                       onClick={handleSubmit}
                       data-testid="candidate-submit-confirm-submit"
                     >
                       提出する
-                    </Button>
-                  </DialogActions>
+                    </SubmitConfirmButton>
+                  </ConfirmActions>
                 </Dialog>
               </>
             )}
-          </Stack>
-        </Box>
-      </Box>
-    </Box>
+          </MainStack>
+        </MainContent>
+      </MainShell>
+    </Root>
   );
 }

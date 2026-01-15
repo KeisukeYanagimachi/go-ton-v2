@@ -1,3 +1,5 @@
+/** 監査ログを検索するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type AuditLogFilters = {

@@ -1,3 +1,5 @@
+/** 受験者の認証を行うユースケース。 */
+
 import {
     CandidateAuthRecord,
     isCandidateLoginAllowed

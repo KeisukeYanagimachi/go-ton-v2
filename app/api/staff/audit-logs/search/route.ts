@@ -21,6 +21,7 @@ const parseDate = (value?: string) => {
   return parsed;
 };
 
+/** 監査ログを検索するAPI。 */
 export const POST = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, [
     "ADMIN",

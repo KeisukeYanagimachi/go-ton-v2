@@ -1,3 +1,5 @@
+/** 受験票QRの生成と検証ロジック。 */
+
 import { createHmac, timingSafeEqual } from "crypto";
 
 const signTicketCode = (ticketCode: string, secret: string) =>

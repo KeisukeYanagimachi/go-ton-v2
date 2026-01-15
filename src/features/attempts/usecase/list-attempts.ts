@@ -1,3 +1,5 @@
+/** Attempt 一覧を取得するユースケース。 */
+
 import { AttemptStatus } from "@prisma/client";
 
 import { prisma } from "@/shared/db/prisma";

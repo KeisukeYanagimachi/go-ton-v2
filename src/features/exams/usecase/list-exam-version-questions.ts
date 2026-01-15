@@ -1,3 +1,5 @@
+/** 出題割当一覧を取得するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type ExamVersionQuestionSummary = {

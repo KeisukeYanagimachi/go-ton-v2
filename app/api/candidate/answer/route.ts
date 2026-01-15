@@ -10,6 +10,7 @@ const requestSchema = z.object({
   selectedOptionId: z.string().min(1).nullable(),
 });
 
+/** 受験者の回答を保存するAPI。 */
 export const POST = async (request: Request) => {
   const payload = requestSchema.safeParse(await request.json());
 

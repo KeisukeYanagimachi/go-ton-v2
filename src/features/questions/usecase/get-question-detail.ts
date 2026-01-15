@@ -1,3 +1,5 @@
+/** 問題詳細を取得するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 import { QUESTION_MODULE_CODES } from "@/features/questions/domain/question-module-codes";

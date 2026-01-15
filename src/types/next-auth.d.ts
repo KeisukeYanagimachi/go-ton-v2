@@ -1,3 +1,5 @@
+/** Auth.js セッション拡張の型定義。 */
+
 import type { StaffRoleCode } from "@/features/auth/domain/staff-auth";
 
 declare module "next-auth" {

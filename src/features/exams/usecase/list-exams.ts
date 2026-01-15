@@ -1,3 +1,5 @@
+/** 試験一覧を取得するユースケース。 */
+
 import { prisma } from "@/shared/db/prisma";
 
 type ExamVersionModuleSummary = {

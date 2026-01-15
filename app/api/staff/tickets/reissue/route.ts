@@ -9,6 +9,7 @@ const requestSchema = z.object({
   ticketCode: z.string().min(1),
 });
 
+/** 受験票を再発行するAPI。 */
 export const POST = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, [
     "ADMIN",

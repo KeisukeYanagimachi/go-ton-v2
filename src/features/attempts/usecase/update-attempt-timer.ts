@@ -1,3 +1,5 @@
+/** モジュール残時間を更新するユースケース。 */
+
 import { authorizeCandidateAccess } from "@/features/auth/usecase/authorize-candidate-access";
 import { prisma } from "@/shared/db/prisma";
 

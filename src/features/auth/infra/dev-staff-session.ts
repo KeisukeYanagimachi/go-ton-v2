@@ -1,3 +1,5 @@
+/** 開発用スタッフセッションを発行・検証する実装。 */
+
 import { createHmac, timingSafeEqual } from "crypto";
 
 type DevStaffSessionPayload = {

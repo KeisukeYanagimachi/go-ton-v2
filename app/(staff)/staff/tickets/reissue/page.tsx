@@ -11,6 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 
@@ -25,12 +26,74 @@ type ReissueErrorCode =
   | "FAILED"
   | "NETWORK_ERROR";
 
-const baseStyles = {
+const Root = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
-  bgcolor: "#f6f7f8",
+  backgroundColor: "#f6f7f8",
   color: "#111418",
-};
+  paddingTop: theme.spacing(4),
+  paddingBottom: theme.spacing(4),
+  [theme.breakpoints.up("md")]: {
+    paddingTop: theme.spacing(6),
+    paddingBottom: theme.spacing(6),
+  },
+}));
 
+const Panel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(3),
+  [theme.breakpoints.up("md")]: {
+    padding: theme.spacing(4),
+  },
+}));
+
+const Title = styled(Typography)({
+  fontWeight: 800,
+});
+
+const Subtitle = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  marginTop: theme.spacing(1),
+}));
+
+const Note = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[400],
+  marginTop: theme.spacing(0.5),
+}));
+
+const FormGrid = styled(Box)(({ theme }) => ({
+  display: "grid",
+  gap: theme.spacing(2),
+}));
+
+const SubmitButton = styled(Button)({
+  paddingTop: 9.6,
+  paddingBottom: 9.6,
+  fontWeight: 700,
+});
+
+const ResultTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const ResultNote = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const ResultLabel = styled(Typography)({
+  fontWeight: 600,
+});
+
+const ResultDivider = styled(Divider)(({ theme }) => ({
+  marginTop: theme.spacing(1.5),
+  marginBottom: theme.spacing(1.5),
+}));
+
+const QrImage = styled(Box)({
+  width: 200,
+  height: 200,
+});
+
+/** 受験票の再発行を行いQRコードを表示するスタッフ画面。 */
 export default function TicketReissuePage() {
   const [ticketCode, setTicketCode] = useState("");
   const [reissueError, setReissueError] = useState<string | null>(null);
@@ -103,97 +166,97 @@ export default function TicketReissuePage() {
   };
 
   return (
-    <Box sx={baseStyles}>
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
+    <Root>
+      <Container maxWidth="md">
+        <Panel>
           <Stack spacing={2}>
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                受験票の再発行
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+              <Title variant="h5">受験票の再発行</Title>
+              <Subtitle variant="body2">
                 受験者の受験票コードを入力し、新しい Ticket を発行します。
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#94a3b8", mt: 0.5 }}>
+              </Subtitle>
+              <Note variant="body2">
                 対象は ACTIVE
                 の受験票のみです。再発行後は旧チケットが無効化されます。
-              </Typography>
+              </Note>
             </Box>
 
             <Box
               component="form"
               onSubmit={handleReissue}
-              sx={{ display: "grid", gap: 2 }}
               data-testid="ticket-reissue-form"
             >
-              <TextField
-                label="受験票コード"
-                value={ticketCode}
-                onChange={(event) => setTicketCode(event.target.value)}
-                required
-                fullWidth
-                inputProps={{ "data-testid": "ticket-reissue-code" }}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={isReissuing}
-                data-testid="ticket-reissue-submit"
-                sx={{ py: 1.2, fontWeight: 700 }}
-              >
-                {isReissuing ? "再発行中..." : "再発行"}
-              </Button>
-              {reissueError && (
-                <Alert severity="error" data-testid="ticket-reissue-error">
-                  {reissueError}
-                </Alert>
-              )}
-              {reissueResult && (
-                <Alert severity="success" data-testid="ticket-reissue-success">
-                  <Stack spacing={0.5}>
-                    <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                      再発行が完了しました。
-                    </Typography>
-                    <Typography variant="body2">
-                      新しい受験票コード: {reissueResult.newTicketCode}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: "#64748b" }}>
-                      旧チケットは無効化されました。
-                    </Typography>
-                    <Divider sx={{ my: 1.5 }} />
-                    <Stack spacing={1} alignItems="flex-start">
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        QRコード（紙配布用）
+              <FormGrid>
+                <TextField
+                  label="受験票コード"
+                  value={ticketCode}
+                  onChange={(event) => setTicketCode(event.target.value)}
+                  required
+                  fullWidth
+                  inputProps={{ "data-testid": "ticket-reissue-code" }}
+                />
+                <SubmitButton
+                  type="submit"
+                  variant="contained"
+                  disabled={isReissuing}
+                  data-testid="ticket-reissue-submit"
+                >
+                  {isReissuing ? "再発行中..." : "再発行"}
+                </SubmitButton>
+                {reissueError && (
+                  <Alert severity="error" data-testid="ticket-reissue-error">
+                    {reissueError}
+                  </Alert>
+                )}
+                {reissueResult && (
+                  <Alert
+                    severity="success"
+                    data-testid="ticket-reissue-success"
+                  >
+                    <Stack spacing={0.5}>
+                      <ResultTitle variant="body2">
+                        再発行が完了しました。
+                      </ResultTitle>
+                      <Typography variant="body2">
+                        新しい受験票コード: {reissueResult.newTicketCode}
                       </Typography>
-                      {qrDataUrl ? (
-                        <Box
-                          component="img"
-                          src={qrDataUrl}
-                          alt="ticket QR"
-                          sx={{ width: 200, height: 200 }}
-                          data-testid="ticket-reissue-qr"
-                        />
-                      ) : (
-                        <Typography variant="caption" color="text.secondary">
-                          QRコードを生成しています...
-                        </Typography>
-                      )}
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => window.print()}
-                        data-testid="ticket-reissue-print"
-                      >
-                        印刷する
-                      </Button>
+                      <ResultNote variant="caption">
+                        旧チケットは無効化されました。
+                      </ResultNote>
+                      <ResultDivider />
+                      <Stack spacing={1} alignItems="flex-start">
+                        <ResultLabel variant="body2">
+                          QRコード（紙配布用）
+                        </ResultLabel>
+                        {qrDataUrl ? (
+                          <QrImage
+                            component="img"
+                            src={qrDataUrl}
+                            alt="ticket QR"
+                            data-testid="ticket-reissue-qr"
+                          />
+                        ) : (
+                          <Typography variant="caption" color="text.secondary">
+                            QRコードを生成しています...
+                          </Typography>
+                        )}
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => window.print()}
+                          data-testid="ticket-reissue-print"
+                        >
+                          印刷する
+                        </Button>
+                      </Stack>
                     </Stack>
-                  </Stack>
-                </Alert>
-              )}
+                  </Alert>
+                )}
+              </FormGrid>
             </Box>
           </Stack>
-        </Paper>
+        </Panel>
       </Container>
-    </Box>
+    </Root>
   );
 }

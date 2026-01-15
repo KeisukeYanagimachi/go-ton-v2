@@ -7,7 +7,9 @@ if [ -z "${DATABASE_URL:-}" ]; then
 fi
 
 base_url="${E2E_BASE_URL:-http://app:3000}"
-db_name=$(printf '%s' "$DATABASE_URL" | sed -n 's#.*/\\([^/?]*\\).*#\\1#p')
+db_url="${DATABASE_URL%/}"
+db_name="${db_url##*/}"
+db_name="${db_name%%\\?*}"
 if [ "$db_name" != "go-ton-e2e" ]; then
   echo "E2E tests require database go-ton-e2e (got ${db_name})."
   exit 1

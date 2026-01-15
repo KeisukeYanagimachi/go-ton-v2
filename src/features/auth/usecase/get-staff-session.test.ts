@@ -1,3 +1,5 @@
+/** スタッフセッション取得のテスト。 */
+
 import { describe, expect, it } from "vitest";
 
 import { getStaffSessionByEmail } from "@/features/auth/usecase/get-staff-session";

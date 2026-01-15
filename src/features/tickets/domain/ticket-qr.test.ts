@@ -1,3 +1,5 @@
+/** 受験票QRロジックのテスト。 */
+
 import { describe, expect, test } from "vitest";
 
 import {

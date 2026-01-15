@@ -1,3 +1,5 @@
+/** スタッフ認証ドメインのテスト。 */
+
 import { describe, expect, test } from "vitest";
 
 import { isStaffLoginAllowed } from "./staff-auth";

@@ -17,6 +17,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 
 type AttemptStatus =
@@ -39,12 +40,78 @@ type AttemptResult = {
   } | null;
 };
 
-const baseStyles = {
+const Root = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
-  bgcolor: "#f6f7f8",
+  backgroundColor: "#f6f7f8",
   color: "#111418",
-};
+  paddingTop: theme.spacing(4),
+  paddingBottom: theme.spacing(4),
+  [theme.breakpoints.up("md")]: {
+    paddingTop: theme.spacing(6),
+    paddingBottom: theme.spacing(6),
+  },
+}));
 
+const BreadcrumbText = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const BreadcrumbSeparator = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[400],
+}));
+
+const BreadcrumbCurrent = styled(Typography)({
+  fontWeight: 700,
+});
+
+const Panel = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(3),
+}));
+
+const PanelTitle = styled(Typography)({
+  fontWeight: 800,
+});
+
+const PanelDescription = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+  marginTop: theme.spacing(1),
+}));
+
+const FilterField = styled(TextField)({
+  minWidth: 200,
+});
+
+const TicketField = styled(FilterField)({
+  minWidth: 240,
+  flex: 1,
+});
+
+const CandidateField = styled(FilterField)({
+  flex: 1,
+});
+
+const ActionButton = styled(Button)({
+  fontWeight: 700,
+});
+
+const SectionTitle = styled(Typography)({
+  fontWeight: 700,
+});
+
+const SectionMeta = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+const DetailButton = styled(Button)({
+  fontWeight: 700,
+});
+
+const EmptyNotice = styled(Typography)(({ theme }) => ({
+  color: theme.palette.grey[600],
+}));
+
+/** 表示用の日時文字列に整形する。 */
 const formatDateTime = (value: string) =>
   new Date(value).toLocaleString("ja-JP", {
     year: "numeric",
@@ -63,6 +130,7 @@ const statusLabelMap: Record<AttemptStatus, string> = {
   ABORTED: "中断",
 };
 
+/** 試験結果の検索と一覧表示を行うスタッフ画面。 */
 export default function StaffResultsPage() {
   const [ticketCode, setTicketCode] = useState("");
   const [candidateName, setCandidateName] = useState("");
@@ -132,30 +200,22 @@ export default function StaffResultsPage() {
   };
 
   return (
-    <Box sx={baseStyles}>
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+    <Root>
+      <Container maxWidth="lg">
         <Stack spacing={3}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="body2" sx={{ color: "#64748b" }}>
-              ホーム
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#94a3b8" }}>
-              /
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 700 }}>
-              結果閲覧
-            </Typography>
+            <BreadcrumbText variant="body2">ホーム</BreadcrumbText>
+            <BreadcrumbSeparator variant="body2">/</BreadcrumbSeparator>
+            <BreadcrumbCurrent variant="body2">結果閲覧</BreadcrumbCurrent>
           </Stack>
 
-          <Paper sx={{ p: 3, borderRadius: 3 }}>
+          <Panel>
             <Stack spacing={2}>
               <Box>
-                <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                  結果一覧
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                <PanelTitle variant="h5">結果一覧</PanelTitle>
+                <PanelDescription variant="body2">
                   受験コードやステータスで結果を検索できます。
-                </Typography>
+                </PanelDescription>
               </Box>
 
               <Stack
@@ -163,32 +223,29 @@ export default function StaffResultsPage() {
                 spacing={2}
                 alignItems={{ xs: "stretch", md: "center" }}
               >
-                <TextField
+                <TicketField
                   label="受験票コード"
                   value={ticketCode}
                   onChange={(event) => setTicketCode(event.target.value)}
                   placeholder="TICKET-XXXX"
-                  sx={{ minWidth: 240, flex: 1 }}
                   inputProps={{ "data-testid": "staff-results-ticket-input" }}
                 />
-                <TextField
+                <CandidateField
                   label="受験者名"
                   value={candidateName}
                   onChange={(event) => setCandidateName(event.target.value)}
                   placeholder="候補者の氏名"
-                  sx={{ minWidth: 200, flex: 1 }}
                   inputProps={{
                     "data-testid": "staff-results-candidate-input",
                   }}
                 />
-                <TextField
+                <FilterField
                   select
                   label="ステータス"
                   value={statusFilter}
                   onChange={(event) =>
                     setStatusFilter(event.target.value as AttemptStatus | "ALL")
                   }
-                  sx={{ minWidth: 200 }}
                 >
                   {[
                     { value: "ALL", label: "すべて" },
@@ -203,38 +260,34 @@ export default function StaffResultsPage() {
                       {option.label}
                     </MenuItem>
                   ))}
-                </TextField>
+                </FilterField>
                 <Stack direction="row" spacing={1}>
-                  <Button
+                  <ActionButton
                     variant="contained"
-                    sx={{ fontWeight: 700 }}
                     onClick={fetchResults}
                     data-testid="staff-results-search"
                   >
                     検索
-                  </Button>
-                  <Button
+                  </ActionButton>
+                  <ActionButton
                     variant="text"
-                    sx={{ fontWeight: 700 }}
                     onClick={handleClear}
                     data-testid="staff-results-clear"
                   >
                     クリア
-                  </Button>
+                  </ActionButton>
                 </Stack>
               </Stack>
             </Stack>
-          </Paper>
+          </Panel>
 
-          <Paper sx={{ p: 3, borderRadius: 3 }}>
+          <Panel>
             <Stack spacing={2}>
               <Stack direction="row" justifyContent="space-between">
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  検索結果
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#64748b" }}>
+                <SectionTitle variant="h6">検索結果</SectionTitle>
+                <SectionMeta variant="body2">
                   {isLoading ? "読み込み中..." : `${results.length} 件`}
-                </Typography>
+                </SectionMeta>
               </Stack>
 
               {message ? <Alert severity="error">{message}</Alert> : null}
@@ -278,33 +331,32 @@ export default function StaffResultsPage() {
                       </TableCell>
                       <TableCell>{formatDateTime(attempt.updatedAt)}</TableCell>
                       <TableCell align="right">
-                        <Button
+                        <DetailButton
                           size="small"
                           variant="outlined"
-                          sx={{ fontWeight: 700 }}
                           href={`/staff/results/${attempt.attemptId}`}
                           data-testid="staff-result-detail-link"
                         >
                           詳細
-                        </Button>
+                        </DetailButton>
                       </TableCell>
                     </TableRow>
                   ))}
                   {results.length === 0 && !isLoading ? (
                     <TableRow>
                       <TableCell colSpan={6}>
-                        <Typography variant="body2" sx={{ color: "#64748b" }}>
+                        <EmptyNotice variant="body2">
                           該当する結果がありません。
-                        </Typography>
+                        </EmptyNotice>
                       </TableCell>
                     </TableRow>
                   ) : null}
                 </TableBody>
               </Table>
             </Stack>
-          </Paper>
+          </Panel>
         </Stack>
       </Container>
-    </Box>
+    </Root>
   );
 }

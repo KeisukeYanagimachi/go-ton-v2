@@ -1,3 +1,5 @@
+/** 監査ログを記録するユースケース。 */
+
 import { Prisma } from "@prisma/client";
 
 type AuditLogInput = {

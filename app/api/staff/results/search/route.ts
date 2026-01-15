@@ -19,6 +19,7 @@ const requestSchema = z.object({
     .optional(),
 });
 
+/** 試験結果一覧を検索するAPI。 */
 export const POST = async (request: Request) => {
   const staff = await requireStaffRoleFromRequest(request, [
     "ADMIN",

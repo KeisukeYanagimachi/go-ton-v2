@@ -1,3 +1,5 @@
+/** 受験者認証のドメインロジック。 */
+
 type TicketStatus = "ACTIVE" | "REVOKED" | "USED";
 
 type CandidateAuthRecord = {

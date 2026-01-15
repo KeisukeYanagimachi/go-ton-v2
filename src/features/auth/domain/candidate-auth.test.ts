@@ -1,3 +1,5 @@
+/** 受験者認証ドメインのテスト。 */
+
 import { describe, expect, test } from "vitest";
 
 import {
