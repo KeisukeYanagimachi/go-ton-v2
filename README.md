@@ -41,10 +41,15 @@ Windows で開発する場合は WSL2 を利用します。
 
 Docker Compose で設定しています。
 
-- `DATABASE_URL` (app): `postgresql://postgres:postgres@db:5432/go-ton?schema=public`
+- `DATABASE_URL` (app): `postgresql://postgres:postgres@db:5432/go-ton`
 - `NODE_ENV` (app): `development`
 - `E2E_BASE_URL` (e2e): `http://app:3000`
 - `NODE_ENV` (e2e): `test`
+
+Integration / E2E は別DBを使用します。
+
+- `TEST_DATABASE_URL` (app): `postgresql://postgres:postgres@db:5432/go-ton-integration`
+- `DATABASE_URL` (app-e2e/e2e): `postgresql://postgres:postgres@db:5432/go-ton-e2e`
 
 ### Auth.js (Google SSO)
 

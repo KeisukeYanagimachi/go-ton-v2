@@ -4,6 +4,7 @@
 
 - 2026-01-10: Unit / Integration のテストランナーを Vitest に統一
 - 2026-01-10: Integration / E2E は専用スキーマで実行し、終了後にクリーンアップする
+- 2026-01-11: Integration / E2E は専用DBで実行し、終了後にクリーンアップする
 
 ## テスト戦略（Unit / Integration / E2E）
 
@@ -56,7 +57,7 @@
 ### 4.2 方針
 
 - Docker の PostgreSQL を使用する
-- Integration 用のスキーマを分離する（schema=integration）
+- Integration 用に **別DB** を分離する（例: `go-ton-integration`）
 - 実行前に `migrate reset --force --skip-seed` で初期化する
 - 実行後に `migrate reset --force --skip-seed` でクリーンアップする
 
@@ -77,7 +78,7 @@
 - Docker compose 上で実行する
 - app / app-e2e / db / e2e の4サービス構成
 - CI でも同一構成を使用する
-- E2E 用のスキーマを分離する（schema=e2e）
+- E2E 用に **別DB** を分離する（例: `go-ton-e2e`）
 - 実行前に `migrate reset --force` を行い、seed まで済ませる
 - 実行後に `migrate reset --force --skip-seed` でクリーンアップする
 

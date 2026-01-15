@@ -8,13 +8,14 @@ fi
 
 export DATABASE_URL="$TEST_DATABASE_URL"
 
+db_name=$(printf '%s' "$DATABASE_URL" | sed -n 's#.*/\([^/?]*\).*#\1#p')
+if [ "$db_name" != "go-ton-integration" ]; then
+  echo "Integration tests require database go-ton-integration (got ${db_name})."
+  exit 1
+fi
+
 cleanup() {
-  schema=$(printf '%s' "$DATABASE_URL" | sed -n 's/.*schema=\\([^&]*\\).*/\\1/p')
-  if [ -z "$schema" ]; then
-    schema="public"
-  fi
-  printf 'DROP SCHEMA IF EXISTS \"%s\" CASCADE; CREATE SCHEMA \"%s\";\\n' "$schema" "$schema" \
-    | npx prisma db execute --stdin >/dev/null 2>&1 || true
+  npx prisma migrate reset --force --skip-seed >/dev/null 2>&1 || true
 }
 
 trap cleanup EXIT
