@@ -2,7 +2,7 @@
 
 import { StaffRoleCode } from "@/features/auth/domain/staff-auth";
 import {
-  DEV_STAFF_SESSION_COOKIE,
+  extractDevStaffSessionToken,
   parseDevStaffSessionToken,
 } from "@/features/auth/infra/dev-staff-session";
 import { resolveStaffRole } from "@/features/auth/usecase/resolve-staff-role";
@@ -18,11 +18,7 @@ const resolveFromDevSession = (request: Request) => {
   }
 
   const cookieHeader = request.headers.get("cookie") ?? "";
-  const token = cookieHeader
-    .split(";")
-    .map((entry) => entry.trim())
-    .find((entry) => entry.startsWith(`${DEV_STAFF_SESSION_COOKIE}=`))
-    ?.split("=")[1];
+  const token = extractDevStaffSessionToken(cookieHeader);
 
   if (!token) {
     return null;

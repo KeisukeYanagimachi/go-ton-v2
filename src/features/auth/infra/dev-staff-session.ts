@@ -55,7 +55,9 @@ const parseDevStaffSessionToken = (
     return null;
   }
 
-  const payload = JSON.parse(decodeBase64Url(encoded)) as DevStaffSessionPayload;
+  const payload = JSON.parse(
+    decodeBase64Url(encoded),
+  ) as DevStaffSessionPayload;
 
   if (payload.expiresAt <= now) {
     return null;
@@ -64,7 +66,17 @@ const parseDevStaffSessionToken = (
   return payload;
 };
 
-export {
-    createDevStaffSessionToken, DEV_STAFF_SESSION_COOKIE, parseDevStaffSessionToken
-};
+/** Cookieヘッダーから開発用スタッフセッショントークンを取得する。 */
+const extractDevStaffSessionToken = (cookieHeader: string) =>
+  cookieHeader
+    .split(";")
+    .map((entry) => entry.trim())
+    .find((entry) => entry.startsWith(`${DEV_STAFF_SESSION_COOKIE}=`))
+    ?.split("=")[1];
 
+export {
+  createDevStaffSessionToken,
+  DEV_STAFF_SESSION_COOKIE,
+  extractDevStaffSessionToken,
+  parseDevStaffSessionToken,
+};

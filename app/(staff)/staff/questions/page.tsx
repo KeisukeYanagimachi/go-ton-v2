@@ -1,62 +1,22 @@
 "use client";
 
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  Container,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Radio,
-  Select,
-  Stack,
-  Switch,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Container, Stack } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-type ModuleCategory = {
-  categoryId: string;
-  code: string;
-  name: string;
-};
-
-type Subcategory = {
-  categoryId: string;
-  parentCategoryId: string;
-  name: string;
-};
-
-type QuestionSummary = {
-  questionId: string;
-  stem: string;
-  isActive: boolean;
-  updatedAt: string;
-  moduleCode: string | null;
-  moduleName: string | null;
-  subcategoryName: string | null;
-};
-
-type QuestionDetail = {
-  questionId: string;
-  stem: string;
-  explanation: string | null;
-  isActive: boolean;
-  moduleCategoryId: string | null;
-  subcategoryId: string | null;
-  options: {
-    optionText: string;
-    isCorrect: boolean;
-    position: number;
-  }[];
-};
+import {
+  QuestionDetailPanel,
+  QuestionHeaderPanel,
+  QuestionListPanel,
+} from "./QuestionManagementPanels";
+import type {
+  ModuleCategory,
+  QuestionDetail,
+  QuestionStatusFilter,
+  QuestionSummary,
+  Subcategory,
+} from "./types";
 
 const Root = styled(Box)({
   minHeight: "100vh",
@@ -73,119 +33,10 @@ const PageContainer = styled(Container)(({ theme }) => ({
   },
 }));
 
-const HeaderPanel = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2.5),
-  borderRadius: theme.spacing(3),
-  [theme.breakpoints.up("md")]: {
-    padding: theme.spacing(3),
-  },
-}));
-
-const HeaderLabel = styled(Typography)(({ theme }) => ({
-  color: theme.palette.grey[600],
-}));
-
-const HeaderTitle = styled(Typography)({
-  fontWeight: 800,
-});
-
-const HeaderDescription = styled(Typography)(({ theme }) => ({
-  color: theme.palette.grey[600],
-}));
-
-const SidebarPanel = styled(Paper)(({ theme }) => ({
-  width: "100%",
-  padding: theme.spacing(2.5),
-  borderRadius: theme.spacing(3),
-  display: "flex",
-  flexDirection: "column",
+const ContentGrid = styled(Stack)(({ theme }) => ({
   [theme.breakpoints.up("lg")]: {
-    width: 380,
-    minHeight: "calc(100vh - 240px)",
+    flexDirection: "row",
   },
-}));
-
-const SidebarContent = styled(Stack)({
-  flex: 1,
-  minHeight: 0,
-});
-
-const SidebarTitle = styled(Typography)({
-  fontWeight: 700,
-});
-
-const ListScroll = styled(Stack)(({ theme }) => ({
-  flex: 1,
-  minHeight: 0,
-  overflowY: "auto",
-  paddingRight: theme.spacing(1),
-  maxHeight: 420,
-  [theme.breakpoints.up("lg")]: {
-    maxHeight: "calc(100vh - 420px)",
-  },
-}));
-
-const QuestionCard = styled(Paper, {
-  shouldForwardProp: (prop) => prop !== "selected",
-})<{ selected: boolean }>(({ theme, selected }) => ({
-  padding: theme.spacing(1.5),
-  borderRadius: theme.spacing(2),
-  borderColor: selected ? "#1d4ed8" : undefined,
-  backgroundColor: selected ? "#eff6ff" : "#fff",
-}));
-
-const QuestionTitle = styled(Typography)({
-  fontWeight: 700,
-});
-
-const QuestionMeta = styled(Typography)(({ theme }) => ({
-  color: theme.palette.grey[600],
-}));
-
-const QuestionIdText = styled(Typography)(({ theme }) => ({
-  color: theme.palette.grey[400],
-}));
-
-const QuestionSelectButton = styled(Button)(({ theme }) => ({
-  marginTop: theme.spacing(1),
-}));
-
-const DetailPanel = styled(Paper)(({ theme }) => ({
-  flex: 1,
-  padding: theme.spacing(3),
-  borderRadius: theme.spacing(3),
-}));
-
-const DetailTitle = styled(Typography)({
-  fontWeight: 700,
-});
-
-const DetailDescription = styled(Typography)(({ theme }) => ({
-  color: theme.palette.grey[600],
-}));
-
-const OptionTitle = styled(Typography)({
-  fontWeight: 700,
-});
-
-const OptionHint = styled(Typography)(({ theme }) => ({
-  color: theme.palette.grey[600],
-}));
-
-const OptionNote = styled(Typography)(({ theme }) => ({
-  color: theme.palette.grey[600],
-}));
-
-const RemoveOptionButton = styled(Button)({
-  minWidth: 96,
-});
-
-const AddOptionButton = styled(Button)({
-  alignSelf: "flex-start",
-});
-
-const EmptyNotice = styled(Typography)(({ theme }) => ({
-  color: theme.palette.grey[600],
 }));
 
 /** 選択肢入力の初期配列を返す。 */
@@ -220,9 +71,7 @@ export default function StaffQuestionManagementPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [keyword, setKeyword] = useState("");
   const [moduleFilter, setModuleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "inactive"
-  >("all");
+  const [statusFilter, setStatusFilter] = useState<QuestionStatusFilter>("all");
   const [showIds, setShowIds] = useState(false);
   const [formState, setFormState] =
     useState<QuestionDetail>(defaultFormState());
@@ -574,391 +423,70 @@ export default function StaffQuestionManagementPage() {
     <Root>
       <PageContainer maxWidth="xl">
         <Stack spacing={3}>
-          <HeaderPanel>
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={2}
-              justifyContent="space-between"
-              alignItems={{ xs: "flex-start", sm: "center" }}
-            >
-              <Box>
-                <HeaderLabel variant="body2">Staff / 問題管理</HeaderLabel>
-                <HeaderTitle variant="h4">問題管理</HeaderTitle>
-                <HeaderDescription variant="body2">
-                  問題の検索・作成・編集をここで行います。
-                </HeaderDescription>
-              </Box>
-              <Button
-                variant="contained"
-                onClick={handleNewQuestion}
-                data-testid="question-create-start"
-              >
-                新規問題作成
-              </Button>
-            </Stack>
-          </HeaderPanel>
+          <QuestionHeaderPanel onCreateQuestion={handleNewQuestion} />
 
-          <Stack direction={{ xs: "column", lg: "row" }} spacing={3}>
-            <SidebarPanel>
-              <SidebarContent spacing={2}>
-                <SidebarTitle variant="subtitle1">問題一覧</SidebarTitle>
-                <TextField
-                  label="キーワード/IDで検索"
-                  value={keyword}
-                  onChange={(event) => setKeyword(event.target.value)}
-                  fullWidth
-                  inputProps={{ "data-testid": "question-search" }}
-                />
-                <Stack direction="row" spacing={1} flexWrap="wrap">
-                  {(["all", "active", "inactive"] as const).map((status) => (
-                    <Button
-                      key={status}
-                      size="small"
-                      variant={
-                        statusFilter === status ? "contained" : "outlined"
-                      }
-                      onClick={() => setStatusFilter(status)}
-                      data-testid={`question-status-${status}`}
-                    >
-                      {status === "all"
-                        ? "すべて"
-                        : status === "active"
-                          ? "有効"
-                          : "無効"}
-                    </Button>
-                  ))}
-                </Stack>
-                <FormControl fullWidth>
-                  <InputLabel id="question-module-filter-label">
-                    モジュールで絞り込み
-                  </InputLabel>
-                  <Select
-                    labelId="question-module-filter-label"
-                    label="モジュールで絞り込み"
-                    value={moduleFilter}
-                    onChange={(event) => setModuleFilter(event.target.value)}
-                    data-testid="question-filter-module"
-                  >
-                    {moduleOptions.map((module) => (
-                      <MenuItem
-                        key={module.categoryId}
-                        value={module.categoryId}
-                      >
-                        {module.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={showIds}
-                      onChange={(event) => setShowIds(event.target.checked)}
-                    />
-                  }
-                  label="IDを表示"
-                />
-                {listError && <Alert severity="error">{listError}</Alert>}
-                <ListScroll spacing={1}>
-                  {questions.map((question) => {
-                    const isSelected =
-                      question.questionId === selectedQuestionId;
-                    return (
-                      <QuestionCard
-                        key={question.questionId}
-                        id={`question-row-${question.questionId}`}
-                        variant={isSelected ? "outlined" : "elevation"}
-                        selected={isSelected}
-                      >
-                        <Stack spacing={1}>
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                            flexWrap="wrap"
-                          >
-                            <Chip
-                              label={question.moduleName ?? "未分類"}
-                              size="small"
-                              color={
-                                question.moduleName ? "primary" : "default"
-                              }
-                              variant="outlined"
-                            />
-                            {question.subcategoryName && (
-                              <Chip
-                                label={question.subcategoryName}
-                                size="small"
-                                variant="outlined"
-                              />
-                            )}
-                            {!question.isActive && (
-                              <Chip label="無効" size="small" color="default" />
-                            )}
-                          </Stack>
-                          <QuestionTitle variant="subtitle2">
-                            {question.stem}
-                          </QuestionTitle>
-                          <QuestionMeta variant="caption">
-                            最終更新: {formatUpdatedAt(question.updatedAt)}
-                          </QuestionMeta>
-                          {showIds && (
-                            <QuestionIdText variant="caption">
-                              ID: {question.questionId}
-                            </QuestionIdText>
-                          )}
-                        </Stack>
-                        <QuestionSelectButton
-                          size="small"
-                          variant={isSelected ? "contained" : "outlined"}
-                          onClick={() =>
-                            handleSelectQuestion(question.questionId)
-                          }
-                          data-testid={`question-select-${question.questionId}`}
-                        >
-                          {isSelected ? "選択中" : "詳細を見る"}
-                        </QuestionSelectButton>
-                      </QuestionCard>
-                    );
-                  })}
-                  {questions.length === 0 && (
-                    <EmptyNotice variant="body2">
-                      該当する問題がありません。
-                    </EmptyNotice>
-                  )}
-                </ListScroll>
-              </SidebarContent>
-            </SidebarPanel>
+          <ContentGrid direction={{ xs: "column", lg: "row" }} spacing={3}>
+            <QuestionListPanel
+              keyword={keyword}
+              moduleFilter={moduleFilter}
+              statusFilter={statusFilter}
+              showIds={showIds}
+              listError={listError}
+              moduleOptions={moduleOptions}
+              questions={questions}
+              selectedQuestionId={selectedQuestionId}
+              onKeywordChange={setKeyword}
+              onModuleFilterChange={setModuleFilter}
+              onStatusFilterChange={setStatusFilter}
+              onToggleShowIds={setShowIds}
+              onSelectQuestion={handleSelectQuestion}
+              formatUpdatedAt={formatUpdatedAt}
+            />
 
-            <DetailPanel>
-              <Stack spacing={2}>
-                <Stack spacing={0.5}>
-                  <DetailTitle variant="h6">
-                    {isCreating ? "新規問題作成" : "問題詳細"}
-                  </DetailTitle>
-                  <DetailDescription variant="body2">
-                    {isCreating
-                      ? "新しい問題を登録します。"
-                      : selectedQuestionId
-                        ? `ID: ${selectedQuestionId}`
-                        : "左の一覧から問題を選択してください。"}
-                  </DetailDescription>
-                </Stack>
-
-                {(formError || formMessage) && (
-                  <Alert severity={formError ? "error" : "success"}>
-                    {formError ?? formMessage}
-                  </Alert>
-                )}
-
-                <Stack spacing={2}>
-                  <TextField
-                    label="問題文"
-                    value={formState.stem}
-                    onChange={(event) =>
-                      setFormState((previous) => ({
-                        ...previous,
-                        stem: event.target.value,
-                      }))
-                    }
-                    fullWidth
-                    multiline
-                    minRows={3}
-                    error={Boolean(fieldErrors.stem)}
-                    helperText={fieldErrors.stem}
-                    inputProps={{ "data-testid": "question-stem" }}
-                  />
-                  <TextField
-                    label="解説（任意）"
-                    value={formState.explanation ?? ""}
-                    onChange={(event) =>
-                      setFormState((previous) => ({
-                        ...previous,
-                        explanation: event.target.value,
-                      }))
-                    }
-                    fullWidth
-                    multiline
-                    minRows={2}
-                    inputProps={{ "data-testid": "question-explanation" }}
-                  />
-                  <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                    <FormControl fullWidth>
-                      <InputLabel id="question-module-label">
-                        モジュール
-                      </InputLabel>
-                      <Select
-                        labelId="question-module-label"
-                        label="モジュール"
-                        value={detailModuleId}
-                        onChange={(event) =>
-                          setFormState((previous) => ({
-                            ...previous,
-                            moduleCategoryId: event.target.value,
-                          }))
-                        }
-                        error={Boolean(fieldErrors.module)}
-                        data-testid="question-module"
-                      >
-                        {modules.map((module) => (
-                          <MenuItem
-                            key={module.categoryId}
-                            value={module.categoryId}
-                          >
-                            {module.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {fieldErrors.module && (
-                        <Typography variant="caption" color="error">
-                          {fieldErrors.module}
-                        </Typography>
-                      )}
-                    </FormControl>
-                    <FormControl fullWidth>
-                      <InputLabel id="question-subcategory-label">
-                        サブカテゴリ（任意）
-                      </InputLabel>
-                      <Select
-                        labelId="question-subcategory-label"
-                        label="サブカテゴリ（任意）"
-                        value={formState.subcategoryId ?? ""}
-                        onChange={(event) =>
-                          setFormState((previous) => ({
-                            ...previous,
-                            subcategoryId:
-                              event.target.value === ""
-                                ? null
-                                : event.target.value,
-                          }))
-                        }
-                        data-testid="question-subcategory"
-                      >
-                        <MenuItem value="">なし</MenuItem>
-                        {availableSubcategories.map((subcategory) => (
-                          <MenuItem
-                            key={subcategory.categoryId}
-                            value={subcategory.categoryId}
-                          >
-                            {subcategory.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formState.isActive}
-                        onChange={(event) =>
-                          setFormState((previous) => ({
-                            ...previous,
-                            isActive: event.target.checked,
-                          }))
-                        }
-                      />
-                    }
-                    label="有効"
-                  />
-                  <Stack spacing={1}>
-                    <OptionTitle variant="subtitle2">
-                      選択肢（正解は1つ）
-                    </OptionTitle>
-                    <OptionHint variant="caption">
-                      2択以上・正解は1つのみ保存できます。
-                    </OptionHint>
-                    {formState.options.map((option, index) => (
-                      <Stack
-                        key={`option-${index}`}
-                        direction={{ xs: "column", md: "row" }}
-                        spacing={2}
-                        alignItems={{ xs: "flex-start", md: "center" }}
-                      >
-                        <Radio
-                          checked={option.isCorrect}
-                          onChange={() => handleCorrectChange(index)}
-                          inputProps={{
-                            "data-testid": `question-option-correct-${index}`,
-                          }}
-                        />
-                        <TextField
-                          label={`選択肢 ${index + 1}`}
-                          value={option.optionText}
-                          onChange={(event) =>
-                            handleOptionTextChange(index, event.target.value)
-                          }
-                          fullWidth
-                          inputProps={{
-                            "data-testid": `question-option-${index}`,
-                          }}
-                        />
-                        <Stack direction="row" spacing={1}>
-                          <Button
-                            variant="outlined"
-                            onClick={() => handleMoveOption(index, "up")}
-                            disabled={index === 0}
-                            data-testid={`question-option-move-up-${index}`}
-                          >
-                            上へ
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            onClick={() => handleMoveOption(index, "down")}
-                            disabled={index === formState.options.length - 1}
-                            data-testid={`question-option-move-down-${index}`}
-                          >
-                            下へ
-                          </Button>
-                        </Stack>
-                        <RemoveOptionButton
-                          variant="outlined"
-                          onClick={() => handleRemoveOption(index)}
-                          disabled={formState.options.length <= 2}
-                          data-testid={`question-option-remove-${index}`}
-                        >
-                          削除
-                        </RemoveOptionButton>
-                      </Stack>
-                    ))}
-                    {fieldErrors.options && (
-                      <Typography variant="caption" color="error">
-                        {fieldErrors.options}
-                      </Typography>
-                    )}
-                    <OptionNote variant="caption">
-                      並び替えは保存時に反映されます。削除で正解が外れた場合は再指定してください。
-                    </OptionNote>
-                    <AddOptionButton
-                      variant="outlined"
-                      onClick={handleAddOption}
-                      data-testid="question-option-add"
-                    >
-                      選択肢を追加
-                    </AddOptionButton>
-                  </Stack>
-                  <Stack direction="row" spacing={2}>
-                    <Button
-                      variant="contained"
-                      onClick={handleSubmit}
-                      data-testid="question-save"
-                      disabled={!canSubmit}
-                    >
-                      {isCreating ? "作成" : "変更を保存"}
-                    </Button>
-                    {!isCreating && (
-                      <Button
-                        variant="outlined"
-                        onClick={resetForm}
-                        data-testid="question-reset"
-                      >
-                        編集内容をリセット
-                      </Button>
-                    )}
-                  </Stack>
-                </Stack>
-              </Stack>
-            </DetailPanel>
-          </Stack>
+            <QuestionDetailPanel
+              isCreating={isCreating}
+              selectedQuestionId={selectedQuestionId}
+              formState={formState}
+              modules={modules}
+              availableSubcategories={availableSubcategories}
+              detailModuleId={detailModuleId}
+              formError={formError}
+              formMessage={formMessage}
+              fieldErrors={fieldErrors}
+              canSubmit={canSubmit}
+              onStemChange={(value) =>
+                setFormState((previous) => ({ ...previous, stem: value }))
+              }
+              onExplanationChange={(value) =>
+                setFormState((previous) => ({
+                  ...previous,
+                  explanation: value,
+                }))
+              }
+              onModuleChange={(value) =>
+                setFormState((previous) => ({
+                  ...previous,
+                  moduleCategoryId: value,
+                }))
+              }
+              onSubcategoryChange={(value) =>
+                setFormState((previous) => ({
+                  ...previous,
+                  subcategoryId: value,
+                }))
+              }
+              onActiveChange={(value) =>
+                setFormState((previous) => ({ ...previous, isActive: value }))
+              }
+              onCorrectChange={handleCorrectChange}
+              onOptionTextChange={handleOptionTextChange}
+              onMoveOption={handleMoveOption}
+              onRemoveOption={handleRemoveOption}
+              onAddOption={handleAddOption}
+              onSubmit={handleSubmit}
+              onReset={resetForm}
+            />
+          </ContentGrid>
         </Stack>
       </PageContainer>
     </Root>

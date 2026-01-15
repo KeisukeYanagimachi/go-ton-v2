@@ -2,8 +2,8 @@
 
 import { auth } from "@/features/auth/infra/auth";
 import {
-    DEV_STAFF_SESSION_COOKIE,
-    parseDevStaffSessionToken,
+  extractDevStaffSessionToken,
+  parseDevStaffSessionToken,
 } from "@/features/auth/infra/dev-staff-session";
 import { prisma } from "@/shared/db/prisma";
 
@@ -23,11 +23,7 @@ const resolveEmailFromDevSession = (request: Request) => {
   }
 
   const cookieHeader = request.headers.get("cookie") ?? "";
-  const token = cookieHeader
-    .split(";")
-    .map((entry) => entry.trim())
-    .find((entry) => entry.startsWith(`${DEV_STAFF_SESSION_COOKIE}=`))
-    ?.split("=")[1];
+  const token = extractDevStaffSessionToken(cookieHeader);
 
   if (!token) {
     return null;
@@ -62,4 +58,3 @@ const getStaffIdentityFromRequest = async (
 
 export { getStaffIdentityFromRequest };
 export type { StaffIdentity };
-
