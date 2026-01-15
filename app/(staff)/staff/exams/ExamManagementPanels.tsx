@@ -20,8 +20,8 @@ import SectionTitle from "@app/ui/SectionTitle";
 import type {
   ExamSummary,
   ExamVersionSummary,
-  SectionMaster,
   QuestionSummary,
+  SectionMaster,
 } from "./types";
 
 type ExamVersionOption = {
@@ -246,7 +246,7 @@ const SectionPanel = styled(Paper)(({ theme }) => ({
   borderRadius: theme.spacing(2),
 }));
 
-const SectionTitle = styled(SectionTitle)({
+const SectionHeading = styled(SectionTitle)({
   fontWeight: 700,
 });
 
@@ -259,7 +259,7 @@ const QuestionCard = styled(Paper)(({ theme }) => ({
   borderRadius: theme.spacing(2),
 }));
 
-const QuestionTitle = styled(SectionTitle)({
+const QuestionTitle = styled(SectionHeading)({
   fontWeight: 700,
 });
 
@@ -272,9 +272,9 @@ const ExamCreatePanel = ({
   onCreateExam,
 }: ExamCreatePanelProps) => (
   <Panel>
-    <SectionTitle variant="h6" weight={700}>
+    <SectionHeading variant="h6" weight={700}>
       新規作成
-    </SectionTitle>
+    </SectionHeading>
     <SectionDescription variant="body2">
       既存の試験に関係なく、新しく試験マスタを作成します。
     </SectionDescription>
@@ -314,9 +314,9 @@ const ExamListPanel = ({
 }: ExamListPanelProps) => (
   <SidebarPanel>
     <SidebarContent spacing={2}>
-      <SectionTitle variant="subtitle1" weight={700}>
+      <SectionHeading variant="subtitle1" weight={700}>
         試験一覧
-      </SectionTitle>
+      </SectionHeading>
       <TextField
         label="試験名・IDで検索"
         value={examSearch}
@@ -460,7 +460,8 @@ const ExamDetailPanel = ({
               >
                 {version.sections.map((section) => (
                   <SectionBadge key={section.sectionId}>
-                    {section.code} · {Math.round(section.durationSeconds / 60)}分
+                    {section.code} · {Math.round(section.durationSeconds / 60)}
+                    分
                   </SectionBadge>
                 ))}
               </SectionBadgeRow>
@@ -534,7 +535,10 @@ const ExamVersionForm = ({
             type="number"
             value={sectionMinutes[section.sectionId] ?? 30}
             onChange={(event) =>
-              onSectionMinutesChange(section.sectionId, Number(event.target.value))
+              onSectionMinutesChange(
+                section.sectionId,
+                Number(event.target.value),
+              )
             }
             fullWidth
             inputProps={{
