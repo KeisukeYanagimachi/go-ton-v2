@@ -13,9 +13,9 @@ import {
 import { styled } from "@mui/material/styles";
 import Link from "next/link";
 
-import MutedText from "@/app/ui/MutedText";
-import Panel from "@/app/ui/Panel";
-import SectionTitle from "@/app/ui/SectionTitle";
+import MutedText from "@app/ui/MutedText";
+import Panel from "@app/ui/Panel";
+import SectionTitle from "@app/ui/SectionTitle";
 
 import type {
   ExamSummary,

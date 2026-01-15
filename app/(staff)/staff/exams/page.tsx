@@ -4,9 +4,9 @@ import { Alert, Box, Container, Stack } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useEffect, useMemo, useState } from "react";
 
-import MutedText from "@/app/ui/MutedText";
-import Panel from "@/app/ui/Panel";
-import SectionTitle from "@/app/ui/SectionTitle";
+import MutedText from "@app/ui/MutedText";
+import Panel from "@app/ui/Panel";
+import SectionTitle from "@app/ui/SectionTitle";
 
 import type {
   AssignmentQuestion,
