@@ -4,9 +4,9 @@ import { prisma } from "@/shared/db/prisma";
 
 type ExamVersionQuestionSummary = {
   examVersionQuestionId: string;
-  moduleId: string;
-  moduleCode: string;
-  moduleName: string;
+  sectionId: string;
+  sectionCode: string;
+  sectionName: string;
   questionId: string;
   questionStem: string;
   position: number;
@@ -22,7 +22,7 @@ const listExamVersionQuestions = async (
       id: true,
       position: true,
       points: true,
-      module: {
+      section: {
         select: {
           id: true,
           code: true,
@@ -36,14 +36,14 @@ const listExamVersionQuestions = async (
         },
       },
     },
-    orderBy: [{ moduleId: "asc" }, { position: "asc" }],
+    orderBy: [{ sectionId: "asc" }, { position: "asc" }],
   });
 
   return items.map((item) => ({
     examVersionQuestionId: item.id,
-    moduleId: item.module.id,
-    moduleCode: item.module.code,
-    moduleName: item.module.name,
+    sectionId: item.section.id,
+    sectionCode: item.section.code,
+    sectionName: item.section.name,
     questionId: item.question.id,
     questionStem: item.question.stem,
     position: item.position,

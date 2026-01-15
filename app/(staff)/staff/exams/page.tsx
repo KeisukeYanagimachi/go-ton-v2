@@ -8,6 +8,7 @@ import MutedText from "@app/ui/MutedText";
 import Panel from "@app/ui/Panel";
 import SectionTitle from "@app/ui/SectionTitle";
 
+import StaffHomeLink from "../StaffHomeLink";
 import type {
   AssignmentQuestion,
   ExamVersionOption,
@@ -19,11 +20,11 @@ import {
   ExamListPanel,
   ExamVersionForm,
 } from "./ExamManagementPanels";
-import type { ExamSummary, ModuleMaster, QuestionSummary } from "./types";
+import type { ExamSummary, QuestionSummary, SectionMaster } from "./types";
 
 type ExamResponse = {
   exams: ExamSummary[];
-  modules: ModuleMaster[];
+  sections: SectionMaster[];
 };
 
 const REQUIRED_CODES = ["VERBAL", "NONVERBAL", "ENGLISH", "STRUCTURAL"];
@@ -64,8 +65,8 @@ const assignmentErrorMessage = (code?: string) => {
       return "試験バージョンが見つかりません。";
     case "INVALID_STATE":
       return "DRAFT の試験バージョンのみ割当を変更できます。";
-    case "MODULE_NOT_IN_VERSION":
-      return "対象のモジュールが試験バージョンに含まれていません。";
+    case "SECTION_NOT_IN_VERSION":
+      return "対象のセクションが試験バージョンに含まれていません。";
     case "QUESTION_NOT_FOUND":
       return "対象の問題が見つかりません。";
     case "DUPLICATE_QUESTION":
@@ -79,20 +80,20 @@ const assignmentErrorMessage = (code?: string) => {
   }
 };
 
-/** 試験定義と出題割当を管理するスタッフ画面。 */
+/** 試験管理と出題割当を管理するスタッフ画面。 */
 export default function StaffExamManagementPage() {
   const [exams, setExams] = useState<ExamSummary[]>([]);
-  const [modules, setModules] = useState<ModuleMaster[]>([]);
+  const [sections, setSections] = useState<SectionMaster[]>([]);
   const [questions, setQuestions] = useState<QuestionSummary[]>([]);
   const [examName, setExamName] = useState("");
   const [examDescription, setExamDescription] = useState("");
   const [selectedExamId, setSelectedExamId] = useState("");
   const [versionNumber, setVersionNumber] = useState(1);
-  const [moduleMinutes, setModuleMinutes] = useState<Record<string, number>>(
+  const [sectionMinutes, setSectionMinutes] = useState<Record<string, number>>(
     {},
   );
   const [selectedVersionId, setSelectedVersionId] = useState("");
-  const [selectedModuleId, setSelectedModuleId] = useState("");
+  const [selectedSectionId, setSelectedSectionId] = useState("");
   const [selectedQuestionId, setSelectedQuestionId] = useState("");
   const [examSearch, setExamSearch] = useState("");
   const [questionSearch, setQuestionSearch] = useState("");
@@ -109,9 +110,9 @@ export default function StaffExamManagementPage() {
   );
   const [assignmentError, setAssignmentError] = useState<string | null>(null);
 
-  const requiredModules = useMemo(
-    () => modules.filter((module) => REQUIRED_CODES.includes(module.code)),
-    [modules],
+  const requiredSections = useMemo(
+    () => sections.filter((section) => REQUIRED_CODES.includes(section.code)),
+    [sections],
   );
 
   const selectedExam = useMemo(
@@ -129,14 +130,14 @@ export default function StaffExamManagementPage() {
         examVersionId: version.examVersionId,
         label: `v${version.versionNumber}`,
         status: version.status,
-        modules: version.modules,
+        sections: version.sections,
       }));
   }, [selectedExam]);
 
   const selectedVersion = versionOptions.find(
     (version) => version.examVersionId === selectedVersionId,
   );
-  const selectedVersionModules = selectedVersion?.modules ?? [];
+  const selectedVersionSections = selectedVersion?.sections ?? [];
   const filteredExams = useMemo(() => {
     const keyword = examSearch.trim().toLowerCase();
     if (!keyword) {
@@ -149,15 +150,15 @@ export default function StaffExamManagementPage() {
 
   const filteredQuestions = useMemo(() => {
     const keyword = questionSearch.trim().toLowerCase();
-    const moduleCode =
-      selectedVersionModules.find(
-        (module) => module.moduleId === selectedModuleId,
+    const sectionCode =
+      selectedVersionSections.find(
+        (section) => section.sectionId === selectedSectionId,
       )?.code ?? "";
     let filtered = questions;
 
-    if (moduleCode) {
+    if (sectionCode) {
       filtered = filtered.filter((question) =>
-        question.moduleCodes.includes(moduleCode),
+        question.sectionCodes.includes(sectionCode),
       );
     }
 
@@ -168,7 +169,7 @@ export default function StaffExamManagementPage() {
     return filtered.filter((question) =>
       question.stem.toLowerCase().includes(keyword),
     );
-  }, [questionSearch, questions, selectedModuleId, selectedVersionModules]);
+  }, [questionSearch, questions, selectedSectionId, selectedVersionSections]);
 
   const sortedVersions = useMemo(() => {
     if (!selectedExam) {
@@ -198,7 +199,7 @@ export default function StaffExamManagementPage() {
       }
       const payload = (await response.json()) as ExamResponse;
       setExams(payload.exams);
-      setModules(payload.modules);
+      setSections(payload.sections);
       if (!selectedExamId && payload.exams.length > 0) {
         setSelectedExamId(payload.exams[0].examId);
       }
@@ -288,9 +289,9 @@ export default function StaffExamManagementPage() {
       const payload = (await response.json()) as {
         questions: {
           examVersionQuestionId: string;
-          moduleId: string;
-          moduleCode: string;
-          moduleName: string;
+          sectionId: string;
+          sectionCode: string;
+          sectionName: string;
           questionId: string;
           questionStem: string;
           position: number;
@@ -308,17 +309,17 @@ export default function StaffExamManagementPage() {
   }, [selectedVersionId]);
 
   useEffect(() => {
-    if (!selectedVersionModules.length) {
-      setSelectedModuleId("");
+    if (!selectedVersionSections.length) {
+      setSelectedSectionId("");
       return;
     }
-    const moduleExists = selectedVersionModules.some(
-      (module) => module.moduleId === selectedModuleId,
+    const sectionExists = selectedVersionSections.some(
+      (section) => section.sectionId === selectedSectionId,
     );
-    if (!selectedModuleId || !moduleExists) {
-      setSelectedModuleId(selectedVersionModules[0].moduleId);
+    if (!selectedSectionId || !sectionExists) {
+      setSelectedSectionId(selectedVersionSections[0].sectionId);
     }
-  }, [selectedVersionModules, selectedModuleId]);
+  }, [selectedVersionSections, selectedSectionId]);
 
   useEffect(() => {
     if (filteredQuestions.length === 0) {
@@ -334,30 +335,30 @@ export default function StaffExamManagementPage() {
   }, [filteredQuestions, selectedQuestionId]);
 
   useEffect(() => {
-    if (!selectedModuleId) {
+    if (!selectedSectionId) {
       return;
     }
     const positions = assignedQuestions
-      .filter((question) => question.moduleId === selectedModuleId)
+      .filter((question) => question.sectionId === selectedSectionId)
       .map((question) => question.position);
     const nextPosition = positions.length > 0 ? Math.max(...positions) + 1 : 1;
     setQuestionPosition(nextPosition);
-  }, [assignedQuestions, selectedModuleId]);
+  }, [assignedQuestions, selectedSectionId]);
 
   useEffect(() => {
-    if (requiredModules.length === 0) {
+    if (requiredSections.length === 0) {
       return;
     }
-    setModuleMinutes((previous) => {
+    setSectionMinutes((previous) => {
       const next = { ...previous };
-      requiredModules.forEach((module) => {
-        if (!next[module.moduleId]) {
-          next[module.moduleId] = 30;
+      requiredSections.forEach((section) => {
+        if (!next[section.sectionId]) {
+          next[section.sectionId] = 30;
         }
       });
       return next;
     });
-  }, [requiredModules]);
+  }, [requiredSections]);
 
   const handleCreateExam = async () => {
     setPageError(null);
@@ -394,10 +395,10 @@ export default function StaffExamManagementPage() {
       setPageError("対象の Exam を選択してください。");
       return;
     }
-    const modulePayload = requiredModules.map((module, index) => ({
-      moduleId: module.moduleId,
+    const sectionPayload = requiredSections.map((section, index) => ({
+      sectionId: section.sectionId,
       durationSeconds:
-        Math.max(1, Math.round(moduleMinutes[module.moduleId])) * 60,
+        Math.max(1, Math.round(sectionMinutes[section.sectionId])) * 60,
       position: index + 1,
     }));
 
@@ -408,7 +409,7 @@ export default function StaffExamManagementPage() {
         body: JSON.stringify({
           examId: selectedExamId,
           versionNumber,
-          modules: modulePayload,
+          sections: sectionPayload,
         }),
       });
 
@@ -475,7 +476,7 @@ export default function StaffExamManagementPage() {
   const handleAssignQuestion = async () => {
     setAssignmentError(null);
     setAssignmentMessage(null);
-    if (!selectedVersionId || !selectedModuleId || !selectedQuestionId) {
+    if (!selectedVersionId || !selectedSectionId || !selectedQuestionId) {
       setAssignmentError("出題割当の入力を確認してください。");
       return;
     }
@@ -489,7 +490,7 @@ export default function StaffExamManagementPage() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           examVersionId: selectedVersionId,
-          moduleId: selectedModuleId,
+          sectionId: selectedSectionId,
           questionId: selectedQuestionId,
           position: questionPosition,
           points: questionPoints,
@@ -538,9 +539,10 @@ export default function StaffExamManagementPage() {
         <Stack spacing={3}>
           <Panel>
             <Stack spacing={1}>
-              <MutedText variant="body2">Staff / 試験定義</MutedText>
+              <StaffHomeLink />
+              <MutedText variant="body2">Staff / 試験管理</MutedText>
               <SectionTitle variant="h4" weight={800}>
-                試験定義の管理
+                試験管理
               </SectionTitle>
               <MutedText variant="body2">
                 まず左の一覧から試験を選択し、右側で詳細・バージョン・出題割当を操作します。
@@ -589,14 +591,14 @@ export default function StaffExamManagementPage() {
                 exams={exams}
                 selectedExamId={selectedExamId}
                 versionNumber={versionNumber}
-                requiredModules={requiredModules}
-                moduleMinutes={moduleMinutes}
+                requiredSections={requiredSections}
+                sectionMinutes={sectionMinutes}
                 onSelectExam={setSelectedExamId}
                 onVersionNumberChange={setVersionNumber}
-                onModuleMinutesChange={(moduleId, minutes) =>
-                  setModuleMinutes((previous) => ({
+                onSectionMinutesChange={(sectionId, minutes) =>
+                  setSectionMinutes((previous) => ({
                     ...previous,
-                    [moduleId]: minutes,
+                    [sectionId]: minutes,
                   }))
                 }
                 onCreateVersion={handleCreateVersion}
@@ -607,8 +609,8 @@ export default function StaffExamManagementPage() {
                 assignmentMessage={assignmentMessage}
                 versionOptions={versionOptions}
                 selectedVersionId={selectedVersionId}
-                selectedModuleId={selectedModuleId}
-                selectedVersionModules={selectedVersionModules}
+                selectedSectionId={selectedSectionId}
+                selectedVersionSections={selectedVersionSections}
                 questionSearch={questionSearch}
                 filteredQuestions={filteredQuestions}
                 selectedQuestionId={selectedQuestionId}
@@ -618,7 +620,7 @@ export default function StaffExamManagementPage() {
                 selectedVersionStatus={selectedVersion?.status}
                 selectedQuestionStem={selectedQuestionStem}
                 onSelectVersionId={setSelectedVersionId}
-                onSelectModuleId={setSelectedModuleId}
+                onSelectSectionId={setSelectedSectionId}
                 onQuestionSearchChange={setQuestionSearch}
                 onSelectQuestionId={setSelectedQuestionId}
                 onQuestionPositionChange={setQuestionPosition}

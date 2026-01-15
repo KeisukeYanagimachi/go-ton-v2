@@ -1,5 +1,9 @@
 # 09_bootstrap_plan.md
 
+## ChangeLog
+
+- 2026-01-11: 試験構成の呼称を「モジュール」から「セクション」に統一
+
 ## プロジェクト立ち上げ計画（Phase 0〜）
 
 ---
@@ -86,7 +90,7 @@ Phase 0 完了条件は以下を **すべて満たすこと**。
 
 **seed の最低要件（Phase 0 時点）**
 
-- exam_modules（VERBAL/NONVERBAL/ENGLISH/STRUCTURAL/PERSONALITY）
+- exam_sections（VERBAL/NONVERBAL/ENGLISH/STRUCTURAL/PERSONALITY）
 - staff_roles（ADMIN/AUTHOR/PROCTOR/REPORT_VIEWER）
 - E2E用 staff_users（whitelist前提）
 - ダミー candidate / ticket（E2Eでログインできる最小データ）
@@ -154,7 +158,7 @@ Phase 0 完了条件は以下を **すべて満たすこと**。
 
 - `docs/spec/05_exam_and_state_machine.md` を満たす
 - Attempt / ExamVersion の状態遷移を実装
-- モジュール順序固定、タイマー、提出、採点への接続まで
+- セクション順序固定、タイマー、提出、採点への接続まで
 
 ---
 

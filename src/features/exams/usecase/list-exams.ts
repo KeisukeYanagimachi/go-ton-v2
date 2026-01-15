@@ -2,8 +2,8 @@
 
 import { prisma } from "@/shared/db/prisma";
 
-type ExamVersionModuleSummary = {
-  moduleId: string;
+type ExamVersionSectionSummary = {
+  sectionId: string;
   code: string;
   name: string;
   durationSeconds: number;
@@ -14,7 +14,7 @@ type ExamVersionSummary = {
   examVersionId: string;
   versionNumber: number;
   status: string;
-  modules: ExamVersionModuleSummary[];
+  sections: ExamVersionSectionSummary[];
 };
 
 type ExamSummary = {
@@ -24,17 +24,17 @@ type ExamSummary = {
   versions: ExamVersionSummary[];
 };
 
-type ModuleMaster = {
-  moduleId: string;
+type SectionMaster = {
+  sectionId: string;
   code: string;
   name: string;
 };
 
 const listExams = async (): Promise<{
   exams: ExamSummary[];
-  modules: ModuleMaster[];
+  sections: SectionMaster[];
 }> => {
-  const [exams, modules] = await Promise.all([
+  const [exams, sections] = await Promise.all([
     prisma.exam.findMany({
       select: {
         id: true,
@@ -45,11 +45,11 @@ const listExams = async (): Promise<{
             id: true,
             versionNumber: true,
             status: true,
-            modules: {
+            sections: {
               select: {
                 durationSeconds: true,
                 position: true,
-                module: {
+                section: {
                   select: {
                     id: true,
                     code: true,
@@ -65,7 +65,7 @@ const listExams = async (): Promise<{
       },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.examModule.findMany({
+    prisma.examSection.findMany({
       select: {
         id: true,
         code: true,
@@ -84,23 +84,23 @@ const listExams = async (): Promise<{
         examVersionId: version.id,
         versionNumber: version.versionNumber,
         status: version.status,
-        modules: version.modules.map((moduleEntry) => ({
-          moduleId: moduleEntry.module.id,
-          code: moduleEntry.module.code,
-          name: moduleEntry.module.name,
-          durationSeconds: moduleEntry.durationSeconds,
-          position: moduleEntry.position,
+        sections: version.sections.map((sectionEntry) => ({
+          sectionId: sectionEntry.section.id,
+          code: sectionEntry.section.code,
+          name: sectionEntry.section.name,
+          durationSeconds: sectionEntry.durationSeconds,
+          position: sectionEntry.position,
         })),
       })),
     })),
-    modules: modules.map((module) => ({
-      moduleId: module.id,
-      code: module.code,
-      name: module.name,
+    sections: sections.map((section) => ({
+      sectionId: section.id,
+      code: section.code,
+      name: section.name,
     })),
   };
 };
 
 export { listExams };
-export type { ExamSummary, ExamVersionSummary, ModuleMaster };
+export type { ExamSummary, ExamVersionSummary, SectionMaster };
 

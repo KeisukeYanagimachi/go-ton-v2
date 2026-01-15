@@ -1,5 +1,9 @@
 # 社内SPIアプリ 仕様書（Codex 引き渡し用）
 
+## ChangeLog
+
+- 2026-01-11: 試験構成の呼称を「モジュール」から「セクション」に統一
+
 ## このディレクトリの目的
 
 この `docs/spec` 配下のドキュメントは、社内向けSPI試験アプリの実装を行うコーディングエージェント（Codex）に渡す **一次資料**です。
@@ -39,7 +43,7 @@
    - 認証・認可：Staff Google SSO + whitelist + RBAC、Candidate QR+PIN、dev/e2eログイン方針（production除外）
 
 5. `05_exam_and_state_machine.md`
-   - 試験進行と状態遷移：ExamVersion（DRAFT/PUBLISHED/ARCHIVED）、Attempt状態、モジュール順序固定、引き継ぎ
+   - 試験進行と状態遷移：ExamVersion（DRAFT/PUBLISHED/ARCHIVED）、Attempt状態、セクション順序固定、引き継ぎ
 
 6. `06_telemetry_spec.md`
    - 行動計測：イベント、idle=15秒、observed/active集計、材料としての扱い（断定しない）
@@ -66,7 +70,7 @@
 - Ticket：受験票（QRに埋め込むコード）
 - PIN：生年月日（固定形式）を入力し照合する認証要素
 - Attempt：受験の実体（受験者×試験バージョンの実行）
-- Module：試験モジュール（SPI3準拠：言語/非言語/英語/構造）
+- Section：試験セクション（SPI3準拠：言語/非言語/英語/構造）
 - Telemetry：問題ごとの滞在/操作時間など行動計測
 
 ---

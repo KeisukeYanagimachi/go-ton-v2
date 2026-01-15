@@ -33,7 +33,7 @@ enum AttemptSessionStatus {
   EXPIRED
 }
 
-enum ExamModuleCode {
+enum ExamSectionCode {
   VERBAL
   NONVERBAL
   ENGLISH
@@ -162,7 +162,7 @@ model ExamVersion {
 
   exam             Exam                @relation(fields: [examId], references: [id])
   tickets          Ticket[]
-  modules          ExamVersionModule[]
+  sections         ExamVersionSection[]
   questions        ExamVersionQuestion[]
   attempts         Attempt[]
 
@@ -172,36 +172,36 @@ model ExamVersion {
   @@map("exam_versions")
 }
 
-model ExamModule {
+model ExamSection {
   id        String         @id @default(uuid()) @db.Uuid @map("id")
-  code      ExamModuleCode @unique @map("code")
+  code      ExamSectionCode @unique @map("code")
   name      String         @map("name")
   createdAt DateTime       @default(now()) @map("created_at")
 
-  examVersionModules ExamVersionModule[]
+  examVersionSections ExamVersionSection[]
   examVersionQuestions ExamVersionQuestion[]
   attemptItems        AttemptItem[]
-  attemptModuleScores AttemptModuleScore[]
-  attemptModuleTimers AttemptModuleTimer[]
+  attemptSectionScores AttemptSectionScore[]
+  attemptSectionTimers AttemptSectionTimer[]
 
-  @@map("exam_modules")
+  @@map("exam_sections")
 }
 
-model ExamVersionModule {
+model ExamVersionSection {
   id             String   @id @default(uuid()) @db.Uuid @map("id")
   examVersionId  String   @db.Uuid @map("exam_version_id")
-  moduleId       String   @db.Uuid @map("module_id")
+  sectionId       String   @db.Uuid @map("section_id")
   durationSeconds Int     @map("duration_seconds")
   position       Int      @map("position")
   createdAt      DateTime @default(now()) @map("created_at")
 
   examVersion ExamVersion @relation(fields: [examVersionId], references: [id])
-  module      ExamModule  @relation(fields: [moduleId], references: [id])
+  section     ExamSection  @relation(fields: [sectionId], references: [id])
 
-  @@unique([examVersionId, moduleId])
+  @@unique([examVersionId, sectionId])
   @@unique([examVersionId, position])
-  @@index([examVersionId], map: "idx_exam_version_modules_version")
-  @@map("exam_version_modules")
+  @@index([examVersionId], map: "idx_exam_version_sections_version")
+  @@map("exam_version_sections")
 }
 
 model QuestionCategory {
@@ -267,19 +267,19 @@ model QuestionCategoryAssignment {
 model ExamVersionQuestion {
   id            String   @id @default(uuid()) @db.Uuid @map("id")
   examVersionId String   @db.Uuid @map("exam_version_id")
-  moduleId      String   @db.Uuid @map("module_id")
+  sectionId      String   @db.Uuid @map("section_id")
   questionId    String   @db.Uuid @map("question_id")
   position      Int      @map("position")
   points        Int      @map("points")
   createdAt     DateTime @default(now()) @map("created_at")
 
   examVersion ExamVersion @relation(fields: [examVersionId], references: [id])
-  module      ExamModule  @relation(fields: [moduleId], references: [id])
+  section     ExamSection  @relation(fields: [sectionId], references: [id])
   question    Question    @relation(fields: [questionId], references: [id])
 
   @@unique([examVersionId, questionId])
-  @@unique([examVersionId, moduleId, position])
-  @@index([examVersionId, moduleId], map: "idx_evq_version_module")
+  @@unique([examVersionId, sectionId, position])
+  @@index([examVersionId, sectionId], map: "idx_evq_version_section")
   @@index([questionId], map: "idx_evq_question")
   @@map("exam_version_questions")
 }
@@ -313,9 +313,9 @@ model Attempt {
   examVersion       ExamVersion         @relation(fields: [examVersionId], references: [id])
   ticket            Ticket              @relation(fields: [ticketId], references: [id])
   sessions          AttemptSession[]
-  moduleTimers      AttemptModuleTimer[]
+  sectionTimers      AttemptSectionTimer[]
   items             AttemptItem[]
-  moduleScores      AttemptModuleScore[]
+  sectionScores      AttemptSectionScore[]
   score             AttemptScore?
   itemEvents        AttemptItemEvent[]
 
@@ -346,10 +346,10 @@ model AttemptSession {
   @@map("attempt_sessions")
 }
 
-model AttemptModuleTimer {
+model AttemptSectionTimer {
   id               String   @id @default(uuid()) @db.Uuid @map("id")
   attemptId        String   @db.Uuid @map("attempt_id")
-  moduleId         String   @db.Uuid @map("module_id")
+  sectionId         String   @db.Uuid @map("section_id")
   timeLimitSeconds Int      @map("time_limit_seconds")
   remainingSeconds Int      @map("remaining_seconds")
   startedAt        DateTime? @map("started_at")
@@ -358,31 +358,31 @@ model AttemptModuleTimer {
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   attempt Attempt   @relation(fields: [attemptId], references: [id])
-  module  ExamModule @relation(fields: [moduleId], references: [id])
+  section ExamSection @relation(fields: [sectionId], references: [id])
 
-  @@unique([attemptId, moduleId])
-  @@index([attemptId], map: "idx_attempt_module_timers_attempt")
-  @@map("attempt_module_timers")
+  @@unique([attemptId, sectionId])
+  @@index([attemptId], map: "idx_attempt_section_timers_attempt")
+  @@map("attempt_section_timers")
 }
 
 model AttemptItem {
   id        String   @id @default(uuid()) @db.Uuid @map("id")
   attemptId String   @db.Uuid @map("attempt_id")
-  moduleId  String   @db.Uuid @map("module_id")
+  sectionId  String   @db.Uuid @map("section_id")
   questionId String  @db.Uuid @map("question_id")
   position  Int      @map("position")
   points    Int      @map("points")
   createdAt DateTime @default(now()) @map("created_at")
 
   attempt  Attempt   @relation(fields: [attemptId], references: [id])
-  module   ExamModule @relation(fields: [moduleId], references: [id])
+  section  ExamSection @relation(fields: [sectionId], references: [id])
   question Question  @relation(fields: [questionId], references: [id])
   answer   AttemptAnswer?
   answerScore AttemptAnswerScore?
   metrics  AttemptItemMetric?
   events   AttemptItemEvent[]
 
-  @@unique([attemptId, moduleId, position])
+  @@unique([attemptId, sectionId, position])
   @@index([attemptId], map: "idx_attempt_items_attempt")
   @@index([questionId], map: "idx_attempt_items_question")
   @@map("attempt_items")
@@ -414,19 +414,19 @@ model AttemptAnswerScore {
   @@map("attempt_answer_scores")
 }
 
-model AttemptModuleScore {
+model AttemptSectionScore {
   id        String   @id @default(uuid()) @db.Uuid @map("id")
   attemptId String   @db.Uuid @map("attempt_id")
-  moduleId  String   @db.Uuid @map("module_id")
+  sectionId  String   @db.Uuid @map("section_id")
   rawScore  Int      @map("raw_score")
   maxScore  Int      @map("max_score")
   scoredAt  DateTime @default(now()) @map("scored_at")
 
   attempt Attempt @relation(fields: [attemptId], references: [id])
-  module  ExamModule @relation(fields: [moduleId], references: [id])
+  section ExamSection @relation(fields: [sectionId], references: [id])
 
-  @@unique([attemptId, moduleId])
-  @@map("attempt_module_scores")
+  @@unique([attemptId, sectionId])
+  @@map("attempt_section_scores")
 }
 
 model AttemptScore {

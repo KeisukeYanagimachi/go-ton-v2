@@ -6,6 +6,7 @@
 - 2026-01-10: Attempt 作成タイミングと session 取り扱いの補足を追記
 - 2026-01-10: Ticket に exam_version_id を紐づけ、Attempt の選定基準を明文化
 - 2026-01-11: 来社枠・来社割当（visit_slots / candidate_slot_assignments）をスコープ外として削除
+- 2026-01-11: セクション名称へ統一し、exam_sections/attempt_section_timers 等のモデル名に変更
 
 ## データモデル仕様（論理設計・不変条件）
 
@@ -176,11 +177,11 @@
 
 ---
 
-### 5.2 モジュール定義
+### 5.2 セクション定義
 
-#### exam_modules（マスタ）
+#### exam_sections（マスタ）
 
-- SPI3 モジュール定義
+- SPI3 セクション定義
   - VERBAL
   - NONVERBAL
   - ENGLISH
@@ -194,14 +195,14 @@
 - name
 - created_at
 
-#### exam_version_modules
+#### exam_version_sections
 
-- 試験バージョンに含まれるモジュール
+- 試験バージョンに含まれるセクション
 
 主な属性
 
 - exam_version_id
-- module_id
+- section_id
 - duration_seconds
 - position
 - created_at
@@ -289,7 +290,7 @@
 主な属性
 
 - exam_version_id
-- module_id
+- section_id
 - question_id
 - position
 - points
@@ -298,8 +299,8 @@
 **不変条件**
 
 - 同一 exam_version 内で question 重複不可
-- module と question のカテゴリ整合性を保つ
-- 同一 exam_version + module 内で position 重複不可
+- section と question のカテゴリ整合性を保つ
+- 同一 exam_version + section 内で position 重複不可
 
 ---
 
@@ -373,16 +374,16 @@
 - Attempt 作成時に AttemptSession を作成する
 - device_id は NULL を許容し、後から紐づけ可能とする
 
-### 8.3 モジュールタイマー
+### 8.3 セクションタイマー
 
-#### attempt_module_timers
+#### attempt_section_timers
 
-- モジュールごとの残り時間スナップショット
+- セクションごとの残り時間スナップショット
 
 主な属性
 
 - attempt_id
-- module_id
+- section_id
 - time_limit_seconds
 - remaining_seconds
 - started_at / ended_at
@@ -406,7 +407,7 @@
 
 - attempt_id
 - question_id
-- module_id
+- section_id
 - position
 - points
 - created_at
@@ -452,14 +453,14 @@
 
 ### 10.2 集計
 
-#### attempt_module_scores
+#### attempt_section_scores
 
-- モジュール単位の集計
+- セクション単位の集計
 
 主な属性
 
 - attempt_id
-- module_id
+- section_id
 - raw_score
 - max_score
 - scored_at
@@ -546,7 +547,7 @@
 - 公開済み試験は変更不可
 - Attempt 開始後の条件は固定
 - 正解は必ず1つ
-- モジュール順序は固定
+- セクション順序は固定
 - 行動計測は「材料」であり断定に使わない
 
 ---

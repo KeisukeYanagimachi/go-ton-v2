@@ -40,8 +40,8 @@ const createStaffUser = async (email: string) => {
   return staffUser;
 };
 
-const ensureModules = async () => {
-  await prisma.examModule.createMany({
+const ensureSections = async () => {
+  await prisma.examSection.createMany({
     data: [
       {
         id: "20000000-0000-0000-0000-000000000001",
@@ -92,7 +92,7 @@ describe("exam management routes (integration)", () => {
     process.env.NODE_ENV = "development";
     process.env.AUTH_SECRET = "test-secret";
 
-    await ensureModules();
+    await ensureSections();
     const staff = await createStaffUser(`author-${randomUUID()}@example.com`);
     const token = createDevStaffSessionToken(
       {
@@ -112,7 +112,7 @@ describe("exam management routes (integration)", () => {
     expect(examResponse.status).toBe(200);
     const examPayload = (await examResponse.json()) as { examId: string };
 
-    const modules = await prisma.examModule.findMany({
+    const sections = await prisma.examSection.findMany({
       where: { code: { in: ["ENGLISH", "NONVERBAL", "STRUCTURAL", "VERBAL"] } },
       orderBy: { code: "asc" },
     });
@@ -126,8 +126,8 @@ describe("exam management routes (integration)", () => {
         body: JSON.stringify({
           examId: examPayload.examId,
           versionNumber: 1,
-          modules: modules.map((module, index) => ({
-            moduleId: module.id,
+          sections: sections.map((section, index) => ({
+            sectionId: section.id,
             durationSeconds: 1800,
             position: index + 1,
           })),

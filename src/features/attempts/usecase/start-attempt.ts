@@ -36,27 +36,27 @@ const startAttempt = async (
       return null;
     }
 
-    const [versionQuestions, versionModules] = await Promise.all([
+    const [versionQuestions, versionSections] = await Promise.all([
       tx.examVersionQuestion.findMany({
         where: { examVersionId: candidateAuth.examVersionId },
         select: {
           questionId: true,
-          moduleId: true,
+          sectionId: true,
           position: true,
           points: true,
         },
-        orderBy: [{ moduleId: "asc" }, { position: "asc" }],
+        orderBy: [{ sectionId: "asc" }, { position: "asc" }],
       }),
-      tx.examVersionModule.findMany({
+      tx.examVersionSection.findMany({
         where: { examVersionId: candidateAuth.examVersionId },
         select: {
-          moduleId: true,
+          sectionId: true,
           durationSeconds: true,
         },
       }),
     ]);
 
-    if (versionQuestions.length === 0 || versionModules.length === 0) {
+    if (versionQuestions.length === 0 || versionSections.length === 0) {
       return null;
     }
 
@@ -80,18 +80,18 @@ const startAttempt = async (
       data: versionQuestions.map((item) => ({
         attemptId: attempt.id,
         questionId: item.questionId,
-        moduleId: item.moduleId,
+        sectionId: item.sectionId,
         position: item.position,
         points: item.points,
       })),
     });
 
-    await tx.attemptModuleTimer.createMany({
-      data: versionModules.map((module) => ({
+    await tx.attemptSectionTimer.createMany({
+      data: versionSections.map((section) => ({
         attemptId: attempt.id,
-        moduleId: module.moduleId,
-        timeLimitSeconds: module.durationSeconds,
-        remainingSeconds: module.durationSeconds,
+        sectionId: section.sectionId,
+        timeLimitSeconds: section.durationSeconds,
+        remainingSeconds: section.durationSeconds,
       })),
     });
 

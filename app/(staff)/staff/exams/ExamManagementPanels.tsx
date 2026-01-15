@@ -20,7 +20,7 @@ import SectionTitle from "@app/ui/SectionTitle";
 import type {
   ExamSummary,
   ExamVersionSummary,
-  ModuleMaster,
+  SectionMaster,
   QuestionSummary,
 } from "./types";
 
@@ -28,14 +28,14 @@ type ExamVersionOption = {
   examVersionId: string;
   label: string;
   status: string;
-  modules: ExamVersionSummary["modules"];
+  sections: ExamVersionSummary["sections"];
 };
 
 type AssignmentQuestion = {
   examVersionQuestionId: string;
-  moduleId: string;
-  moduleCode: string;
-  moduleName: string;
+  sectionId: string;
+  sectionCode: string;
+  sectionName: string;
   questionId: string;
   questionStem: string;
   position: number;
@@ -65,11 +65,11 @@ type ExamVersionFormProps = {
   exams: ExamSummary[];
   selectedExamId: string;
   versionNumber: number;
-  requiredModules: ModuleMaster[];
-  moduleMinutes: Record<string, number>;
+  requiredSections: SectionMaster[];
+  sectionMinutes: Record<string, number>;
   onSelectExam: (examId: string) => void;
   onVersionNumberChange: (value: number) => void;
-  onModuleMinutesChange: (moduleId: string, minutes: number) => void;
+  onSectionMinutesChange: (sectionId: string, minutes: number) => void;
   onCreateVersion: () => void;
 };
 
@@ -78,8 +78,8 @@ type ExamAssignmentPanelProps = {
   assignmentMessage: string | null;
   versionOptions: ExamVersionOption[];
   selectedVersionId: string;
-  selectedModuleId: string;
-  selectedVersionModules: ExamVersionSummary["modules"];
+  selectedSectionId: string;
+  selectedVersionSections: ExamVersionSummary["sections"];
   questionSearch: string;
   filteredQuestions: QuestionSummary[];
   selectedQuestionId: string;
@@ -89,7 +89,7 @@ type ExamAssignmentPanelProps = {
   selectedVersionStatus?: string;
   selectedQuestionStem: string | null;
   onSelectVersionId: (value: string) => void;
-  onSelectModuleId: (value: string) => void;
+  onSelectSectionId: (value: string) => void;
   onQuestionSearchChange: (value: string) => void;
   onSelectQuestionId: (value: string) => void;
   onQuestionPositionChange: (value: number) => void;
@@ -195,11 +195,11 @@ const ArchiveButton = styled(Button)({
   backgroundColor: "#111418",
 });
 
-const ModuleBadgeRow = styled(Stack)(({ theme }) => ({
+const SectionBadgeRow = styled(Stack)(({ theme }) => ({
   marginTop: theme.spacing(1.5),
 }));
 
-const ModuleBadge = styled(Box)(({ theme }) => ({
+const SectionBadge = styled(Box)(({ theme }) => ({
   paddingLeft: theme.spacing(1.5),
   paddingRight: theme.spacing(1.5),
   paddingTop: theme.spacing(0.5),
@@ -241,16 +241,16 @@ const SelectedQuestionBox = styled(Box)(({ theme }) => ({
   paddingBottom: theme.spacing(1.5),
 }));
 
-const ModulePanel = styled(Paper)(({ theme }) => ({
+const SectionPanel = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   borderRadius: theme.spacing(2),
 }));
 
-const ModuleTitle = styled(SectionTitle)({
+const SectionTitle = styled(SectionTitle)({
   fontWeight: 700,
 });
 
-const ModuleQuestionStack = styled(Stack)(({ theme }) => ({
+const SectionQuestionStack = styled(Stack)(({ theme }) => ({
   marginTop: theme.spacing(1.5),
 }));
 
@@ -454,16 +454,16 @@ const ExamDetailPanel = ({
                   </ArchiveButton>
                 </Stack>
               </Stack>
-              <ModuleBadgeRow
+              <SectionBadgeRow
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1}
               >
-                {version.modules.map((module) => (
-                  <ModuleBadge key={module.moduleId}>
-                    {module.code} · {Math.round(module.durationSeconds / 60)}分
-                  </ModuleBadge>
+                {version.sections.map((section) => (
+                  <SectionBadge key={section.sectionId}>
+                    {section.code} · {Math.round(section.durationSeconds / 60)}分
+                  </SectionBadge>
                 ))}
-              </ModuleBadgeRow>
+              </SectionBadgeRow>
             </VersionCard>
           ))}
           {selectedExam.versions.length === 0 && (
@@ -486,11 +486,11 @@ const ExamVersionForm = ({
   exams,
   selectedExamId,
   versionNumber,
-  requiredModules,
-  moduleMinutes,
+  requiredSections,
+  sectionMinutes,
   onSelectExam,
   onVersionNumberChange,
-  onModuleMinutesChange,
+  onSectionMinutesChange,
   onCreateVersion,
 }: ExamVersionFormProps) => (
   <Panel>
@@ -527,19 +527,19 @@ const ExamVersionForm = ({
         }}
       />
       <Stack spacing={1}>
-        {requiredModules.map((module) => (
+        {requiredSections.map((section) => (
           <TextField
-            key={module.moduleId}
-            label={`${module.name}（分）`}
+            key={section.sectionId}
+            label={`${section.name}（分）`}
             type="number"
-            value={moduleMinutes[module.moduleId] ?? 30}
+            value={sectionMinutes[section.sectionId] ?? 30}
             onChange={(event) =>
-              onModuleMinutesChange(module.moduleId, Number(event.target.value))
+              onSectionMinutesChange(section.sectionId, Number(event.target.value))
             }
             fullWidth
             inputProps={{
               min: 1,
-              "data-testid": `exam-version-module-${module.code}`,
+              "data-testid": `exam-version-section-${section.code}`,
             }}
           />
         ))}
@@ -561,8 +561,8 @@ const ExamAssignmentPanel = ({
   assignmentMessage,
   versionOptions,
   selectedVersionId,
-  selectedModuleId,
-  selectedVersionModules,
+  selectedSectionId,
+  selectedVersionSections,
   questionSearch,
   filteredQuestions,
   selectedQuestionId,
@@ -572,7 +572,7 @@ const ExamAssignmentPanel = ({
   selectedVersionStatus,
   selectedQuestionStem,
   onSelectVersionId,
-  onSelectModuleId,
+  onSelectSectionId,
   onQuestionSearchChange,
   onSelectQuestionId,
   onQuestionPositionChange,
@@ -607,15 +607,15 @@ const ExamAssignmentPanel = ({
         </TextField>
         <TextField
           select
-          label="モジュール"
-          value={selectedModuleId}
-          onChange={(event) => onSelectModuleId(event.target.value)}
+          label="セクション"
+          value={selectedSectionId}
+          onChange={(event) => onSelectSectionId(event.target.value)}
           fullWidth
-          inputProps={{ "data-testid": "exam-question-module" }}
+          inputProps={{ "data-testid": "exam-question-section" }}
         >
-          {selectedVersionModules.map((module) => (
-            <MenuItem key={module.moduleId} value={module.moduleId}>
-              {module.code}（{module.name}）
+          {selectedVersionSections.map((section) => (
+            <MenuItem key={section.sectionId} value={section.sectionId}>
+              {section.code}（{section.name}）
             </MenuItem>
           ))}
         </TextField>
@@ -624,7 +624,7 @@ const ExamAssignmentPanel = ({
         <Stack spacing={2}>
           <SearchRow direction="row" spacing={2} alignItems="center">
             <SearchField
-              label="問題を検索（選択モジュール内）"
+              label="問題を検索（選択セクション内）"
               value={questionSearch}
               onChange={(event) => onQuestionSearchChange(event.target.value)}
               fullWidth
@@ -650,7 +650,7 @@ const ExamAssignmentPanel = ({
           >
             {filteredQuestions.length === 0 ? (
               <MenuItem value="" disabled>
-                該当モジュールの問題がありません。
+                該当セクションの問題がありません。
               </MenuItem>
             ) : (
               filteredQuestions.map((question) => (
@@ -709,28 +709,28 @@ const ExamAssignmentPanel = ({
         </Stack>
       </AssignmentCard>
       <Stack spacing={2}>
-        {selectedVersionModules.map((module) => {
-          const moduleQuestions = assignedQuestions
-            .filter((question) => question.moduleId === module.moduleId)
+        {selectedVersionSections.map((section) => {
+          const sectionQuestions = assignedQuestions
+            .filter((question) => question.sectionId === section.sectionId)
             .sort((a, b) => a.position - b.position);
           return (
-            <ModulePanel key={module.moduleId} variant="outlined">
+            <SectionPanel key={section.sectionId} variant="outlined">
               <Stack
                 direction={{ xs: "column", md: "row" }}
                 spacing={1}
                 justifyContent="space-between"
               >
                 <Box>
-                  <ModuleTitle variant="subtitle2">
-                    {module.code}（{module.name}）
-                  </ModuleTitle>
+                  <SectionTitle variant="subtitle2">
+                    {section.code}（{section.name}）
+                  </SectionTitle>
                   <MutedText variant="caption">
-                    出題数: {moduleQuestions.length}
+                    出題数: {sectionQuestions.length}
                   </MutedText>
                 </Box>
               </Stack>
-              <ModuleQuestionStack spacing={1}>
-                {moduleQuestions.map((question) => (
+              <SectionQuestionStack spacing={1}>
+                {sectionQuestions.map((question) => (
                   <QuestionCard
                     key={question.examVersionQuestionId}
                     variant="outlined"
@@ -780,13 +780,13 @@ const ExamAssignmentPanel = ({
                     </Stack>
                   </QuestionCard>
                 ))}
-                {moduleQuestions.length === 0 && (
+                {sectionQuestions.length === 0 && (
                   <MutedText variant="body2">
                     出題がまだ割り当てられていません。
                   </MutedText>
                 )}
-              </ModuleQuestionStack>
-            </ModulePanel>
+              </SectionQuestionStack>
+            </SectionPanel>
           );
         })}
       </Stack>

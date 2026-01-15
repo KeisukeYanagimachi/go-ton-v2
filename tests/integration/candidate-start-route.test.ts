@@ -22,7 +22,7 @@ const createExamVersionBundle = async () => {
       publishedAt: new Date(),
     },
   });
-  const examModule = await prisma.examModule.upsert({
+  const examSection = await prisma.examSection.upsert({
     where: { code: "VERBAL" },
     update: {},
     create: {
@@ -31,11 +31,11 @@ const createExamVersionBundle = async () => {
       name: "Verbal",
     },
   });
-  await prisma.examVersionModule.create({
+  await prisma.examVersionSection.create({
     data: {
       id: randomUUID(),
       examVersionId: examVersion.id,
-      moduleId: examModule.id,
+      sectionId: examSection.id,
       durationSeconds: 1200,
       position: 1,
     },
@@ -52,7 +52,7 @@ const createExamVersionBundle = async () => {
     data: {
       id: randomUUID(),
       examVersionId: examVersion.id,
-      moduleId: examModule.id,
+      sectionId: examSection.id,
       questionId: question.id,
       position: 1,
       points: 1,
@@ -115,7 +115,7 @@ describe("candidate start route (integration)", () => {
     const items = await prisma.attemptItem.findMany({
       where: { attemptId: payload.attemptId },
     });
-    const timers = await prisma.attemptModuleTimer.findMany({
+    const timers = await prisma.attemptSectionTimer.findMany({
       where: { attemptId: payload.attemptId },
     });
 

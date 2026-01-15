@@ -20,6 +20,8 @@ import { styled } from "@mui/material/styles";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import StaffHomeLink from "../../StaffHomeLink";
+
 type AttemptResultDetail = {
   attemptId: string;
   status: string;
@@ -34,9 +36,9 @@ type AttemptResultDetail = {
     maxScore: number;
     scoredAt: string;
   } | null;
-  moduleScores: {
-    moduleCode: string;
-    moduleName: string;
+  sectionScores: {
+    sectionCode: string;
+    sectionName: string;
     rawScore: number;
     maxScore: number;
     scoredAt: string;
@@ -204,7 +206,7 @@ export default function StaffResultDetailPage() {
               ).toISOString(),
             }
           : null,
-        moduleScores: payload.attempt.moduleScores.map((score) => ({
+        sectionScores: payload.attempt.sectionScores.map((score) => ({
           ...score,
           scoredAt: new Date(score.scoredAt).toISOString(),
         })),
@@ -224,6 +226,7 @@ export default function StaffResultDetailPage() {
     <Root>
       <Container maxWidth="lg">
         <Stack spacing={3}>
+          <StaffHomeLink />
           <Stack direction="row" spacing={1} alignItems="center">
             <BreadcrumbText variant="body2">ホーム</BreadcrumbText>
             <BreadcrumbSeparator variant="body2">/</BreadcrumbSeparator>
@@ -238,7 +241,7 @@ export default function StaffResultDetailPage() {
                 <Box>
                   <Title variant="h5">結果詳細</Title>
                   <Description variant="body2">
-                    採点結果とモジュール別の内訳を確認します。
+                    採点結果とセクション別の内訳を確認します。
                   </Description>
                 </Box>
                 <BackButton href="/staff/results">一覧へ戻る</BackButton>
@@ -302,20 +305,20 @@ export default function StaffResultDetailPage() {
                   </ScorePanel>
 
                   <ScorePanel>
-                    <SectionTitle variant="h6">モジュール別スコア</SectionTitle>
+                    <SectionTitle variant="h6">セクション別スコア</SectionTitle>
                     <ScoreTable size="small">
                       <TableHead>
                         <TableRow>
-                          <TableCell>モジュール</TableCell>
+                          <TableCell>セクション</TableCell>
                           <TableCell>スコア</TableCell>
                           <TableCell>採点日時</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {detail.moduleScores.map((score) => (
-                          <TableRow key={score.moduleCode}>
+                        {detail.sectionScores.map((score) => (
+                          <TableRow key={score.sectionCode}>
                             <TableCell>
-                              {score.moduleName} ({score.moduleCode})
+                              {score.sectionName} ({score.sectionCode})
                             </TableCell>
                             <TableCell>
                               {score.rawScore} / {score.maxScore}
@@ -325,11 +328,11 @@ export default function StaffResultDetailPage() {
                             </TableCell>
                           </TableRow>
                         ))}
-                        {detail.moduleScores.length === 0 ? (
+                        {detail.sectionScores.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={3}>
                               <TableEmptyNotice variant="body2">
-                                モジュール別スコアがありません。
+                                セクション別スコアがありません。
                               </TableEmptyNotice>
                             </TableCell>
                           </TableRow>

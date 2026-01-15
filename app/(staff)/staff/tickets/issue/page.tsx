@@ -16,6 +16,8 @@ import { styled } from "@mui/material/styles";
 import QRCode from "qrcode";
 import { useEffect, useMemo, useState } from "react";
 
+import StaffHomeLink from "../../StaffHomeLink";
+
 type CandidateAssignment = {
   id: string;
   fullName: string;
@@ -105,6 +107,7 @@ export default function TicketIssuePage() {
   const [candidates, setCandidates] = useState<CandidateAssignment[]>([]);
   const [examVersions, setExamVersions] = useState<ExamVersionOption[]>([]);
   const [candidateId, setCandidateId] = useState("");
+  const [candidateSearch, setCandidateSearch] = useState("");
   const [examVersionId, setExamVersionId] = useState("");
   const [issueResult, setIssueResult] = useState<IssueResult | null>(null);
   const [issueError, setIssueError] = useState<string | null>(null);
@@ -112,7 +115,7 @@ export default function TicketIssuePage() {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   const errorMessageMap: Record<IssueErrorCode, string> = {
-    CANDIDATE_NOT_FOUND: "候補者が見つかりません。",
+    CANDIDATE_NOT_FOUND: "受験者が見つかりません。",
     EXAM_VERSION_NOT_FOUND: "試験バージョンが見つかりません。",
     EXAM_VERSION_NOT_PUBLISHED: "公開済みの試験バージョンのみ発行対象です。",
     INVALID_REQUEST: "入力内容を確認してください。",
@@ -125,6 +128,24 @@ export default function TicketIssuePage() {
     () => candidates.find((candidate) => candidate.id === candidateId),
     [candidates, candidateId],
   );
+  const filteredCandidates = useMemo(() => {
+    const keyword = candidateSearch.trim().toLowerCase();
+    if (!keyword) {
+      return candidates;
+    }
+    const matches = candidates.filter((candidate) =>
+      `${candidate.fullName} ${candidate.email ?? ""}`
+        .toLowerCase()
+        .includes(keyword),
+    );
+    if (
+      selectedCandidate &&
+      !matches.some((candidate) => candidate.id === selectedCandidate.id)
+    ) {
+      return [selectedCandidate, ...matches];
+    }
+    return matches;
+  }, [candidateSearch, candidates, selectedCandidate]);
 
   const selectedExamVersion = useMemo(
     () =>
@@ -221,9 +242,10 @@ export default function TicketIssuePage() {
         <Panel>
           <Stack spacing={2}>
             <Box>
+              <StaffHomeLink />
               <Title variant="h5">受験票の発行</Title>
               <Subtitle variant="body2">
-                候補者と試験バージョンを選択し、受験票コードとQRを発行します。
+                受験者と試験バージョンを選択し、受験票コードとQRを発行します。
               </Subtitle>
             </Box>
 
@@ -234,8 +256,17 @@ export default function TicketIssuePage() {
             >
               <FormGrid>
                 <TextField
+                  label="受験者を検索"
+                  value={candidateSearch}
+                  onChange={(event) => setCandidateSearch(event.target.value)}
+                  fullWidth
+                  inputProps={{
+                    "data-testid": "ticket-issue-candidate-search",
+                  }}
+                />
+                <TextField
                   select
-                  label="候補者"
+                  label="受験者"
                   value={candidateId}
                   onChange={(event) => setCandidateId(event.target.value)}
                   fullWidth
@@ -243,12 +274,18 @@ export default function TicketIssuePage() {
                     inputProps: { "data-testid": "ticket-issue-candidate" },
                   }}
                 >
-                  {candidates.map((candidate) => (
-                    <MenuItem key={candidate.id} value={candidate.id}>
-                      {candidate.fullName}
-                      {candidate.email ? `（${candidate.email}）` : ""}
+                  {filteredCandidates.length === 0 ? (
+                    <MenuItem value="" disabled>
+                      該当する受験者がいません。
                     </MenuItem>
-                  ))}
+                  ) : (
+                    filteredCandidates.map((candidate) => (
+                      <MenuItem key={candidate.id} value={candidate.id}>
+                        {candidate.fullName}
+                        {candidate.email ? `（${candidate.email}）` : ""}
+                      </MenuItem>
+                    ))
+                  )}
                 </TextField>
                 <TextField
                   select

@@ -1,11 +1,11 @@
-/** 問題管理で使用するモジュールカテゴリ。 */
-type ModuleCategory = {
+/** 問題管理で使用するセクションカテゴリ。 */
+type SectionCategory = {
   categoryId: string;
   code: string;
   name: string;
 };
 
-/** モジュール配下のサブカテゴリ。 */
+/** セクション配下のサブカテゴリ。 */
 type Subcategory = {
   categoryId: string;
   parentCategoryId: string;
@@ -18,8 +18,8 @@ type QuestionSummary = {
   stem: string;
   isActive: boolean;
   updatedAt: string;
-  moduleCode: string | null;
-  moduleName: string | null;
+  sectionCode: string | null;
+  sectionName: string | null;
   subcategoryName: string | null;
 };
 
@@ -29,7 +29,7 @@ type QuestionDetail = {
   stem: string;
   explanation: string | null;
   isActive: boolean;
-  moduleCategoryId: string | null;
+  sectionCategoryId: string | null;
   subcategoryId: string | null;
   options: {
     optionText: string;
@@ -42,7 +42,7 @@ type QuestionDetail = {
 type QuestionStatusFilter = "all" | "active" | "inactive";
 
 export type {
-    ModuleCategory,
+    SectionCategory,
     QuestionDetail,
     QuestionStatusFilter,
     QuestionSummary,

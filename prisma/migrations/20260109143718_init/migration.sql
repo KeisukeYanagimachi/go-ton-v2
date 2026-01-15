@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "ExamModuleCode" AS ENUM ('VERBAL', 'NONVERBAL', 'ENGLISH', 'STRUCTURAL', 'PERSONALITY');
+CREATE TYPE "ExamSectionCode" AS ENUM ('VERBAL', 'NONVERBAL', 'ENGLISH', 'STRUCTURAL', 'PERSONALITY');
 
 -- CreateEnum
 CREATE TYPE "StaffRoleName" AS ENUM ('ADMIN', 'AUTHOR', 'PROCTOR', 'REPORT_VIEWER');
@@ -8,12 +8,12 @@ CREATE TYPE "StaffRoleName" AS ENUM ('ADMIN', 'AUTHOR', 'PROCTOR', 'REPORT_VIEWE
 CREATE TYPE "TicketStatus" AS ENUM ('ACTIVE', 'REVOKED', 'USED');
 
 -- CreateTable
-CREATE TABLE "exam_modules" (
+CREATE TABLE "exam_sections" (
     "id" TEXT NOT NULL,
-    "code" "ExamModuleCode" NOT NULL,
+    "code" "ExamSectionCode" NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "exam_modules_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "exam_sections_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -89,7 +89,7 @@ CREATE TABLE "tickets" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "exam_modules_code_key" ON "exam_modules"("code");
+CREATE UNIQUE INDEX "exam_sections_code_key" ON "exam_sections"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "staff_roles_name_key" ON "staff_roles"("name");

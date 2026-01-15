@@ -11,7 +11,7 @@ type CreateQuestionInput = {
   stem: string;
   explanation: string | null;
   isActive: boolean;
-  moduleCategoryId: string;
+  sectionCategoryId: string;
   subcategoryId: string | null;
   options: QuestionOptionInput[];
 };
@@ -21,7 +21,7 @@ type CreateQuestionResult =
   | {
       ok: false;
       error:
-        | "MODULE_REQUIRED"
+        | "SECTION_REQUIRED"
         | "SUBCATEGORY_INVALID"
         | "OPTIONS_INVALID"
         | "NO_CORRECT"
@@ -31,13 +31,13 @@ type CreateQuestionResult =
 const createQuestion = async (
   input: CreateQuestionInput,
 ): Promise<CreateQuestionResult> => {
-  const moduleCategory = await prisma.questionCategory.findUnique({
-    where: { id: input.moduleCategoryId },
+  const sectionCategory = await prisma.questionCategory.findUnique({
+    where: { id: input.sectionCategoryId },
     select: { id: true, parentId: true },
   });
 
-  if (!moduleCategory || moduleCategory.parentId !== null) {
-    return { ok: false, error: "MODULE_REQUIRED" };
+  if (!sectionCategory || sectionCategory.parentId !== null) {
+    return { ok: false, error: "SECTION_REQUIRED" };
   }
 
   if (input.subcategoryId) {
@@ -45,7 +45,7 @@ const createQuestion = async (
       where: { id: input.subcategoryId },
       select: { parentId: true },
     });
-    if (!subcategory || subcategory.parentId !== moduleCategory.id) {
+    if (!subcategory || subcategory.parentId !== sectionCategory.id) {
       return { ok: false, error: "SUBCATEGORY_INVALID" };
     }
   }
@@ -59,7 +59,9 @@ const createQuestion = async (
     return { ok: false, error: "OPTIONS_INVALID" };
   }
 
-  const correctCount = trimmedOptions.filter((option) => option.isCorrect).length;
+  const correctCount = trimmedOptions.filter(
+    (option) => option.isCorrect,
+  ).length;
   if (correctCount === 0) {
     return { ok: false, error: "NO_CORRECT" };
   }
@@ -86,7 +88,7 @@ const createQuestion = async (
     });
 
     const assignments = [
-      { questionId: question.id, categoryId: moduleCategory.id },
+      { questionId: question.id, categoryId: sectionCategory.id },
     ];
     if (input.subcategoryId) {
       assignments.push({
@@ -104,4 +106,3 @@ const createQuestion = async (
 
 export { createQuestion };
 export type { CreateQuestionInput, CreateQuestionResult, QuestionOptionInput };
-

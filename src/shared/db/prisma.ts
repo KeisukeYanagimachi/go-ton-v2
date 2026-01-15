@@ -1,4 +1,4 @@
-/** Prisma クライアントを提供するモジュール。 */
+/** Prisma クライアントを提供するセクション。 */
 
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";

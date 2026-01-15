@@ -3,8 +3,8 @@
 import { authorizeCandidateAccess } from "@/features/auth/usecase/authorize-candidate-access";
 import { prisma } from "@/shared/db/prisma";
 
-type AttemptModuleSnapshot = {
-  moduleId: string;
+type AttemptSectionSnapshot = {
+  sectionId: string;
   code: string;
   name: string;
   position: number;
@@ -26,7 +26,7 @@ type AttemptQuestionSnapshot = {
 
 type AttemptItemSnapshot = {
   attemptItemId: string;
-  moduleId: string;
+  sectionId: string;
   position: number;
   points: number;
   selectedOptionId: string | null;
@@ -36,7 +36,7 @@ type AttemptItemSnapshot = {
 type AttemptSnapshot = {
   attemptId: string;
   status: string;
-  modules: AttemptModuleSnapshot[];
+  sections: AttemptSectionSnapshot[];
   items: AttemptItemSnapshot[];
 };
 
@@ -63,14 +63,14 @@ const getAttemptSnapshot = async (
     return null;
   }
 
-  const [modules, timers, items] = await Promise.all([
-    prisma.examVersionModule.findMany({
+  const [sections, timers, items] = await Promise.all([
+    prisma.examVersionSection.findMany({
       where: { examVersionId: attempt.examVersionId },
       select: {
-        moduleId: true,
+        sectionId: true,
         position: true,
         durationSeconds: true,
-        module: {
+        section: {
           select: {
             code: true,
             name: true,
@@ -79,10 +79,10 @@ const getAttemptSnapshot = async (
       },
       orderBy: { position: "asc" },
     }),
-    prisma.attemptModuleTimer.findMany({
+    prisma.attemptSectionTimer.findMany({
       where: { attemptId: attempt.id },
       select: {
-        moduleId: true,
+        sectionId: true,
         remainingSeconds: true,
       },
     }),
@@ -90,7 +90,7 @@ const getAttemptSnapshot = async (
       where: { attemptId: attempt.id },
       select: {
         id: true,
-        moduleId: true,
+        sectionId: true,
         questionId: true,
         position: true,
         points: true,
@@ -98,15 +98,15 @@ const getAttemptSnapshot = async (
     }),
   ]);
 
-  if (modules.length === 0 || items.length === 0) {
+  if (sections.length === 0 || items.length === 0) {
     return null;
   }
 
-  const moduleTimerMap = new Map(
-    timers.map((timer) => [timer.moduleId, timer.remainingSeconds]),
+  const sectionTimerMap = new Map(
+    timers.map((timer) => [timer.sectionId, timer.remainingSeconds]),
   );
-  const modulePositionMap = new Map(
-    modules.map((module) => [module.moduleId, module.position]),
+  const sectionPositionMap = new Map(
+    sections.map((section) => [section.sectionId, section.position]),
   );
 
   const questionIds = items.map((item) => item.questionId);
@@ -145,11 +145,11 @@ const getAttemptSnapshot = async (
   );
 
   const sortedItems = [...items].sort((a, b) => {
-    const modulePositionA = modulePositionMap.get(a.moduleId) ?? 0;
-    const modulePositionB = modulePositionMap.get(b.moduleId) ?? 0;
+    const sectionPositionA = sectionPositionMap.get(a.sectionId) ?? 0;
+    const sectionPositionB = sectionPositionMap.get(b.sectionId) ?? 0;
 
-    if (modulePositionA !== modulePositionB) {
-      return modulePositionA - modulePositionB;
+    if (sectionPositionA !== sectionPositionB) {
+      return sectionPositionA - sectionPositionB;
     }
 
     return a.position - b.position;
@@ -166,7 +166,7 @@ const getAttemptSnapshot = async (
 
     itemSnapshots.push({
       attemptItemId: item.id,
-      moduleId: item.moduleId,
+      sectionId: item.sectionId,
       position: item.position,
       points: item.points,
       selectedOptionId: answerMap.get(item.id) ?? null,
@@ -177,14 +177,14 @@ const getAttemptSnapshot = async (
   return {
     attemptId: attempt.id,
     status: attempt.status,
-    modules: modules.map((module) => ({
-      moduleId: module.moduleId,
-      code: module.module.code,
-      name: module.module.name,
-      position: module.position,
-      durationSeconds: module.durationSeconds,
+    sections: sections.map((section) => ({
+      sectionId: section.sectionId,
+      code: section.section.code,
+      name: section.section.name,
+      position: section.position,
+      durationSeconds: section.durationSeconds,
       remainingSeconds:
-        moduleTimerMap.get(module.moduleId) ?? module.durationSeconds,
+        sectionTimerMap.get(section.sectionId) ?? section.durationSeconds,
     })),
     items: itemSnapshots,
   };

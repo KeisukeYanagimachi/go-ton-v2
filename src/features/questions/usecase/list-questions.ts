@@ -4,11 +4,11 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/shared/db/prisma";
 
-import { QUESTION_MODULE_CODES } from "@/features/questions/domain/question-module-codes";
+import { QUESTION_SECTION_CODES } from "@/features/questions/domain/question-section-codes";
 
 type ListQuestionsInput = {
   keyword?: string;
-  moduleCategoryId?: string;
+  sectionCategoryId?: string;
   status?: "all" | "active" | "inactive";
 };
 
@@ -17,8 +17,8 @@ type QuestionSummary = {
   stem: string;
   isActive: boolean;
   updatedAt: Date;
-  moduleCode: string | null;
-  moduleName: string | null;
+  sectionCode: string | null;
+  sectionName: string | null;
   subcategoryName: string | null;
 };
 
@@ -39,19 +39,19 @@ const listQuestions = async (
     where.isActive = false;
   }
 
-  if (input.moduleCategoryId) {
-    const moduleCategory = await prisma.questionCategory.findUnique({
-      where: { id: input.moduleCategoryId },
+  if (input.sectionCategoryId) {
+    const sectionCategory = await prisma.questionCategory.findUnique({
+      where: { id: input.sectionCategoryId },
       select: { id: true },
     });
-    const subcategories = moduleCategory
+    const subcategories = sectionCategory
       ? await prisma.questionCategory.findMany({
-          where: { parentId: moduleCategory.id },
+          where: { parentId: sectionCategory.id },
           select: { id: true },
         })
       : [];
     const categoryIds = [
-      input.moduleCategoryId,
+      input.sectionCategoryId,
       ...subcategories.map((c) => c.id),
     ];
 
@@ -60,12 +60,12 @@ const listQuestions = async (
     };
   }
 
-  const moduleDefinitions = await prisma.examModule.findMany({
-    where: { code: { in: QUESTION_MODULE_CODES } },
+  const sectionDefinitions = await prisma.examSection.findMany({
+    where: { code: { in: QUESTION_SECTION_CODES } },
     select: { code: true, name: true },
   });
-  const moduleNameByCode = new Map(
-    moduleDefinitions.map((module) => [module.code, module.name]),
+  const sectionNameByCode = new Map(
+    sectionDefinitions.map((section) => [section.code, section.name]),
   );
 
   const questions = await prisma.question.findMany({
@@ -95,19 +95,19 @@ const listQuestions = async (
     const assignments = question.categories.map(
       (assignment) => assignment.category,
     );
-    const moduleAssignment =
+    const sectionAssignment =
       assignments.find((category) => category.parentId === null) ??
       assignments.find((category) => category.parent?.name);
-    const moduleCategory = moduleAssignment?.parent ?? moduleAssignment ?? null;
-    const moduleCode =
-      moduleCategory && QUESTION_MODULE_CODES.includes(moduleCategory.name)
-        ? moduleCategory.name
+    const sectionCategory = sectionAssignment?.parent ?? sectionAssignment ?? null;
+    const sectionCode =
+      sectionCategory && QUESTION_SECTION_CODES.includes(sectionCategory.name)
+        ? sectionCategory.name
         : null;
-    const moduleName = moduleCode
-      ? (moduleNameByCode.get(moduleCode) ?? moduleCode)
+    const sectionName = sectionCode
+      ? (sectionNameByCode.get(sectionCode) ?? sectionCode)
       : null;
-    const subcategoryName = moduleAssignment?.parent
-      ? moduleAssignment.name
+    const subcategoryName = sectionAssignment?.parent
+      ? sectionAssignment.name
       : null;
 
     return {
@@ -115,8 +115,8 @@ const listQuestions = async (
       stem: question.stem,
       isActive: question.isActive,
       updatedAt: question.updatedAt,
-      moduleCode,
-      moduleName,
+      sectionCode,
+      sectionName,
       subcategoryName,
     };
   });

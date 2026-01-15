@@ -2,7 +2,7 @@
 
 import { prisma } from "@/shared/db/prisma";
 
-import { QUESTION_MODULE_CODES } from "@/features/questions/domain/question-module-codes";
+import { QUESTION_SECTION_CODES } from "@/features/questions/domain/question-section-codes";
 
 type QuestionDetail =
   | {
@@ -12,7 +12,7 @@ type QuestionDetail =
         stem: string;
         explanation: string | null;
         isActive: boolean;
-        moduleCategoryId: string | null;
+        sectionCategoryId: string | null;
         subcategoryId: string | null;
         options: {
           optionText: string;
@@ -55,15 +55,15 @@ const getQuestionDetail = async (questionId: string): Promise<QuestionDetail> =>
   }
 
   const assignments = question.categories.map((entry) => entry.category);
-  const moduleAssignment =
+  const sectionAssignment =
     assignments.find((category) => category.parentId === null) ??
     assignments.find((category) => category.parent?.name);
-  const moduleCategory = moduleAssignment?.parent ?? moduleAssignment ?? null;
-  const moduleCategoryId =
-    moduleCategory && QUESTION_MODULE_CODES.includes(moduleCategory.name)
-      ? moduleCategory.id
+  const sectionCategory = sectionAssignment?.parent ?? sectionAssignment ?? null;
+  const sectionCategoryId =
+    sectionCategory && QUESTION_SECTION_CODES.includes(sectionCategory.name)
+      ? sectionCategory.id
       : null;
-  const subcategoryId = moduleAssignment?.parent ? moduleAssignment.id : null;
+  const subcategoryId = sectionAssignment?.parent ? sectionAssignment.id : null;
 
   return {
     ok: true,
@@ -72,7 +72,7 @@ const getQuestionDetail = async (questionId: string): Promise<QuestionDetail> =>
       stem: question.stem,
       explanation: question.explanation,
       isActive: question.isActive,
-      moduleCategoryId,
+      sectionCategoryId,
       subcategoryId,
       options: question.options.map((option) => ({
         optionText: option.optionText,

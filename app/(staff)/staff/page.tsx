@@ -74,7 +74,7 @@ export default function StaffHomePage() {
       <Content maxWidth="lg">
         <Stack spacing={4}>
           <Box>
-            <PageTitle variant="h4">運用メニュー</PageTitle>
+            <PageTitle variant="h4">スタッフホーム</PageTitle>
             <Subtitle variant="body1">
               試験当日の操作はここから開始します。
             </Subtitle>
@@ -88,9 +88,9 @@ export default function StaffHomePage() {
                 href="/staff/candidates"
                 data-testid="staff-home-candidates-link"
               >
-                <CardTitle variant="h6">候補者管理</CardTitle>
+                <CardTitle variant="h6">受験者管理</CardTitle>
                 <CardDescription variant="body2">
-                  候補者情報の登録・検索・編集を行います。
+                  受験者情報の登録・検索・編集を行います。
                 </CardDescription>
               </CardLink>
               <CardLink
@@ -100,7 +100,7 @@ export default function StaffHomePage() {
               >
                 <CardTitle variant="h6">受験票の発行</CardTitle>
                 <CardDescription variant="body2">
-                  候補者に紐づく受験票コードとQRを発行します。
+                  受験者に紐づく受験票コードとQRを発行します。
                 </CardDescription>
               </CardLink>
 
@@ -136,7 +136,7 @@ export default function StaffHomePage() {
                 href="/staff/exams"
                 data-testid="staff-home-exams-link"
               >
-                <CardTitle variant="h6">試験定義の管理</CardTitle>
+                <CardTitle variant="h6">試験管理</CardTitle>
                 <CardDescription variant="body2">
                   Exam と ExamVersion を作成し、公開状態を管理します。
                 </CardDescription>

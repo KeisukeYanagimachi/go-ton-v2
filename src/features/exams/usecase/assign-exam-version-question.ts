@@ -4,7 +4,7 @@ import { prisma } from "@/shared/db/prisma";
 
 type AssignExamVersionQuestionInput = {
   examVersionId: string;
-  moduleId: string;
+  sectionId: string;
   questionId: string;
   position: number;
   points: number;
@@ -17,7 +17,7 @@ type AssignExamVersionQuestionResult =
       error:
         | "EXAM_VERSION_NOT_FOUND"
         | "INVALID_STATE"
-        | "MODULE_NOT_IN_VERSION"
+        | "SECTION_NOT_IN_VERSION"
         | "QUESTION_NOT_FOUND"
         | "DUPLICATE_QUESTION"
         | "DUPLICATE_POSITION";
@@ -39,16 +39,16 @@ const assignExamVersionQuestion = async (
     return { ok: false, error: "INVALID_STATE" };
   }
 
-  const moduleEntry = await prisma.examVersionModule.findFirst({
+  const sectionEntry = await prisma.examVersionSection.findFirst({
     where: {
       examVersionId: input.examVersionId,
-      moduleId: input.moduleId,
+      sectionId: input.sectionId,
     },
     select: { id: true },
   });
 
-  if (!moduleEntry) {
-    return { ok: false, error: "MODULE_NOT_IN_VERSION" };
+  if (!sectionEntry) {
+    return { ok: false, error: "SECTION_NOT_IN_VERSION" };
   }
 
   const question = await prisma.question.findUnique({
@@ -76,9 +76,9 @@ const assignExamVersionQuestion = async (
 
   const existingPosition = await prisma.examVersionQuestion.findUnique({
     where: {
-      examVersionId_moduleId_position: {
+      examVersionId_sectionId_position: {
         examVersionId: input.examVersionId,
-        moduleId: input.moduleId,
+        sectionId: input.sectionId,
         position: input.position,
       },
     },
@@ -92,7 +92,7 @@ const assignExamVersionQuestion = async (
   const created = await prisma.examVersionQuestion.create({
     data: {
       examVersionId: input.examVersionId,
-      moduleId: input.moduleId,
+      sectionId: input.sectionId,
       questionId: input.questionId,
       position: input.position,
       points: input.points,
@@ -104,4 +104,3 @@ const assignExamVersionQuestion = async (
 
 export { assignExamVersionQuestion };
 export type { AssignExamVersionQuestionInput, AssignExamVersionQuestionResult };
-

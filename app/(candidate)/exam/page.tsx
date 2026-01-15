@@ -21,8 +21,8 @@ import {
   ExamSidebar,
 } from "./ExamSections";
 
-type AttemptModuleSnapshot = {
-  moduleId: string;
+type AttemptSectionSnapshot = {
+  sectionId: string;
   code: string;
   name: string;
   position: number;
@@ -44,7 +44,7 @@ type AttemptQuestionSnapshot = {
 
 type AttemptItemSnapshot = {
   attemptItemId: string;
-  moduleId: string;
+  sectionId: string;
   position: number;
   points: number;
   selectedOptionId: string | null;
@@ -54,7 +54,7 @@ type AttemptItemSnapshot = {
 type AttemptSnapshot = {
   attemptId: string;
   status: string;
-  modules: AttemptModuleSnapshot[];
+  sections: AttemptSectionSnapshot[];
   items: AttemptItemSnapshot[];
 };
 
@@ -105,7 +105,7 @@ export default function CandidateExamPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [ticketCode, setTicketCode] = useState<string | null>(null);
   const [pin, setPin] = useState<string | null>(null);
-  const [moduleIndex, setModuleIndex] = useState(0);
+  const [sectionIndex, setSectionIndex] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | null>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -115,7 +115,7 @@ export default function CandidateExamPage() {
   const [hasAttemptedAdvance, setHasAttemptedAdvance] = useState(false);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [timerReady, setTimerReady] = useState(false);
-  const [isModuleConfirmOpen, setIsModuleConfirmOpen] = useState(false);
+  const [isSectionConfirmOpen, setIsSectionConfirmOpen] = useState(false);
   const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState(false);
   const remainingSecondsRef = useRef<number | null>(null);
   const lastSyncSeconds = useRef<number | null>(null);
@@ -165,10 +165,10 @@ export default function CandidateExamPage() {
         });
         answersRef.current = initialAnswers;
         setAnswers(initialAnswers);
-        setModuleIndex(0);
+        setSectionIndex(0);
         setActiveIndex(0);
-        setRemainingSeconds(payload.modules[0]?.remainingSeconds ?? null);
-        lastSyncSeconds.current = payload.modules[0]?.remainingSeconds ?? null;
+        setRemainingSeconds(payload.sections[0]?.remainingSeconds ?? null);
+        lastSyncSeconds.current = payload.sections[0]?.remainingSeconds ?? null;
         setIsLoading(false);
       } catch {
         setError("NETWORK_ERROR");
@@ -226,33 +226,33 @@ export default function CandidateExamPage() {
     };
   }, []);
 
-  const modules = snapshot?.modules ?? [];
-  const currentModule = modules[moduleIndex] ?? null;
-  const moduleItems = useMemo(() => {
-    if (!snapshot || !currentModule) {
+  const sections = snapshot?.sections ?? [];
+  const currentSection = sections[sectionIndex] ?? null;
+  const sectionItems = useMemo(() => {
+    if (!snapshot || !currentSection) {
       return [];
     }
 
     return snapshot.items
-      .filter((item) => item.moduleId === currentModule.moduleId)
+      .filter((item) => item.sectionId === currentSection.sectionId)
       .sort((a, b) => a.position - b.position);
-  }, [snapshot, currentModule]);
+  }, [snapshot, currentSection]);
 
-  const activeItem = moduleItems[activeIndex] ?? null;
+  const activeItem = sectionItems[activeIndex] ?? null;
   const isLocked = snapshot?.status === "LOCKED";
-  const isLastQuestion = activeIndex >= moduleItems.length - 1;
-  const isLastModule = moduleIndex >= modules.length - 1;
+  const isLastQuestion = activeIndex >= sectionItems.length - 1;
+  const isLastSection = sectionIndex >= sections.length - 1;
   const progressValue =
-    moduleItems.length > 0
-      ? Math.round(((activeIndex + 1) / moduleItems.length) * 100)
+    sectionItems.length > 0
+      ? Math.round(((activeIndex + 1) / sectionItems.length) * 100)
       : 0;
   const timerLabel =
     remainingSeconds !== null ? formatSeconds(remainingSeconds) : "00:00:00";
-  const moduleLabel = currentModule
-    ? `${currentModule.name}・セクション ${currentModule.position} / ${snapshot?.modules.length ?? 0}`
+  const sectionLabel = currentSection
+    ? `${currentSection.name}・セクション ${currentSection.position} / ${snapshot?.sections.length ?? 0}`
     : "試験準備中";
   const showTimeWarning =
-    currentModule !== null && currentModule.remainingSeconds <= 300;
+    currentSection !== null && currentSection.remainingSeconds <= 300;
   const errorMessageMap: Record<string, string> = {
     MISSING_CREDENTIALS: "ログイン情報が見つかりません。",
     UNAUTHORIZED: "認証に失敗しました。",
@@ -460,15 +460,15 @@ export default function CandidateExamPage() {
   }, [activeItem?.attemptItemId, ticketCode, pin, isLocked]);
 
   useEffect(() => {
-    if (!currentModule) {
+    if (!currentSection) {
       return;
     }
 
     setActiveIndex(0);
-    setRemainingSeconds(currentModule.remainingSeconds ?? null);
-    lastSyncSeconds.current = currentModule.remainingSeconds ?? null;
+    setRemainingSeconds(currentSection.remainingSeconds ?? null);
+    lastSyncSeconds.current = currentSection.remainingSeconds ?? null;
     setSaveMessage(null);
-  }, [currentModule?.moduleId]);
+  }, [currentSection?.sectionId]);
 
   useEffect(() => {
     if (!activeItem) {
@@ -479,7 +479,7 @@ export default function CandidateExamPage() {
   }, [activeItem?.attemptItemId]);
 
   const persistTimer = async (elapsed: number) => {
-    if (!ticketCode || !pin || !currentModule || elapsed <= 0) {
+    if (!ticketCode || !pin || !currentSection || elapsed <= 0) {
       return;
     }
 
@@ -490,7 +490,7 @@ export default function CandidateExamPage() {
         body: JSON.stringify({
           ticketCode,
           pin,
-          moduleId: currentModule.moduleId,
+          sectionId: currentSection.sectionId,
           elapsedSeconds: elapsed,
         }),
       });
@@ -511,7 +511,7 @@ export default function CandidateExamPage() {
   };
 
   useEffect(() => {
-    if (!currentModule || !timerReady || isLocked) {
+    if (!currentSection || !timerReady || isLocked) {
       return undefined;
     }
 
@@ -553,7 +553,7 @@ export default function CandidateExamPage() {
         syncIntervalId.current = null;
       }
     };
-  }, [currentModule?.moduleId, ticketCode, pin, timerReady, isLocked]);
+  }, [currentSection?.sectionId, ticketCode, pin, timerReady, isLocked]);
 
   const handleNext = async () => {
     if (!activeItem) {
@@ -564,7 +564,7 @@ export default function CandidateExamPage() {
       setError("LOCKED");
       return;
     }
-    if (isLastQuestion && isLastModule) {
+    if (isLastQuestion && isLastSection) {
       return;
     }
     setHasAttemptedAdvance(true);
@@ -573,21 +573,21 @@ export default function CandidateExamPage() {
       return;
     }
     const nextIndex = activeIndex + 1;
-    if (nextIndex >= moduleItems.length) {
-      setIsModuleConfirmOpen(true);
+    if (nextIndex >= sectionItems.length) {
+      setIsSectionConfirmOpen(true);
       return;
     }
 
-    setActiveIndex(Math.min(nextIndex, moduleItems.length - 1));
+    setActiveIndex(Math.min(nextIndex, sectionItems.length - 1));
   };
 
-  const handleModuleAdvance = async () => {
+  const handleSectionAdvance = async () => {
     if (!activeItem) {
       return;
     }
 
-    setIsModuleConfirmOpen(false);
-    setModuleIndex((previous) => Math.min(previous + 1, modules.length - 1));
+    setIsSectionConfirmOpen(false);
+    setSectionIndex((previous) => Math.min(previous + 1, sections.length - 1));
   };
 
   const handlePrev = async () => {
@@ -654,7 +654,7 @@ export default function CandidateExamPage() {
     <ExamFrame
       header={
         <ExamHeader
-          moduleLabel={moduleLabel}
+          sectionLabel={sectionLabel}
           timerLabel={timerLabel}
           showTimeWarning={showTimeWarning}
         />
@@ -699,11 +699,11 @@ export default function CandidateExamPage() {
             anchorOrigin={{ vertical: "top", horizontal: "center" }}
           />
           <ExamLayout>
-            <ExamSidebar modules={modules} moduleIndex={moduleIndex} />
+            <ExamSidebar sections={sections} sectionIndex={sectionIndex} />
             <ExamMainPanel
               activeItem={activeItem}
               activeIndex={activeIndex}
-              moduleItemsCount={moduleItems.length}
+              sectionItemsCount={sectionItems.length}
               progressValue={progressValue}
               isLocked={isLocked}
               lockedMessage={errorMessageMap.LOCKED}
@@ -713,7 +713,7 @@ export default function CandidateExamPage() {
               isSaving={isSaving}
               isSubmitting={isSubmitting}
               isLastQuestion={isLastQuestion}
-              isLastModule={isLastModule}
+              isLastSection={isLastSection}
               onSelectOption={handleSelectOption}
               onPrev={handlePrev}
               onNext={handleNext}
@@ -721,10 +721,10 @@ export default function CandidateExamPage() {
             />
           </ExamLayout>
           <ExamDialogs
-            isModuleConfirmOpen={isModuleConfirmOpen}
+            isSectionConfirmOpen={isSectionConfirmOpen}
             isSubmitConfirmOpen={isSubmitConfirmOpen}
-            onCloseModuleConfirm={() => setIsModuleConfirmOpen(false)}
-            onAdvanceModule={handleModuleAdvance}
+            onCloseSectionConfirm={() => setIsSectionConfirmOpen(false)}
+            onAdvanceSection={handleSectionAdvance}
             onCloseSubmitConfirm={() => setIsSubmitConfirmOpen(false)}
             onSubmit={handleSubmit}
           />

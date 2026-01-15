@@ -4,10 +4,10 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography }
 import { styled } from "@mui/material/styles";
 
 type ExamDialogsProps = {
-  isModuleConfirmOpen: boolean;
+  isSectionConfirmOpen: boolean;
   isSubmitConfirmOpen: boolean;
-  onCloseModuleConfirm: () => void;
-  onAdvanceModule: () => void;
+  onCloseSectionConfirm: () => void;
+  onAdvanceSection: () => void;
   onCloseSubmitConfirm: () => void;
   onSubmit: () => void;
 };
@@ -22,7 +22,7 @@ const ConfirmText = styled(Typography)(({ theme }) => ({
   color: theme.palette.grey[600],
 }));
 
-const ModuleAdvanceButton = styled(Button)({
+const SectionAdvanceButton = styled(Button)({
   backgroundColor: "#137fec",
 });
 
@@ -32,41 +32,41 @@ const SubmitConfirmButton = styled(Button)({
 
 /** 試験画面の確認ダイアログ群を表示する。 */
 export default function ExamDialogs({
-  isModuleConfirmOpen,
+  isSectionConfirmOpen,
   isSubmitConfirmOpen,
-  onCloseModuleConfirm,
-  onAdvanceModule,
+  onCloseSectionConfirm,
+  onAdvanceSection,
   onCloseSubmitConfirm,
   onSubmit,
 }: ExamDialogsProps) {
   return (
     <>
       <Dialog
-        open={isModuleConfirmOpen}
-        onClose={onCloseModuleConfirm}
-        data-testid="candidate-module-confirm"
+        open={isSectionConfirmOpen}
+        onClose={onCloseSectionConfirm}
+        data-testid="candidate-section-confirm"
       >
-        <DialogTitle>次のモジュールへ進みますか？</DialogTitle>
+        <DialogTitle>次のセクションへ進みますか？</DialogTitle>
         <DialogContent>
           <ConfirmText variant="body2">
-            次のモジュールに進むと、前のモジュールには戻れません。
+            次のセクションに進むと、前のセクションには戻れません。
           </ConfirmText>
         </DialogContent>
         <ConfirmActions>
           <Button
             variant="outlined"
-            onClick={onCloseModuleConfirm}
-            data-testid="candidate-module-confirm-cancel"
+            onClick={onCloseSectionConfirm}
+            data-testid="candidate-section-confirm-cancel"
           >
             キャンセル
           </Button>
-          <ModuleAdvanceButton
+          <SectionAdvanceButton
             variant="contained"
-            onClick={onAdvanceModule}
-            data-testid="candidate-module-confirm-advance"
+            onClick={onAdvanceSection}
+            data-testid="candidate-section-confirm-advance"
           >
             進む
-          </ModuleAdvanceButton>
+          </SectionAdvanceButton>
         </ConfirmActions>
       </Dialog>
 

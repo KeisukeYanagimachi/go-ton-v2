@@ -45,8 +45,8 @@ const createStaffUser = async (email: string) => {
   return staffUser;
 };
 
-const ensureModulesAndCategories = async () => {
-  await prisma.examModule.createMany({
+const ensureSectionsAndCategories = async () => {
+  await prisma.examSection.createMany({
     data: [
       {
         id: "20000000-0000-0000-0000-000000000001",
@@ -113,7 +113,7 @@ describe("question management routes (integration)", () => {
   test("creates, lists, and updates questions", async () => {
     process.env.NODE_ENV = "development";
     process.env.AUTH_SECRET = "test-secret";
-    await ensureModulesAndCategories();
+    await ensureSectionsAndCategories();
 
     const staff = await createStaffUser(`author-${randomUUID()}@example.com`);
     const token = createDevStaffSessionToken(
@@ -135,7 +135,7 @@ describe("question management routes (integration)", () => {
         stem: `Question ${randomUUID()}`,
         explanation: "Initial explanation",
         isActive: true,
-        moduleCategoryId: "80000000-0000-0000-0000-000000000001",
+        sectionCategoryId: "80000000-0000-0000-0000-000000000001",
         subcategoryId: "80000000-0000-0000-0000-000000000011",
         options: [
           { optionText: "Option A", isCorrect: true },
@@ -194,7 +194,7 @@ describe("question management routes (integration)", () => {
           stem: `Updated ${randomUUID()}`,
           explanation: "Updated explanation",
           isActive: false,
-          moduleCategoryId: "80000000-0000-0000-0000-000000000001",
+          sectionCategoryId: "80000000-0000-0000-0000-000000000001",
           subcategoryId: null,
           options: [
             { optionText: "Option A", isCorrect: false },

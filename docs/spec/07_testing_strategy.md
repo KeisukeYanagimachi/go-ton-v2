@@ -5,6 +5,7 @@
 - 2026-01-10: Unit / Integration のテストランナーを Vitest に統一
 - 2026-01-10: Integration / E2E は専用スキーマで実行し、終了後にクリーンアップする
 - 2026-01-11: Integration / E2E は専用DBで実行し、終了後にクリーンアップする
+- 2026-01-11: 試験構成の呼称を「モジュール」から「セクション」に統一
 
 ## テスト戦略（Unit / Integration / E2E）
 
@@ -104,9 +105,9 @@
 #### Candidate 系
 
 1. Ticket + PIN でログインできる
-2. モジュール順序固定で試験が進行する
+2. セクション順序固定で試験が進行する
 3. 回答を選択して次の問題に進める
-4. 制限時間経過でモジュールが終了する
+4. 制限時間経過でセクションが終了する
 5. 試験を提出できる
 6. 行動計測イベントが記録され、metrics が更新される
 
@@ -146,12 +147,12 @@
 
 ### 6.2 Seed に含める内容
 
-- exam_modules（VERBAL / NONVERBAL / ENGLISH / STRUCTURAL / PERSONALITY）
+- exam_sections（VERBAL / NONVERBAL / ENGLISH / STRUCTURAL / PERSONALITY）
 - staff_roles
 - staff_users（E2E 用）
 - candidates
 - tickets
-- 試験（Exam / ExamVersion / Modules / Questions）
+- 試験（Exam / ExamVersion / Sections / Questions）
 
 ---
 

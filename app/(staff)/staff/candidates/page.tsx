@@ -14,6 +14,8 @@ import {
 import { styled } from "@mui/material/styles";
 import { useEffect, useMemo, useState } from "react";
 
+import StaffHomeLink from "../StaffHomeLink";
+
 type CandidateSummary = {
   candidateId: string;
   fullName: string;
@@ -143,7 +145,7 @@ const SaveButton = styled(Button)({
   fontWeight: 700,
 });
 
-/** 候補者フォームの初期値を返す。 */
+/** 受験者フォームの初期値を返す。 */
 const emptyForm = (): CandidateForm => ({
   fullName: "",
   email: "",
@@ -154,7 +156,7 @@ const emptyForm = (): CandidateForm => ({
 /** DateTime文字列から日付入力用の値を取り出す。 */
 const toDateInputValue = (value: string) => value.split("T")[0] ?? value;
 
-/** 候補者管理の一覧と詳細フォームを表示する。 */
+/** 受験者管理の一覧と詳細フォームを表示する。 */
 export default function StaffCandidatesPage() {
   const [candidates, setCandidates] = useState<CandidateSummary[]>([]);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(
@@ -199,8 +201,8 @@ export default function StaffCandidatesPage() {
       if (!response.ok) {
         setListError(
           response.status === 403
-            ? "候補者一覧の権限がありません。"
-            : "候補者一覧の取得に失敗しました。",
+            ? "受験者一覧の権限がありません。"
+            : "受験者一覧の取得に失敗しました。",
         );
         return;
       }
@@ -222,10 +224,10 @@ export default function StaffCandidatesPage() {
       if (!response.ok) {
         setFormError(
           response.status === 404
-            ? "候補者が見つかりません。"
+            ? "受験者が見つかりません。"
             : response.status === 403
-              ? "候補者の権限がありません。"
-              : "候補者の取得に失敗しました。",
+              ? "受験者の権限がありません。"
+              : "受験者の取得に失敗しました。",
         );
         return;
       }
@@ -300,11 +302,11 @@ export default function StaffCandidatesPage() {
         body: JSON.stringify(payload),
       });
       if (!response.ok) {
-        setFormError("候補者情報の保存に失敗しました。");
+        setFormError("受験者情報の保存に失敗しました。");
         return;
       }
       const result = (await response.json()) as { candidateId: string };
-      setFormMessage(isCreating ? "候補者を登録しました。" : "更新しました。");
+      setFormMessage(isCreating ? "受験者を登録しました。" : "更新しました。");
       await fetchCandidates();
       setIsCreating(false);
       setSelectedCandidateId(result.candidateId);
@@ -321,9 +323,10 @@ export default function StaffCandidatesPage() {
       <Container maxWidth="lg">
         <Stack spacing={3}>
           <Box>
-            <PageTitle variant="h4">候補者管理</PageTitle>
+            <StaffHomeLink />
+            <PageTitle variant="h4">受験者管理</PageTitle>
             <PageSubtitle variant="body1">
-              候補者情報の登録・検索・編集を行います。
+              受験者情報の登録・検索・編集を行います。
             </PageSubtitle>
           </Box>
 
@@ -386,13 +389,13 @@ export default function StaffCandidatesPage() {
                 </Button>
 
                 <CandidateListTitle variant="subtitle2">
-                  候補者一覧 ({candidates.length}件)
+                  受験者一覧 ({candidates.length}件)
                 </CandidateListTitle>
                 {listError && <Alert severity="error">{listError}</Alert>}
                 <CandidateList spacing={1} data-testid="staff-candidates-list">
                   {candidates.length === 0 ? (
                     <Typography variant="body2" color="text.secondary">
-                      候補者が登録されていません。
+                      受験者が登録されていません。
                     </Typography>
                   ) : (
                     candidates.map((candidate) => (
@@ -428,20 +431,20 @@ export default function StaffCandidatesPage() {
                 <Box>
                   <SectionTitle variant="h6">
                     {isCreating
-                      ? "新規候補者の登録"
+                      ? "新規受験者の登録"
                       : selectedCandidate
-                        ? "候補者詳細"
-                        : "候補者を選択"}
+                        ? "受験者詳細"
+                        : "受験者を選択"}
                   </SectionTitle>
                   <Typography variant="body2" color="text.secondary">
                     {isCreating
-                      ? "候補者情報を入力して登録します。"
+                      ? "受験者情報を入力して登録します。"
                       : selectedCandidate
-                        ? "候補者の情報を確認・編集します。"
-                        : "一覧から候補者を選ぶか、新規作成を開始してください。"}
+                        ? "受験者の情報を確認・編集します。"
+                        : "一覧から受験者を選ぶか、新規作成を開始してください。"}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    候補者の作成・編集は ADMIN のみが実行できます。
+                    受験者の作成・編集は ADMIN のみが実行できます。
                   </Typography>
                 </Box>
 
@@ -449,14 +452,14 @@ export default function StaffCandidatesPage() {
                   <EmptyStateCard variant="outlined">
                     <Stack spacing={2}>
                       <Typography variant="body2" color="text.secondary">
-                        候補者が選択されていません。
+                        受験者が選択されていません。
                       </Typography>
                       <EmptyActionButton
                         variant="contained"
                         onClick={handleCreate}
                         data-testid="staff-candidates-empty-create"
                       >
-                        新規候補者を登録する
+                        新規受験者を登録する
                       </EmptyActionButton>
                     </Stack>
                   </EmptyStateCard>

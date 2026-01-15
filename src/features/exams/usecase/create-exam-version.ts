@@ -2,8 +2,8 @@
 
 import { prisma } from "@/shared/db/prisma";
 
-type ExamVersionModuleInput = {
-  moduleId: string;
+type ExamVersionSectionInput = {
+  sectionId: string;
   durationSeconds: number;
   position: number;
 };
@@ -11,31 +11,29 @@ type ExamVersionModuleInput = {
 type CreateExamVersionInput = {
   examId: string;
   versionNumber: number;
-  modules: ExamVersionModuleInput[];
+  sections: ExamVersionSectionInput[];
 };
 
 type CreateExamVersionResult =
   | { ok: true; examVersionId: string }
-  | { ok: false; error: "EXAM_NOT_FOUND" | "DUPLICATE_VERSION" | "INVALID_MODULES" };
+  | {
+      ok: false;
+      error: "EXAM_NOT_FOUND" | "DUPLICATE_VERSION" | "INVALID_SECTIONS";
+    };
 
-const REQUIRED_MODULE_CODES = [
-  "VERBAL",
-  "NONVERBAL",
-  "ENGLISH",
-  "STRUCTURAL",
-];
+const REQUIRED_SECTION_CODES = ["VERBAL", "NONVERBAL", "ENGLISH", "STRUCTURAL"];
 
-const validateModules = (modules: ExamVersionModuleInput[]) => {
-  if (modules.length === 0) {
+const validateSections = (sections: ExamVersionSectionInput[]) => {
+  if (sections.length === 0) {
     return false;
   }
 
-  const positions = new Set(modules.map((module) => module.position));
-  if (positions.size !== modules.length) {
+  const positions = new Set(sections.map((section) => section.position));
+  if (positions.size !== sections.length) {
     return false;
   }
 
-  if (modules.some((module) => module.durationSeconds <= 0)) {
+  if (sections.some((section) => section.durationSeconds <= 0)) {
     return false;
   }
 
@@ -45,8 +43,8 @@ const validateModules = (modules: ExamVersionModuleInput[]) => {
 const createExamVersion = async (
   input: CreateExamVersionInput,
 ): Promise<CreateExamVersionResult> => {
-  if (!validateModules(input.modules)) {
-    return { ok: false, error: "INVALID_MODULES" };
+  if (!validateSections(input.sections)) {
+    return { ok: false, error: "INVALID_SECTIONS" };
   }
 
   const exam = await prisma.exam.findUnique({
@@ -70,19 +68,23 @@ const createExamVersion = async (
     return { ok: false, error: "DUPLICATE_VERSION" };
   }
 
-  const requiredModules = await prisma.examModule.findMany({
-    where: { code: { in: REQUIRED_MODULE_CODES } },
+  const requiredSections = await prisma.examSection.findMany({
+    where: { code: { in: REQUIRED_SECTION_CODES } },
     select: { id: true },
   });
-  const requiredModuleIds = new Set(requiredModules.map((module) => module.id));
-  const inputModuleIds = new Set(input.modules.map((module) => module.moduleId));
+  const requiredSectionIds = new Set(
+    requiredSections.map((section) => section.id),
+  );
+  const inputSectionIds = new Set(
+    input.sections.map((section) => section.sectionId),
+  );
 
   if (
-    requiredModuleIds.size !== REQUIRED_MODULE_CODES.length ||
-    inputModuleIds.size !== requiredModuleIds.size ||
-    ![...requiredModuleIds].every((id) => inputModuleIds.has(id))
+    requiredSectionIds.size !== REQUIRED_SECTION_CODES.length ||
+    inputSectionIds.size !== requiredSectionIds.size ||
+    ![...requiredSectionIds].every((id) => inputSectionIds.has(id))
   ) {
-    return { ok: false, error: "INVALID_MODULES" };
+    return { ok: false, error: "INVALID_SECTIONS" };
   }
 
   const examVersion = await prisma.$transaction(async (tx) => {
@@ -94,12 +96,12 @@ const createExamVersion = async (
       },
     });
 
-    await tx.examVersionModule.createMany({
-      data: input.modules.map((module) => ({
+    await tx.examVersionSection.createMany({
+      data: input.sections.map((section) => ({
         examVersionId: created.id,
-        moduleId: module.moduleId,
-        durationSeconds: module.durationSeconds,
-        position: module.position,
+        sectionId: section.sectionId,
+        durationSeconds: section.durationSeconds,
+        position: section.position,
       })),
     });
 
@@ -111,4 +113,3 @@ const createExamVersion = async (
 
 export { createExamVersion };
 export type { CreateExamVersionInput, CreateExamVersionResult };
-

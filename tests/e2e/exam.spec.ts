@@ -57,7 +57,7 @@ test("candidate can complete the exam and submit", async ({ page }) => {
   await page.getByTestId("candidate-start-submit").click();
   await expect(page).toHaveURL(/\/exam/, { timeout: loadTimeout });
 
-  await expect(page.getByTestId("candidate-current-module")).toContainText(
+  await expect(page.getByTestId("candidate-current-section")).toContainText(
     "Verbal",
   );
 
@@ -74,10 +74,10 @@ test("candidate can complete the exam and submit", async ({ page }) => {
       );
     }
   }
-  await expect(page.getByTestId("candidate-module-confirm")).toBeVisible();
-  await page.getByTestId("candidate-module-confirm-advance").click();
+  await expect(page.getByTestId("candidate-section-confirm")).toBeVisible();
+  await page.getByTestId("candidate-section-confirm-advance").click();
 
-  await expect(page.getByTestId("candidate-current-module")).toContainText(
+  await expect(page.getByTestId("candidate-current-section")).toContainText(
     "Nonverbal",
   );
 
@@ -94,10 +94,10 @@ test("candidate can complete the exam and submit", async ({ page }) => {
       );
     }
   }
-  await expect(page.getByTestId("candidate-module-confirm")).toBeVisible();
-  await page.getByTestId("candidate-module-confirm-advance").click();
+  await expect(page.getByTestId("candidate-section-confirm")).toBeVisible();
+  await page.getByTestId("candidate-section-confirm-advance").click();
 
-  await expect(page.getByTestId("candidate-current-module")).toContainText(
+  await expect(page.getByTestId("candidate-current-section")).toContainText(
     "English",
   );
 
@@ -114,10 +114,10 @@ test("candidate can complete the exam and submit", async ({ page }) => {
       );
     }
   }
-  await expect(page.getByTestId("candidate-module-confirm")).toBeVisible();
-  await page.getByTestId("candidate-module-confirm-advance").click();
+  await expect(page.getByTestId("candidate-section-confirm")).toBeVisible();
+  await page.getByTestId("candidate-section-confirm-advance").click();
 
-  await expect(page.getByTestId("candidate-current-module")).toContainText(
+  await expect(page.getByTestId("candidate-current-section")).toContainText(
     "Structural",
   );
 

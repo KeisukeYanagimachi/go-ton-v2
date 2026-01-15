@@ -7,10 +7,10 @@ import { createExamVersion } from "@/features/exams/usecase/create-exam-version"
 const requestSchema = z.object({
   examId: z.string().min(1),
   versionNumber: z.number().int().min(1),
-  modules: z
+  sections: z
     .array(
       z.object({
-        moduleId: z.string().min(1),
+        sectionId: z.string().min(1),
         durationSeconds: z.number().int().min(1),
         position: z.number().int().min(1),
       }),

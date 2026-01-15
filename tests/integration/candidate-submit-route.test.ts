@@ -23,7 +23,7 @@ const createExamVersionBundle = async () => {
       publishedAt: new Date(),
     },
   });
-  const examModule = await prisma.examModule.upsert({
+  const examSection = await prisma.examSection.upsert({
     where: { code: "VERBAL" },
     update: {},
     create: {
@@ -32,11 +32,11 @@ const createExamVersionBundle = async () => {
       name: "Verbal",
     },
   });
-  await prisma.examVersionModule.create({
+  await prisma.examVersionSection.create({
     data: {
       id: randomUUID(),
       examVersionId: examVersion.id,
-      moduleId: examModule.id,
+      sectionId: examSection.id,
       durationSeconds: 1200,
       position: 1,
     },
@@ -62,7 +62,7 @@ const createExamVersionBundle = async () => {
     data: {
       id: randomUUID(),
       examVersionId: examVersion.id,
-      moduleId: examModule.id,
+      sectionId: examSection.id,
       questionId: question.id,
       position: 1,
       points: 1,
@@ -134,7 +134,7 @@ describe("candidate submit route (integration)", () => {
         status: true,
         submittedAt: true,
         score: { select: { rawScore: true, maxScore: true } },
-        moduleScores: { select: { rawScore: true, maxScore: true } },
+        sectionScores: { select: { rawScore: true, maxScore: true } },
       },
     });
     const updatedTicket = await prisma.ticket.findUnique({
@@ -145,7 +145,7 @@ describe("candidate submit route (integration)", () => {
     expect(attempt?.status).toBe("SCORED");
     expect(attempt?.submittedAt).not.toBeNull();
     expect(attempt?.score).not.toBeNull();
-    expect(attempt?.moduleScores.length).toBeGreaterThan(0);
+    expect(attempt?.sectionScores.length).toBeGreaterThan(0);
     expect(updatedTicket?.status).toBe("USED");
   });
 });

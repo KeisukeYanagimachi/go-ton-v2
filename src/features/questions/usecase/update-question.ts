@@ -12,7 +12,7 @@ type UpdateQuestionInput = {
   stem: string;
   explanation: string | null;
   isActive: boolean;
-  moduleCategoryId: string;
+  sectionCategoryId: string;
   subcategoryId: string | null;
   options: QuestionOptionInput[];
 };
@@ -23,7 +23,7 @@ type UpdateQuestionResult =
       ok: false;
       error:
         | "QUESTION_NOT_FOUND"
-        | "MODULE_REQUIRED"
+        | "SECTION_REQUIRED"
         | "SUBCATEGORY_INVALID"
         | "OPTIONS_INVALID"
         | "NO_CORRECT"
@@ -42,13 +42,13 @@ const updateQuestion = async (
     return { ok: false, error: "QUESTION_NOT_FOUND" };
   }
 
-  const moduleCategory = await prisma.questionCategory.findUnique({
-    where: { id: input.moduleCategoryId },
+  const sectionCategory = await prisma.questionCategory.findUnique({
+    where: { id: input.sectionCategoryId },
     select: { id: true, parentId: true },
   });
 
-  if (!moduleCategory || moduleCategory.parentId !== null) {
-    return { ok: false, error: "MODULE_REQUIRED" };
+  if (!sectionCategory || sectionCategory.parentId !== null) {
+    return { ok: false, error: "SECTION_REQUIRED" };
   }
 
   if (input.subcategoryId) {
@@ -56,7 +56,7 @@ const updateQuestion = async (
       where: { id: input.subcategoryId },
       select: { parentId: true },
     });
-    if (!subcategory || subcategory.parentId !== moduleCategory.id) {
+    if (!subcategory || subcategory.parentId !== sectionCategory.id) {
       return { ok: false, error: "SUBCATEGORY_INVALID" };
     }
   }
@@ -70,7 +70,9 @@ const updateQuestion = async (
     return { ok: false, error: "OPTIONS_INVALID" };
   }
 
-  const correctCount = trimmedOptions.filter((option) => option.isCorrect).length;
+  const correctCount = trimmedOptions.filter(
+    (option) => option.isCorrect,
+  ).length;
   if (correctCount === 0) {
     return { ok: false, error: "NO_CORRECT" };
   }
@@ -105,7 +107,7 @@ const updateQuestion = async (
     });
 
     const assignments = [
-      { questionId: input.questionId, categoryId: moduleCategory.id },
+      { questionId: input.questionId, categoryId: sectionCategory.id },
     ];
     if (input.subcategoryId) {
       assignments.push({
@@ -121,4 +123,3 @@ const updateQuestion = async (
 
 export { updateQuestion };
 export type { QuestionOptionInput, UpdateQuestionInput, UpdateQuestionResult };
-

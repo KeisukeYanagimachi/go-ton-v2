@@ -13,8 +13,8 @@ import {
 import { styled } from "@mui/material/styles";
 import type { ReactNode } from "react";
 
-type ExamModuleSnapshot = {
-  moduleId: string;
+type ExamSectionSnapshot = {
+  sectionId: string;
   code: string;
   name: string;
   position: number;
@@ -41,20 +41,20 @@ type ExamFrameProps = {
 };
 
 type ExamHeaderProps = {
-  moduleLabel: string;
+  sectionLabel: string;
   timerLabel: string;
   showTimeWarning: boolean;
 };
 
 type ExamSidebarProps = {
-  modules: ExamModuleSnapshot[];
-  moduleIndex: number;
+  sections: ExamSectionSnapshot[];
+  sectionIndex: number;
 };
 
 type ExamMainPanelProps = {
   activeItem: ExamQuestionItem;
   activeIndex: number;
-  moduleItemsCount: number;
+  sectionItemsCount: number;
   progressValue: number;
   isLocked: boolean;
   lockedMessage: string;
@@ -64,7 +64,7 @@ type ExamMainPanelProps = {
   isSaving: boolean;
   isSubmitting: boolean;
   isLastQuestion: boolean;
-  isLastModule: boolean;
+  isLastSection: boolean;
   onSelectOption: (optionId: string) => void;
   onPrev: () => void;
   onNext: () => void;
@@ -224,21 +224,21 @@ const ExamLayout = styled(Box)(({ theme }) => ({
   },
 }));
 
-const ModulePanel = styled(Paper)(({ theme }) => ({
+const SectionPanel = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2.5),
   borderRadius: theme.spacing(3),
   height: "100%",
 }));
 
-const ModuleTitle = styled(Typography)({
+const SectionTitle = styled(Typography)({
   fontWeight: 700,
 });
 
-const ModuleCount = styled(Typography)(({ theme }) => ({
+const SectionCount = styled(Typography)(({ theme }) => ({
   color: theme.palette.grey[600],
 }));
 
-const ModuleRow = styled(Stack, {
+const SectionRow = styled(Stack, {
   shouldForwardProp: (prop) => prop !== "status",
 })<{ status: "current" | "complete" | "pending" }>(({ status, theme }) => ({
   paddingLeft: theme.spacing(2),
@@ -251,15 +251,15 @@ const ModuleRow = styled(Stack, {
   border: "1px solid #e2e8f0",
 }));
 
-const ModuleName = styled(Typography)({
+const SectionName = styled(Typography)({
   fontWeight: 700,
 });
 
-const ModuleTime = styled(Typography)(({ theme }) => ({
+const SectionTime = styled(Typography)(({ theme }) => ({
   color: theme.palette.grey[600],
 }));
 
-const ModuleStatusChip = styled(Chip, {
+const SectionStatusChip = styled(Chip, {
   shouldForwardProp: (prop) => prop !== "status",
 })<{ status: "current" | "complete" | "pending" }>(({ status }) => ({
   backgroundColor:
@@ -418,7 +418,7 @@ const ExamFrame = ({ header, children }: ExamFrameProps) => (
 
 /** 試験画面のヘッダーを表示する。 */
 const ExamHeader = ({
-  moduleLabel,
+  sectionLabel,
   timerLabel,
   showTimeWarning,
 }: ExamHeaderProps) => (
@@ -429,9 +429,9 @@ const ExamHeader = ({
         <HeaderTitle variant="subtitle1">SPI 採用適性検査</HeaderTitle>
         <HeaderSubtitle
           variant="caption"
-          data-testid="candidate-current-module"
+          data-testid="candidate-current-section"
         >
-          {moduleLabel}
+          {sectionLabel}
         </HeaderSubtitle>
       </Box>
     </HeaderLeft>
@@ -446,18 +446,18 @@ const ExamHeader = ({
   </Header>
 );
 
-/** モジュールの進行状況サイドバーを表示する。 */
-const ExamSidebar = ({ modules, moduleIndex }: ExamSidebarProps) => (
-  <ModulePanel>
+/** セクションの進行状況サイドバーを表示する。 */
+const ExamSidebar = ({ sections, sectionIndex }: ExamSidebarProps) => (
+  <SectionPanel>
     <Stack spacing={1}>
       <Stack direction="row" spacing={1} alignItems="center">
-        <ModuleTitle variant="subtitle1">モジュール構成</ModuleTitle>
-        <ModuleCount variant="caption">全{modules.length}件</ModuleCount>
+        <SectionTitle variant="subtitle1">セクション構成</SectionTitle>
+        <SectionCount variant="caption">全{sections.length}件</SectionCount>
       </Stack>
       <Stack spacing={1}>
-        {modules.map((module, index) => {
-          const isCurrent = index === moduleIndex;
-          const isComplete = index < moduleIndex;
+        {sections.map((section, index) => {
+          const isCurrent = index === sectionIndex;
+          const isComplete = index < sectionIndex;
           const status = isCurrent
             ? "current"
             : isComplete
@@ -465,37 +465,37 @@ const ExamSidebar = ({ modules, moduleIndex }: ExamSidebarProps) => (
               : "pending";
 
           return (
-            <ModuleRow
-              key={module.moduleId}
+            <SectionRow
+              key={section.sectionId}
               direction="row"
               alignItems="center"
               justifyContent="space-between"
               status={status}
-              data-testid={`candidate-module-${module.code}`}
+              data-testid={`candidate-section-${section.code}`}
             >
               <Stack>
-                <ModuleName>{module.name}</ModuleName>
-                <ModuleTime variant="caption">
-                  目安時間: {Math.ceil(module.durationSeconds / 60)}分
-                </ModuleTime>
+                <SectionName>{section.name}</SectionName>
+                <SectionTime variant="caption">
+                  目安時間: {Math.ceil(section.durationSeconds / 60)}分
+                </SectionTime>
               </Stack>
-              <ModuleStatusChip
+              <SectionStatusChip
                 status={status}
                 label={isCurrent ? "実施中" : isComplete ? "完了" : "未開始"}
               />
-            </ModuleRow>
+            </SectionRow>
           );
         })}
       </Stack>
     </Stack>
-  </ModulePanel>
+  </SectionPanel>
 );
 
 /** 問題と回答エリアを表示するメインパネル。 */
 const ExamMainPanel = ({
   activeItem,
   activeIndex,
-  moduleItemsCount,
+  sectionItemsCount,
   progressValue,
   isLocked,
   lockedMessage,
@@ -505,7 +505,7 @@ const ExamMainPanel = ({
   isSaving,
   isSubmitting,
   isLastQuestion,
-  isLastModule,
+  isLastSection,
   onSelectOption,
   onPrev,
   onNext,
@@ -530,7 +530,7 @@ const ExamMainPanel = ({
           <ProgressTitle variant="h5" data-testid="candidate-current-question">
             問 {activeIndex + 1}
           </ProgressTitle>
-          <ProgressCount variant="body2">/ {moduleItemsCount}</ProgressCount>
+          <ProgressCount variant="body2">/ {sectionItemsCount}</ProgressCount>
         </Stack>
         <ProgressText variant="body2">{progressValue}% 完了</ProgressText>
       </Stack>
@@ -583,7 +583,7 @@ const ExamMainPanel = ({
       >
         {isSaving ? "保存中..." : "前の問題"}
       </PrevButton>
-      {isLastQuestion && isLastModule ? (
+      {isLastQuestion && isLastSection ? (
         <SubmitButton
           variant="contained"
           data-testid="candidate-submit-exam"
@@ -602,7 +602,7 @@ const ExamMainPanel = ({
           {isSaving
             ? "保存中..."
             : isLastQuestion
-              ? "次のモジュールへ"
+              ? "次のセクションへ"
               : "次の問題へ"}
         </NextButton>
       )}
@@ -611,4 +611,4 @@ const ExamMainPanel = ({
 );
 
 export { ExamFrame, ExamHeader, ExamLayout, ExamMainPanel, ExamSidebar };
-export type { ExamModuleSnapshot, ExamQuestionItem };
+export type { ExamSectionSnapshot, ExamQuestionItem };

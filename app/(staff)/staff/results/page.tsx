@@ -20,6 +20,8 @@ import {
 import { styled } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 
+import StaffHomeLink from "../StaffHomeLink";
+
 type AttemptStatus =
   | "NOT_STARTED"
   | "IN_PROGRESS"
@@ -203,6 +205,7 @@ export default function StaffResultsPage() {
     <Root>
       <Container maxWidth="lg">
         <Stack spacing={3}>
+          <StaffHomeLink />
           <Stack direction="row" spacing={1} alignItems="center">
             <BreadcrumbText variant="body2">ホーム</BreadcrumbText>
             <BreadcrumbSeparator variant="body2">/</BreadcrumbSeparator>
@@ -234,7 +237,7 @@ export default function StaffResultsPage() {
                   label="受験者名"
                   value={candidateName}
                   onChange={(event) => setCandidateName(event.target.value)}
-                  placeholder="候補者の氏名"
+                  placeholder="受験者の氏名"
                   inputProps={{
                     "data-testid": "staff-results-candidate-input",
                   }}

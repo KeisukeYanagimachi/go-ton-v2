@@ -6,11 +6,11 @@ import { updateAttemptTimer } from "@/features/attempts/usecase/update-attempt-t
 const requestSchema = z.object({
   ticketCode: z.string().min(1),
   pin: z.string().min(1),
-  moduleId: z.string().min(1),
+  sectionId: z.string().min(1),
   elapsedSeconds: z.number().int().nonnegative(),
 });
 
-/** モジュールの残り時間を更新するAPI。 */
+/** セクションの残り時間を更新するAPI。 */
 export const POST = async (request: Request) => {
   const payload = requestSchema.safeParse(await request.json());
 
@@ -21,7 +21,7 @@ export const POST = async (request: Request) => {
   const result = await updateAttemptTimer(
     payload.data.ticketCode,
     payload.data.pin,
-    payload.data.moduleId,
+    payload.data.sectionId,
     payload.data.elapsedSeconds,
   );
 

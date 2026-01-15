@@ -2,7 +2,7 @@
 
 import { prisma } from "@/shared/db/prisma";
 
-const MODULE_CODES = [
+const SECTION_CODES = [
   "VERBAL",
   "NONVERBAL",
   "ENGLISH",
@@ -13,17 +13,17 @@ const MODULE_CODES = [
 type QuestionSummary = {
   questionId: string;
   stem: string;
-  moduleCodes: string[];
+  sectionCodes: string[];
 };
 
-const extractModuleCodes = (
+const extractSectionCodes = (
   assignments: { category: { name: string; parent?: { name: string } | null } }[],
 ) => {
   const codes = new Set<string>();
 
   assignments.forEach((assignment) => {
     const candidate = assignment.category.parent?.name ?? assignment.category.name;
-    if (MODULE_CODES.includes(candidate)) {
+    if (SECTION_CODES.includes(candidate)) {
       codes.add(candidate);
     }
   });
@@ -54,7 +54,7 @@ const listActiveQuestions = async (): Promise<QuestionSummary[]> => {
   return questions.map((question) => ({
     questionId: question.id,
     stem: question.stem,
-    moduleCodes: extractModuleCodes(question.categories),
+    sectionCodes: extractSectionCodes(question.categories),
   }));
 };
 

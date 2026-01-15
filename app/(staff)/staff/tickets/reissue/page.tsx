@@ -15,6 +15,8 @@ import { styled } from "@mui/material/styles";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 
+import StaffHomeLink from "../../StaffHomeLink";
+
 type ReissueResult = {
   newTicketCode: string;
   qrPayload: string;
@@ -171,6 +173,7 @@ export default function TicketReissuePage() {
         <Panel>
           <Stack spacing={2}>
             <Box>
+              <StaffHomeLink />
               <Title variant="h5">受験票の再発行</Title>
               <Subtitle variant="body2">
                 受験者の受験票コードを入力し、新しい Ticket を発行します。

@@ -38,8 +38,8 @@ const createStaffUser = async (email: string) => {
   return staffUser;
 };
 
-const ensureModules = async () => {
-  await prisma.examModule.createMany({
+const ensureSections = async () => {
+  await prisma.examSection.createMany({
     data: [
       {
         id: "20000000-0000-0000-0000-000000000001",
@@ -79,7 +79,7 @@ describe("exam version question routes (integration)", () => {
   test("assigns and removes exam version questions", async () => {
     process.env.NODE_ENV = "development";
     process.env.AUTH_SECRET = "test-secret";
-    await ensureModules();
+    await ensureSections();
 
     const staff = await createStaffUser(
       `author-${randomUUID()}@example.com`,
@@ -110,16 +110,16 @@ describe("exam version question routes (integration)", () => {
       },
     });
 
-    const modules = await prisma.examModule.findMany({
+    const sections = await prisma.examSection.findMany({
       where: { code: { in: ["ENGLISH", "NONVERBAL", "STRUCTURAL", "VERBAL"] } },
       orderBy: { code: "asc" },
     });
 
-    await prisma.examVersionModule.createMany({
-      data: modules.map((module, index) => ({
+    await prisma.examVersionSection.createMany({
+      data: sections.map((section, index) => ({
         id: randomUUID(),
         examVersionId: examVersion.id,
-        moduleId: module.id,
+        sectionId: section.id,
         durationSeconds: 1800,
         position: index + 1,
       })),
@@ -144,7 +144,7 @@ describe("exam version question routes (integration)", () => {
         },
         body: JSON.stringify({
           examVersionId: examVersion.id,
-          moduleId: modules[0].id,
+          sectionId: sections[0].id,
           questionId: question.id,
           position: 1,
           points: 1,

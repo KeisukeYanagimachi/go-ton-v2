@@ -19,9 +19,9 @@ type AttemptResultDetail =
           maxScore: number;
           scoredAt: Date;
         } | null;
-        moduleScores: {
-          moduleCode: string;
-          moduleName: string;
+        sectionScores: {
+          sectionCode: string;
+          sectionName: string;
           rawScore: number;
           maxScore: number;
           scoredAt: Date;
@@ -59,14 +59,14 @@ const getAttemptResultDetail = async (
           scoredAt: true,
         },
       },
-      moduleScores: {
+      sectionScores: {
         select: {
           rawScore: true,
           maxScore: true,
           scoredAt: true,
-          module: { select: { code: true, name: true } },
+          section: { select: { code: true, name: true } },
         },
-        orderBy: { module: { code: "asc" } },
+        orderBy: { section: { code: "asc" } },
       },
     },
   });
@@ -93,9 +93,9 @@ const getAttemptResultDetail = async (
             scoredAt: attempt.score.scoredAt,
           }
         : null,
-      moduleScores: attempt.moduleScores.map((score) => ({
-        moduleCode: score.module.code,
-        moduleName: score.module.name,
+      sectionScores: attempt.sectionScores.map((score) => ({
+        sectionCode: score.section.code,
+        sectionName: score.section.name,
         rawScore: score.rawScore,
         maxScore: score.maxScore,
         scoredAt: score.scoredAt,

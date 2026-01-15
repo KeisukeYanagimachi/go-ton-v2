@@ -35,7 +35,8 @@ test("staff can issue a ticket with QR payload", async ({ page }) => {
     timeout: loadTimeout,
   });
 
-  await page.getByRole("combobox", { name: "候補者" }).click();
+  await page.getByTestId("ticket-issue-candidate-search").fill("Candidate One");
+  await page.getByRole("combobox", { name: "受験者" }).click();
   await page.getByRole("option", { name: /Candidate One/ }).click();
 
   await page.getByRole("combobox", { name: "試験バージョン" }).click();

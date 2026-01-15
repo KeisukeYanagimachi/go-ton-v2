@@ -23,7 +23,7 @@ const createExamVersionBundle = async () => {
       publishedAt: new Date(),
     },
   });
-  const examModule = await prisma.examModule.upsert({
+  const examSection = await prisma.examSection.upsert({
     where: { code: "VERBAL" },
     update: {},
     create: {
@@ -32,11 +32,11 @@ const createExamVersionBundle = async () => {
       name: "Verbal",
     },
   });
-  await prisma.examVersionModule.create({
+  await prisma.examVersionSection.create({
     data: {
       id: randomUUID(),
       examVersionId: examVersion.id,
-      moduleId: examModule.id,
+      sectionId: examSection.id,
       durationSeconds: 1200,
       position: 1,
     },
@@ -69,14 +69,14 @@ const createExamVersionBundle = async () => {
     data: {
       id: randomUUID(),
       examVersionId: examVersion.id,
-      moduleId: examModule.id,
+      sectionId: examSection.id,
       questionId: question.id,
       position: 1,
       points: 1,
     },
   });
 
-  return { examVersion, examModule };
+  return { examVersion, examSection };
 };
 
 const createCandidate = async () =>
@@ -102,9 +102,9 @@ describe("candidate attempt route (integration)", () => {
     await disconnectPrisma();
   });
 
-  test("returns modules and questions for an active attempt", async () => {
+  test("returns sections and questions for an active attempt", async () => {
     const candidate = await createCandidate();
-    const { examVersion, examModule } = await createExamVersionBundle();
+    const { examVersion, examSection } = await createExamVersionBundle();
     const pin = "19990101";
     const ticketCode = `TICKET-${randomUUID()}`;
 
@@ -160,13 +160,13 @@ describe("candidate attempt route (integration)", () => {
     const payload = (await response.json()) as {
       attemptId: string;
       status: string;
-      modules: Array<{
-        moduleId: string;
+      sections: Array<{
+        sectionId: string;
         code: string;
         name: string;
       }>;
       items: Array<{
-        moduleId: string;
+        sectionId: string;
         selectedOptionId: string | null;
         question: { options: unknown[] };
       }>;
@@ -174,11 +174,11 @@ describe("candidate attempt route (integration)", () => {
 
     expect(payload.attemptId).toBe(startPayload.attemptId);
     expect(payload.status).toBe("IN_PROGRESS");
-    expect(payload.modules).toHaveLength(1);
-    expect(payload.modules[0].moduleId).toBe(examModule.id);
-    expect(payload.modules[0].code).toBe("VERBAL");
+    expect(payload.sections).toHaveLength(1);
+    expect(payload.sections[0].sectionId).toBe(examSection.id);
+    expect(payload.sections[0].code).toBe("VERBAL");
     expect(payload.items).toHaveLength(1);
-    expect(payload.items[0].moduleId).toBe(examModule.id);
+    expect(payload.items[0].sectionId).toBe(examSection.id);
     expect(payload.items[0].question.options).toHaveLength(2);
     expect(payload.items[0].selectedOptionId).toBe(option?.id ?? null);
   });

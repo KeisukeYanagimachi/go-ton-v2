@@ -4,7 +4,7 @@
   - The primary key for the `candidate_slot_assignments` table will be changed. If it partially fails, the table could be left without primary key constraint.
   - The primary key for the `candidates` table will be changed. If it partially fails, the table could be left without primary key constraint.
   - You are about to drop the column `name` on the `candidates` table. All the data in the column will be lost.
-  - The primary key for the `exam_modules` table will be changed. If it partially fails, the table could be left without primary key constraint.
+  - The primary key for the `exam_sections` table will be changed. If it partially fails, the table could be left without primary key constraint.
   - The primary key for the `staff_roles` table will be changed. If it partially fails, the table could be left without primary key constraint.
   - The `name` column on the `staff_roles` table would be dropped and recreated. This will lead to data loss if there is data in the column.
   - The primary key for the `staff_user_roles` table will be changed. If it partially fails, the table could be left without primary key constraint.
@@ -20,8 +20,8 @@
   - Added the required column `full_name` to the `candidates` table without a default value. This is not possible if the table is not empty.
   - Added the required column `updated_at` to the `candidates` table without a default value. This is not possible if the table is not empty.
   - Changed the type of `id` on the `candidates` table. No cast exists, the column would be dropped and recreated, which cannot be done if there is data, since the column is required.
-  - Added the required column `name` to the `exam_modules` table without a default value. This is not possible if the table is not empty.
-  - Changed the type of `id` on the `exam_modules` table. No cast exists, the column would be dropped and recreated, which cannot be done if there is data, since the column is required.
+  - Added the required column `name` to the `exam_sections` table without a default value. This is not possible if the table is not empty.
+  - Changed the type of `id` on the `exam_sections` table. No cast exists, the column would be dropped and recreated, which cannot be done if there is data, since the column is required.
   - Added the required column `code` to the `staff_roles` table without a default value. This is not possible if the table is not empty.
   - Changed the type of `id` on the `staff_roles` table. No cast exists, the column would be dropped and recreated, which cannot be done if there is data, since the column is required.
   - Changed the type of `staff_user_id` on the `staff_user_roles` table. No cast exists, the column would be dropped and recreated, which cannot be done if there is data, since the column is required.
@@ -95,11 +95,11 @@ ALTER COLUMN "birth_date" SET DATA TYPE DATE,
 ADD CONSTRAINT "candidates_pkey" PRIMARY KEY ("id");
 
 -- AlterTable
-ALTER TABLE "exam_modules" DROP CONSTRAINT "exam_modules_pkey",
+ALTER TABLE "exam_sections" DROP CONSTRAINT "exam_sections_pkey",
 ADD COLUMN     "name" TEXT NOT NULL,
 DROP COLUMN "id",
 ADD COLUMN     "id" UUID NOT NULL,
-ADD CONSTRAINT "exam_modules_pkey" PRIMARY KEY ("id");
+ADD CONSTRAINT "exam_sections_pkey" PRIMARY KEY ("id");
 
 -- AlterTable
 ALTER TABLE "staff_roles" DROP CONSTRAINT "staff_roles_pkey",
@@ -177,15 +177,15 @@ CREATE TABLE "exam_versions" (
 );
 
 -- CreateTable
-CREATE TABLE "exam_version_modules" (
+CREATE TABLE "exam_version_sections" (
     "id" UUID NOT NULL,
     "exam_version_id" UUID NOT NULL,
-    "module_id" UUID NOT NULL,
+    "section_id" UUID NOT NULL,
     "duration_seconds" INTEGER NOT NULL,
     "position" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "exam_version_modules_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "exam_version_sections_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -236,7 +236,7 @@ CREATE TABLE "question_category_assignments" (
 CREATE TABLE "exam_version_questions" (
     "id" UUID NOT NULL,
     "exam_version_id" UUID NOT NULL,
-    "module_id" UUID NOT NULL,
+    "section_id" UUID NOT NULL,
     "question_id" UUID NOT NULL,
     "position" INTEGER NOT NULL,
     "points" INTEGER NOT NULL,
@@ -289,10 +289,10 @@ CREATE TABLE "attempt_sessions" (
 );
 
 -- CreateTable
-CREATE TABLE "attempt_module_timers" (
+CREATE TABLE "attempt_section_timers" (
     "id" UUID NOT NULL,
     "attempt_id" UUID NOT NULL,
-    "module_id" UUID NOT NULL,
+    "section_id" UUID NOT NULL,
     "time_limit_seconds" INTEGER NOT NULL,
     "remaining_seconds" INTEGER NOT NULL,
     "started_at" TIMESTAMP(3),
@@ -300,14 +300,14 @@ CREATE TABLE "attempt_module_timers" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "attempt_module_timers_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "attempt_section_timers_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "attempt_items" (
     "id" UUID NOT NULL,
     "attempt_id" UUID NOT NULL,
-    "module_id" UUID NOT NULL,
+    "section_id" UUID NOT NULL,
     "question_id" UUID NOT NULL,
     "position" INTEGER NOT NULL,
     "points" INTEGER NOT NULL,
@@ -339,15 +339,15 @@ CREATE TABLE "attempt_answer_scores" (
 );
 
 -- CreateTable
-CREATE TABLE "attempt_module_scores" (
+CREATE TABLE "attempt_section_scores" (
     "id" UUID NOT NULL,
     "attempt_id" UUID NOT NULL,
-    "module_id" UUID NOT NULL,
+    "section_id" UUID NOT NULL,
     "raw_score" INTEGER NOT NULL,
     "max_score" INTEGER NOT NULL,
     "scored_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "attempt_module_scores_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "attempt_section_scores_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -410,13 +410,13 @@ CREATE INDEX "idx_exam_versions_status" ON "exam_versions"("status");
 CREATE UNIQUE INDEX "exam_versions_exam_id_version_number_key" ON "exam_versions"("exam_id", "version_number");
 
 -- CreateIndex
-CREATE INDEX "idx_exam_version_modules_version" ON "exam_version_modules"("exam_version_id");
+CREATE INDEX "idx_exam_version_sections_version" ON "exam_version_sections"("exam_version_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "exam_version_modules_exam_version_id_module_id_key" ON "exam_version_modules"("exam_version_id", "module_id");
+CREATE UNIQUE INDEX "exam_version_sections_exam_version_id_section_id_key" ON "exam_version_sections"("exam_version_id", "section_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "exam_version_modules_exam_version_id_position_key" ON "exam_version_modules"("exam_version_id", "position");
+CREATE UNIQUE INDEX "exam_version_sections_exam_version_id_position_key" ON "exam_version_sections"("exam_version_id", "position");
 
 -- CreateIndex
 CREATE INDEX "idx_question_categories_parent" ON "question_categories"("parent_id");
@@ -431,7 +431,7 @@ CREATE UNIQUE INDEX "question_options_question_id_position_key" ON "question_opt
 CREATE INDEX "idx_question_category_assignments_cat" ON "question_category_assignments"("category_id");
 
 -- CreateIndex
-CREATE INDEX "idx_evq_version_module" ON "exam_version_questions"("exam_version_id", "module_id");
+CREATE INDEX "idx_evq_version_section" ON "exam_version_questions"("exam_version_id", "section_id");
 
 -- CreateIndex
 CREATE INDEX "idx_evq_question" ON "exam_version_questions"("question_id");
@@ -440,7 +440,7 @@ CREATE INDEX "idx_evq_question" ON "exam_version_questions"("question_id");
 CREATE UNIQUE INDEX "exam_version_questions_exam_version_id_question_id_key" ON "exam_version_questions"("exam_version_id", "question_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "exam_version_questions_exam_version_id_module_id_position_key" ON "exam_version_questions"("exam_version_id", "module_id", "position");
+CREATE UNIQUE INDEX "exam_version_questions_exam_version_id_section_id_position_key" ON "exam_version_questions"("exam_version_id", "section_id", "position");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "devices_device_code_key" ON "devices"("device_code");
@@ -464,10 +464,10 @@ CREATE INDEX "idx_attempt_sessions_attempt" ON "attempt_sessions"("attempt_id");
 CREATE INDEX "idx_attempt_sessions_status" ON "attempt_sessions"("status");
 
 -- CreateIndex
-CREATE INDEX "idx_attempt_module_timers_attempt" ON "attempt_module_timers"("attempt_id");
+CREATE INDEX "idx_attempt_section_timers_attempt" ON "attempt_section_timers"("attempt_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "attempt_module_timers_attempt_id_module_id_key" ON "attempt_module_timers"("attempt_id", "module_id");
+CREATE UNIQUE INDEX "attempt_section_timers_attempt_id_section_id_key" ON "attempt_section_timers"("attempt_id", "section_id");
 
 -- CreateIndex
 CREATE INDEX "idx_attempt_items_attempt" ON "attempt_items"("attempt_id");
@@ -476,7 +476,7 @@ CREATE INDEX "idx_attempt_items_attempt" ON "attempt_items"("attempt_id");
 CREATE INDEX "idx_attempt_items_question" ON "attempt_items"("question_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "attempt_items_attempt_id_module_id_position_key" ON "attempt_items"("attempt_id", "module_id", "position");
+CREATE UNIQUE INDEX "attempt_items_attempt_id_section_id_position_key" ON "attempt_items"("attempt_id", "section_id", "position");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "attempt_answers_attempt_item_id_key" ON "attempt_answers"("attempt_item_id");
@@ -488,7 +488,7 @@ CREATE INDEX "idx_attempt_answers_selected_option" ON "attempt_answers"("selecte
 CREATE UNIQUE INDEX "attempt_answer_scores_attempt_item_id_key" ON "attempt_answer_scores"("attempt_item_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "attempt_module_scores_attempt_id_module_id_key" ON "attempt_module_scores"("attempt_id", "module_id");
+CREATE UNIQUE INDEX "attempt_section_scores_attempt_id_section_id_key" ON "attempt_section_scores"("attempt_id", "section_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "attempt_scores_attempt_id_key" ON "attempt_scores"("attempt_id");
@@ -560,10 +560,10 @@ ALTER TABLE "tickets" ADD CONSTRAINT "tickets_created_by_staff_user_id_fkey" FOR
 ALTER TABLE "exam_versions" ADD CONSTRAINT "exam_versions_exam_id_fkey" FOREIGN KEY ("exam_id") REFERENCES "exams"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "exam_version_modules" ADD CONSTRAINT "exam_version_modules_exam_version_id_fkey" FOREIGN KEY ("exam_version_id") REFERENCES "exam_versions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "exam_version_sections" ADD CONSTRAINT "exam_version_sections_exam_version_id_fkey" FOREIGN KEY ("exam_version_id") REFERENCES "exam_versions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "exam_version_modules" ADD CONSTRAINT "exam_version_modules_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "exam_modules"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "exam_version_sections" ADD CONSTRAINT "exam_version_sections_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "exam_sections"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "question_categories" ADD CONSTRAINT "question_categories_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "question_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -581,7 +581,7 @@ ALTER TABLE "question_category_assignments" ADD CONSTRAINT "question_category_as
 ALTER TABLE "exam_version_questions" ADD CONSTRAINT "exam_version_questions_exam_version_id_fkey" FOREIGN KEY ("exam_version_id") REFERENCES "exam_versions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "exam_version_questions" ADD CONSTRAINT "exam_version_questions_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "exam_modules"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "exam_version_questions" ADD CONSTRAINT "exam_version_questions_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "exam_sections"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "exam_version_questions" ADD CONSTRAINT "exam_version_questions_question_id_fkey" FOREIGN KEY ("question_id") REFERENCES "questions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -605,16 +605,16 @@ ALTER TABLE "attempt_sessions" ADD CONSTRAINT "attempt_sessions_device_id_fkey" 
 ALTER TABLE "attempt_sessions" ADD CONSTRAINT "attempt_sessions_created_by_staff_user_id_fkey" FOREIGN KEY ("created_by_staff_user_id") REFERENCES "staff_users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "attempt_module_timers" ADD CONSTRAINT "attempt_module_timers_attempt_id_fkey" FOREIGN KEY ("attempt_id") REFERENCES "attempts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "attempt_section_timers" ADD CONSTRAINT "attempt_section_timers_attempt_id_fkey" FOREIGN KEY ("attempt_id") REFERENCES "attempts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "attempt_module_timers" ADD CONSTRAINT "attempt_module_timers_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "exam_modules"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "attempt_section_timers" ADD CONSTRAINT "attempt_section_timers_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "exam_sections"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "attempt_items" ADD CONSTRAINT "attempt_items_attempt_id_fkey" FOREIGN KEY ("attempt_id") REFERENCES "attempts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "attempt_items" ADD CONSTRAINT "attempt_items_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "exam_modules"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "attempt_items" ADD CONSTRAINT "attempt_items_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "exam_sections"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "attempt_items" ADD CONSTRAINT "attempt_items_question_id_fkey" FOREIGN KEY ("question_id") REFERENCES "questions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -629,10 +629,10 @@ ALTER TABLE "attempt_answers" ADD CONSTRAINT "attempt_answers_selected_option_id
 ALTER TABLE "attempt_answer_scores" ADD CONSTRAINT "attempt_answer_scores_attempt_item_id_fkey" FOREIGN KEY ("attempt_item_id") REFERENCES "attempt_items"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "attempt_module_scores" ADD CONSTRAINT "attempt_module_scores_attempt_id_fkey" FOREIGN KEY ("attempt_id") REFERENCES "attempts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "attempt_section_scores" ADD CONSTRAINT "attempt_section_scores_attempt_id_fkey" FOREIGN KEY ("attempt_id") REFERENCES "attempts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "attempt_module_scores" ADD CONSTRAINT "attempt_module_scores_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "exam_modules"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "attempt_section_scores" ADD CONSTRAINT "attempt_section_scores_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "exam_sections"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "attempt_scores" ADD CONSTRAINT "attempt_scores_attempt_id_fkey" FOREIGN KEY ("attempt_id") REFERENCES "attempts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

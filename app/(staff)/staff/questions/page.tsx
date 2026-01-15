@@ -11,7 +11,7 @@ import {
   QuestionListPanel,
 } from "./QuestionManagementPanels";
 import type {
-  ModuleCategory,
+  SectionCategory,
   QuestionDetail,
   QuestionStatusFilter,
   QuestionSummary,
@@ -52,7 +52,7 @@ const defaultFormState = (): QuestionDetail => ({
   stem: "",
   explanation: "",
   isActive: true,
-  moduleCategoryId: null,
+  sectionCategoryId: null,
   subcategoryId: null,
   options: emptyOptions().map((option, index) => ({
     ...option,
@@ -65,12 +65,12 @@ export default function StaffQuestionManagementPage() {
   const searchParams = useSearchParams();
 
   const [questions, setQuestions] = useState<QuestionSummary[]>([]);
-  const [modules, setModules] = useState<ModuleCategory[]>([]);
+  const [sections, setSections] = useState<SectionCategory[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [selectedQuestionId, setSelectedQuestionId] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [keyword, setKeyword] = useState("");
-  const [moduleFilter, setModuleFilter] = useState("all");
+  const [sectionFilter, setSectionFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<QuestionStatusFilter>("all");
   const [showIds, setShowIds] = useState(false);
   const [formState, setFormState] =
@@ -81,13 +81,13 @@ export default function StaffQuestionManagementPage() {
   const canSubmit = isCreating || Boolean(selectedQuestionId);
   const [fieldErrors, setFieldErrors] = useState<{
     stem?: string;
-    module?: string;
+    section?: string;
     options?: string;
   }>({});
 
-  const moduleOptions = useMemo(
-    () => [{ categoryId: "all", name: "すべて", code: "ALL" }, ...modules],
-    [modules],
+  const sectionOptions = useMemo(
+    () => [{ categoryId: "all", name: "すべて", code: "ALL" }, ...sections],
+    [sections],
   );
 
   /** 更新日時を表示用に整形する。 */
@@ -100,14 +100,14 @@ export default function StaffQuestionManagementPage() {
       minute: "2-digit",
     });
 
-  const detailModuleId =
-    formState.moduleCategoryId ?? modules[0]?.categoryId ?? "";
+  const detailSectionId =
+    formState.sectionCategoryId ?? sections[0]?.categoryId ?? "";
   const availableSubcategories = useMemo(
     () =>
       subcategories.filter(
-        (subcategory) => subcategory.parentCategoryId === detailModuleId,
+        (subcategory) => subcategory.parentCategoryId === detailSectionId,
       ),
-    [subcategories, detailModuleId],
+    [subcategories, detailSectionId],
   );
 
   const fetchQuestions = async () => {
@@ -117,8 +117,8 @@ export default function StaffQuestionManagementPage() {
       if (keyword.trim()) {
         params.set("keyword", keyword.trim());
       }
-      if (moduleFilter !== "all") {
-        params.set("moduleCategoryId", moduleFilter);
+      if (sectionFilter !== "all") {
+        params.set("sectionCategoryId", sectionFilter);
       }
       if (statusFilter !== "all") {
         params.set("status", statusFilter);
@@ -130,7 +130,7 @@ export default function StaffQuestionManagementPage() {
       }
       const payload = (await response.json()) as {
         questions: QuestionSummary[];
-        modules: ModuleCategory[];
+        sections: SectionCategory[];
         subcategories: Subcategory[];
       };
       setQuestions(
@@ -139,7 +139,7 @@ export default function StaffQuestionManagementPage() {
           updatedAt: new Date(question.updatedAt).toISOString(),
         })),
       );
-      setModules(payload.modules);
+      setSections(payload.sections);
       setSubcategories(payload.subcategories);
     } catch {
       setListError("通信に失敗しました。");
@@ -178,7 +178,7 @@ export default function StaffQuestionManagementPage() {
   const resetForm = () => {
     setFormState((previous) => ({
       ...defaultFormState(),
-      moduleCategoryId: modules[0]?.categoryId ?? previous.moduleCategoryId,
+      sectionCategoryId: sections[0]?.categoryId ?? previous.sectionCategoryId,
     }));
   };
 
@@ -275,12 +275,12 @@ export default function StaffQuestionManagementPage() {
   };
 
   const validateForm = () => {
-    const nextErrors: { stem?: string; module?: string; options?: string } = {};
+    const nextErrors: { stem?: string; section?: string; options?: string } = {};
     if (!formState.stem.trim()) {
       nextErrors.stem = "問題文を入力してください。";
     }
-    if (!detailModuleId) {
-      nextErrors.module = "モジュールを選択してください。";
+    if (!detailSectionId) {
+      nextErrors.section = "セクションを選択してください。";
     }
     const normalizedOptions = formState.options.map((option) =>
       option.optionText.trim(),
@@ -321,7 +321,7 @@ export default function StaffQuestionManagementPage() {
       stem: formState.stem,
       explanation: formState.explanation,
       isActive: formState.isActive,
-      moduleCategoryId: detailModuleId,
+      sectionCategoryId: detailSectionId,
       subcategoryId: formState.subcategoryId,
       options: formState.options.map((option) => ({
         optionText: option.optionText,
@@ -364,7 +364,7 @@ export default function StaffQuestionManagementPage() {
 
   useEffect(() => {
     void fetchQuestions();
-  }, [keyword, moduleFilter, statusFilter]);
+  }, [keyword, sectionFilter, statusFilter]);
 
   useEffect(() => {
     const selected = searchParams.get("questionId");
@@ -372,7 +372,7 @@ export default function StaffQuestionManagementPage() {
       setIsCreating(false);
       setSelectedQuestionId(selected);
       setStatusFilter("all");
-      setModuleFilter("all");
+      setSectionFilter("all");
     }
   }, [searchParams]);
 
@@ -397,13 +397,13 @@ export default function StaffQuestionManagementPage() {
   }, [selectedQuestionId, questions.length]);
 
   useEffect(() => {
-    if (!formState.moduleCategoryId && modules.length > 0) {
+    if (!formState.sectionCategoryId && sections.length > 0) {
       setFormState((previous) => ({
         ...previous,
-        moduleCategoryId: modules[0].categoryId,
+        sectionCategoryId: sections[0].categoryId,
       }));
     }
-  }, [modules, formState.moduleCategoryId]);
+  }, [sections, formState.sectionCategoryId]);
 
   useEffect(() => {
     if (!formState.subcategoryId) {
@@ -412,12 +412,12 @@ export default function StaffQuestionManagementPage() {
     const exists = subcategories.some(
       (subcategory) =>
         subcategory.categoryId === formState.subcategoryId &&
-        subcategory.parentCategoryId === detailModuleId,
+        subcategory.parentCategoryId === detailSectionId,
     );
     if (!exists) {
       setFormState((previous) => ({ ...previous, subcategoryId: null }));
     }
-  }, [detailModuleId, formState.subcategoryId, subcategories]);
+  }, [detailSectionId, formState.subcategoryId, subcategories]);
 
   return (
     <Root>
@@ -428,15 +428,15 @@ export default function StaffQuestionManagementPage() {
           <ContentGrid direction={{ xs: "column", lg: "row" }} spacing={3}>
             <QuestionListPanel
               keyword={keyword}
-              moduleFilter={moduleFilter}
+              sectionFilter={sectionFilter}
               statusFilter={statusFilter}
               showIds={showIds}
               listError={listError}
-              moduleOptions={moduleOptions}
+              sectionOptions={sectionOptions}
               questions={questions}
               selectedQuestionId={selectedQuestionId}
               onKeywordChange={setKeyword}
-              onModuleFilterChange={setModuleFilter}
+              onSectionFilterChange={setSectionFilter}
               onStatusFilterChange={setStatusFilter}
               onToggleShowIds={setShowIds}
               onSelectQuestion={handleSelectQuestion}
@@ -447,9 +447,9 @@ export default function StaffQuestionManagementPage() {
               isCreating={isCreating}
               selectedQuestionId={selectedQuestionId}
               formState={formState}
-              modules={modules}
+              sections={sections}
               availableSubcategories={availableSubcategories}
-              detailModuleId={detailModuleId}
+              detailSectionId={detailSectionId}
               formError={formError}
               formMessage={formMessage}
               fieldErrors={fieldErrors}
@@ -463,10 +463,10 @@ export default function StaffQuestionManagementPage() {
                   explanation: value,
                 }))
               }
-              onModuleChange={(value) =>
+              onSectionChange={(value) =>
                 setFormState((previous) => ({
                   ...previous,
-                  moduleCategoryId: value,
+                  sectionCategoryId: value,
                 }))
               }
               onSubcategoryChange={(value) =>

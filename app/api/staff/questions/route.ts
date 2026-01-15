@@ -8,7 +8,7 @@ import { listQuestions } from "@/features/questions/usecase/list-questions";
 
 const querySchema = z.object({
   keyword: z.string().optional(),
-  moduleCategoryId: z.string().optional(),
+  sectionCategoryId: z.string().optional(),
   status: z.enum(["all", "active", "inactive"]).optional(),
 });
 
@@ -21,15 +21,15 @@ const createSchema = z.object({
   stem: z.string().min(1),
   explanation: z.string().optional().nullable(),
   isActive: z.boolean(),
-  moduleCategoryId: z.string().min(1),
+  sectionCategoryId: z.string().min(1),
   subcategoryId: z.string().optional().nullable(),
   options: z.array(optionSchema).min(2),
 });
 
 const errorMessage = (code?: string) => {
   switch (code) {
-    case "MODULE_REQUIRED":
-      return "モジュールを選択してください。";
+    case "SECTION_REQUIRED":
+      return "セクションを選択してください。";
     case "SUBCATEGORY_INVALID":
       return "サブカテゴリの選択を確認してください。";
     case "OPTIONS_INVALID":
@@ -54,7 +54,7 @@ export const GET = async (request: Request) => {
   const url = new URL(request.url);
   const payload = querySchema.safeParse({
     keyword: url.searchParams.get("keyword") ?? undefined,
-    moduleCategoryId: url.searchParams.get("moduleCategoryId") ?? undefined,
+    sectionCategoryId: url.searchParams.get("sectionCategoryId") ?? undefined,
     status: url.searchParams.get("status") ?? undefined,
   });
 
@@ -69,7 +69,7 @@ export const GET = async (request: Request) => {
 
   return NextResponse.json({
     questions,
-    modules: categories.modules,
+    sections: categories.sections,
     subcategories: categories.subcategories,
   });
 };
@@ -91,7 +91,7 @@ export const POST = async (request: Request) => {
     stem: payload.data.stem,
     explanation: payload.data.explanation ?? null,
     isActive: payload.data.isActive,
-    moduleCategoryId: payload.data.moduleCategoryId,
+    sectionCategoryId: payload.data.sectionCategoryId,
     subcategoryId: payload.data.subcategoryId ?? null,
     options: payload.data.options,
   });

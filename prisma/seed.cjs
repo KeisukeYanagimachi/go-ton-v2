@@ -54,10 +54,10 @@ const resetSeedAttempts = async () => {
   await prisma.attemptItem.deleteMany({
     where: { attemptId: { in: attemptIds } },
   });
-  await prisma.attemptModuleTimer.deleteMany({
+  await prisma.attemptSectionTimer.deleteMany({
     where: { attemptId: { in: attemptIds } },
   });
-  await prisma.attemptModuleScore.deleteMany({
+  await prisma.attemptSectionScore.deleteMany({
     where: { attemptId: { in: attemptIds } },
   });
   await prisma.attemptScore.deleteMany({
@@ -187,7 +187,7 @@ async function main() {
     skipDuplicates: true,
   });
 
-  await prisma.examModule.createMany({
+  await prisma.examSection.createMany({
     data: [
       {
         id: "20000000-0000-0000-0000-000000000001",
@@ -260,7 +260,7 @@ async function main() {
     create: {
       id: "70000000-0000-0000-0000-000000000001",
       name: "Company SPI Exam",
-      description: "Internal SPI-like assessment aligned with SPI3 modules",
+      description: "Internal SPI-like assessment aligned with SPI3 sections",
     },
   });
 
@@ -377,33 +377,33 @@ async function main() {
 
   await resetReissueTicket();
 
-  await prisma.examVersionModule.createMany({
+  await prisma.examVersionSection.createMany({
     data: [
       {
         id: "72000000-0000-0000-0000-000000000001",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        moduleId: "20000000-0000-0000-0000-000000000001",
+        sectionId: "20000000-0000-0000-0000-000000000001",
         durationSeconds: 1800,
         position: 1,
       },
       {
         id: "72000000-0000-0000-0000-000000000002",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        moduleId: "20000000-0000-0000-0000-000000000002",
+        sectionId: "20000000-0000-0000-0000-000000000002",
         durationSeconds: 1800,
         position: 2,
       },
       {
         id: "72000000-0000-0000-0000-000000000003",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        moduleId: "20000000-0000-0000-0000-000000000003",
+        sectionId: "20000000-0000-0000-0000-000000000003",
         durationSeconds: 1200,
         position: 3,
       },
       {
         id: "72000000-0000-0000-0000-000000000004",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        moduleId: "20000000-0000-0000-0000-000000000004",
+        sectionId: "20000000-0000-0000-0000-000000000004",
         durationSeconds: 1200,
         position: 4,
       },
@@ -766,7 +766,7 @@ async function main() {
       {
         id: "A1000000-0000-0000-0000-000000000001",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        moduleId: "20000000-0000-0000-0000-000000000001",
+        sectionId: "20000000-0000-0000-0000-000000000001",
         questionId: "90000000-0000-0000-0000-000000000001",
         position: 1,
         points: 1,
@@ -774,7 +774,7 @@ async function main() {
       {
         id: "A1000000-0000-0000-0000-000000000002",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        moduleId: "20000000-0000-0000-0000-000000000001",
+        sectionId: "20000000-0000-0000-0000-000000000001",
         questionId: "90000000-0000-0000-0000-000000000002",
         position: 2,
         points: 1,
@@ -782,7 +782,7 @@ async function main() {
       {
         id: "A1000000-0000-0000-0000-000000000003",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        moduleId: "20000000-0000-0000-0000-000000000002",
+        sectionId: "20000000-0000-0000-0000-000000000002",
         questionId: "90000000-0000-0000-0000-000000000003",
         position: 1,
         points: 1,
@@ -790,7 +790,7 @@ async function main() {
       {
         id: "A1000000-0000-0000-0000-000000000004",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        moduleId: "20000000-0000-0000-0000-000000000002",
+        sectionId: "20000000-0000-0000-0000-000000000002",
         questionId: "90000000-0000-0000-0000-000000000004",
         position: 2,
         points: 1,
@@ -798,7 +798,7 @@ async function main() {
       {
         id: "A1000000-0000-0000-0000-000000000005",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        moduleId: "20000000-0000-0000-0000-000000000003",
+        sectionId: "20000000-0000-0000-0000-000000000003",
         questionId: "90000000-0000-0000-0000-000000000005",
         position: 1,
         points: 1,
@@ -806,7 +806,7 @@ async function main() {
       {
         id: "A1000000-0000-0000-0000-000000000006",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        moduleId: "20000000-0000-0000-0000-000000000003",
+        sectionId: "20000000-0000-0000-0000-000000000003",
         questionId: "90000000-0000-0000-0000-000000000006",
         position: 2,
         points: 1,
@@ -814,7 +814,7 @@ async function main() {
       {
         id: "A1000000-0000-0000-0000-000000000007",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        moduleId: "20000000-0000-0000-0000-000000000004",
+        sectionId: "20000000-0000-0000-0000-000000000004",
         questionId: "90000000-0000-0000-0000-000000000007",
         position: 1,
         points: 1,
@@ -822,7 +822,7 @@ async function main() {
       {
         id: "A1000000-0000-0000-0000-000000000008",
         examVersionId: "71000000-0000-0000-0000-000000000002",
-        moduleId: "20000000-0000-0000-0000-000000000004",
+        sectionId: "20000000-0000-0000-0000-000000000004",
         questionId: "90000000-0000-0000-0000-000000000008",
         position: 2,
         points: 1,

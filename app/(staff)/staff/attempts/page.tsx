@@ -21,6 +21,8 @@ import {
 import { styled } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 
+import StaffHomeLink from "../StaffHomeLink";
+
 type ActionState = "idle" | "submitting" | "success" | "error";
 type MessageCode =
   | "REQUEST_FAILED"
@@ -279,6 +281,7 @@ export default function StaffAttemptTakeoverPage() {
     <Root>
       <Container maxWidth="lg">
         <Stack spacing={3}>
+          <StaffHomeLink />
           <Stack direction="row" spacing={1} alignItems="center">
             <BreadcrumbText variant="body2">ホーム</BreadcrumbText>
             <BreadcrumbSeparator variant="body2">/</BreadcrumbSeparator>

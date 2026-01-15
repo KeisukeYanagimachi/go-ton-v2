@@ -19,6 +19,8 @@ import {
 import { styled } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 
+import StaffHomeLink from "../StaffHomeLink";
+
 type AuditLogRow = {
   id: string;
   action: string;
@@ -173,6 +175,7 @@ export default function StaffAuditLogsPage() {
     <Root>
       <Container maxWidth="lg">
         <Stack spacing={3}>
+          <StaffHomeLink />
           <Stack direction="row" spacing={1} alignItems="center">
             <BreadcrumbText variant="body2">ホーム</BreadcrumbText>
             <BreadcrumbSeparator variant="body2">/</BreadcrumbSeparator>

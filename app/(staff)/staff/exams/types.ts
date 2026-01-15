@@ -1,5 +1,5 @@
-type ModuleMaster = {
-  moduleId: string;
+type SectionMaster = {
+  sectionId: string;
   code: string;
   name: string;
 };
@@ -7,15 +7,15 @@ type ModuleMaster = {
 type QuestionSummary = {
   questionId: string;
   stem: string;
-  moduleCodes: string[];
+  sectionCodes: string[];
 };
 
 type ExamVersionSummary = {
   examVersionId: string;
   versionNumber: number;
   status: string;
-  modules: {
-    moduleId: string;
+  sections: {
+    sectionId: string;
     code: string;
     name: string;
     durationSeconds: number;
@@ -30,4 +30,4 @@ type ExamSummary = {
   versions: ExamVersionSummary[];
 };
 
-export type { ExamSummary, ExamVersionSummary, ModuleMaster, QuestionSummary };
+export type { ExamSummary, ExamVersionSummary, SectionMaster, QuestionSummary };

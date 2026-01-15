@@ -4,14 +4,9 @@ import { prisma } from "@/shared/db/prisma";
 
 type PublishExamVersionResult =
   | { ok: true }
-  | { ok: false; error: "NOT_FOUND" | "INVALID_STATE" | "MISSING_MODULES" };
+  | { ok: false; error: "NOT_FOUND" | "INVALID_STATE" | "MISSING_SECTIONS" };
 
-const REQUIRED_MODULE_CODES = [
-  "VERBAL",
-  "NONVERBAL",
-  "ENGLISH",
-  "STRUCTURAL",
-];
+const REQUIRED_SECTION_CODES = ["VERBAL", "NONVERBAL", "ENGLISH", "STRUCTURAL"];
 
 const publishExamVersion = async (
   examVersionId: string,
@@ -29,19 +24,19 @@ const publishExamVersion = async (
     return { ok: false, error: "INVALID_STATE" };
   }
 
-  const modules = await prisma.examVersionModule.findMany({
+  const sections = await prisma.examVersionSection.findMany({
     where: { examVersionId },
     select: {
-      module: { select: { code: true } },
+      section: { select: { code: true } },
     },
   });
-  const moduleCodes = new Set(modules.map((module) => module.module.code));
-  const hasAllRequired = REQUIRED_MODULE_CODES.every((code) =>
-    moduleCodes.has(code),
+  const sectionCodes = new Set(sections.map((section) => section.section.code));
+  const hasAllRequired = REQUIRED_SECTION_CODES.every((code) =>
+    sectionCodes.has(code),
   );
 
   if (!hasAllRequired) {
-    return { ok: false, error: "MISSING_MODULES" };
+    return { ok: false, error: "MISSING_SECTIONS" };
   }
 
   await prisma.examVersion.update({
@@ -57,4 +52,3 @@ const publishExamVersion = async (
 
 export { publishExamVersion };
 export type { PublishExamVersionResult };
-

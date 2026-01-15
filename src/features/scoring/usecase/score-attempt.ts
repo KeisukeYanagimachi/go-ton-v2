@@ -34,7 +34,7 @@ const scoreAttempt = async (
     where: { attemptId },
     select: {
       id: true,
-      moduleId: true,
+      sectionId: true,
       points: true,
       questionId: true,
     },
@@ -94,28 +94,28 @@ const scoreAttempt = async (
     })),
   });
 
-  const moduleScoreMap = new Map<
+  const sectionScoreMap = new Map<
     string,
     { rawScore: number; maxScore: number }
   >();
   answerScores.forEach((score, index) => {
-    const moduleId = items[index].moduleId;
-    const current = moduleScoreMap.get(moduleId) ?? { rawScore: 0, maxScore: 0 };
+    const sectionId = items[index].sectionId;
+    const current = sectionScoreMap.get(sectionId) ?? { rawScore: 0, maxScore: 0 };
     current.rawScore += score.pointsAwarded;
     current.maxScore += items[index].points;
-    moduleScoreMap.set(moduleId, current);
+    sectionScoreMap.set(sectionId, current);
   });
 
-  await tx.attemptModuleScore.createMany({
-    data: Array.from(moduleScoreMap.entries()).map(([moduleId, totals]) => ({
+  await tx.attemptSectionScore.createMany({
+    data: Array.from(sectionScoreMap.entries()).map(([sectionId, totals]) => ({
       attemptId,
-      moduleId,
+      sectionId,
       rawScore: totals.rawScore,
       maxScore: totals.maxScore,
     })),
   });
 
-  const totalScore = Array.from(moduleScoreMap.values()).reduce(
+  const totalScore = Array.from(sectionScoreMap.values()).reduce(
     (acc, totals) => ({
       rawScore: acc.rawScore + totals.rawScore,
       maxScore: acc.maxScore + totals.maxScore,

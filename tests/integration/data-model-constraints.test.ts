@@ -15,9 +15,9 @@ const ensureStaffRole = async () =>
     },
   });
 
-const ensureExamModules = async () =>
+const ensureExamSections = async () =>
   Promise.all([
-    prisma.examModule.upsert({
+    prisma.examSection.upsert({
       where: { code: "VERBAL" },
       update: {},
       create: {
@@ -26,7 +26,7 @@ const ensureExamModules = async () =>
         name: "Verbal",
       },
     }),
-    prisma.examModule.upsert({
+    prisma.examSection.upsert({
       where: { code: "NONVERBAL" },
       update: {},
       create: {
@@ -97,7 +97,7 @@ const expectUniqueViolation = async (promise: Promise<unknown>) => {
 describe("data model constraints (integration)", () => {
   beforeAll(async () => {
     await ensureStaffRole();
-    await ensureExamModules();
+    await ensureExamSections();
   });
 
   afterAll(async () => {
@@ -205,34 +205,34 @@ describe("data model constraints (integration)", () => {
     );
   });
 
-  test("exam_version_modules enforces module and position uniqueness", async () => {
-    const [examModule, examModuleAlt] = await Promise.all([
-      prisma.examModule.findUniqueOrThrow({
+  test("exam_version_sections enforces section and position uniqueness", async () => {
+    const [examSection, examSectionAlt] = await Promise.all([
+      prisma.examSection.findUniqueOrThrow({
         where: { code: "VERBAL" },
       }),
-      prisma.examModule.findUniqueOrThrow({
+      prisma.examSection.findUniqueOrThrow({
         where: { code: "NONVERBAL" },
       }),
     ]);
     const exam = await createExam();
     const examVersion = await createExamVersion(exam.id, 1);
 
-    await prisma.examVersionModule.create({
+    await prisma.examVersionSection.create({
       data: {
         id: randomUUID(),
         examVersionId: examVersion.id,
-        moduleId: examModule.id,
+        sectionId: examSection.id,
         durationSeconds: 1200,
         position: 1,
       },
     });
 
     await expectUniqueViolation(
-      prisma.examVersionModule.create({
+      prisma.examVersionSection.create({
         data: {
           id: randomUUID(),
           examVersionId: examVersion.id,
-          moduleId: examModule.id,
+          sectionId: examSection.id,
           durationSeconds: 1200,
           position: 2,
         },
@@ -240,11 +240,11 @@ describe("data model constraints (integration)", () => {
     );
 
     await expectUniqueViolation(
-      prisma.examVersionModule.create({
+      prisma.examVersionSection.create({
         data: {
           id: randomUUID(),
           examVersionId: examVersion.id,
-          moduleId: examModuleAlt.id,
+          sectionId: examSectionAlt.id,
           durationSeconds: 1200,
           position: 1,
         },
@@ -261,7 +261,7 @@ describe("data model constraints (integration)", () => {
   });
 
   test("attempt_answers are unique per attempt_item", async () => {
-    const examModule = await prisma.examModule.findUniqueOrThrow({
+    const examSection = await prisma.examSection.findUniqueOrThrow({
       where: { code: "VERBAL" },
     });
     const candidate = await createCandidate();
@@ -292,7 +292,7 @@ describe("data model constraints (integration)", () => {
       data: {
         id: randomUUID(),
         attemptId: attempt.id,
-        moduleId: examModule.id,
+        sectionId: examSection.id,
         questionId: question.id,
         position: 1,
         points: 1,

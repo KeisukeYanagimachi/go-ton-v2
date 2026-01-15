@@ -23,7 +23,7 @@ const createExamVersionBundle = async () => {
       publishedAt: new Date(),
     },
   });
-  const examModule = await prisma.examModule.upsert({
+  const examSection = await prisma.examSection.upsert({
     where: { code: "VERBAL" },
     update: {},
     create: {
@@ -32,11 +32,11 @@ const createExamVersionBundle = async () => {
       name: "Verbal",
     },
   });
-  await prisma.examVersionModule.create({
+  await prisma.examVersionSection.create({
     data: {
       id: randomUUID(),
       examVersionId: examVersion.id,
-      moduleId: examModule.id,
+      sectionId: examSection.id,
       durationSeconds: 120,
       position: 1,
     },
@@ -63,14 +63,14 @@ const createExamVersionBundle = async () => {
     data: {
       id: randomUUID(),
       examVersionId: examVersion.id,
-      moduleId: examModule.id,
+      sectionId: examSection.id,
       questionId: question.id,
       position: 1,
       points: 1,
     },
   });
 
-  return { examVersion, examModule };
+  return { examVersion, examSection };
 };
 
 const createCandidate = async () =>
@@ -96,9 +96,9 @@ describe("candidate timer route (integration)", () => {
     await disconnectPrisma();
   });
 
-  test("updates remaining seconds for current module", async () => {
+  test("updates remaining seconds for current section", async () => {
     const candidate = await createCandidate();
-    const { examVersion, examModule } = await createExamVersionBundle();
+    const { examVersion, examSection } = await createExamVersionBundle();
     const pin = "19990101";
     const ticketCode = `TICKET-${randomUUID()}`;
 
@@ -125,7 +125,7 @@ describe("candidate timer route (integration)", () => {
       createRequest("http://localhost/api/candidate/timer", {
         ticketCode,
         pin,
-        moduleId: examModule.id,
+        sectionId: examSection.id,
         elapsedSeconds: 30,
       }),
     );
@@ -134,14 +134,14 @@ describe("candidate timer route (integration)", () => {
     const payload = (await response.json()) as { remainingSeconds: number };
     expect(payload.remainingSeconds).toBe(90);
 
-    const timer = await prisma.attemptModuleTimer.findUnique({
+    const timer = await prisma.attemptSectionTimer.findUnique({
       where: {
-        attemptId_moduleId: {
+        attemptId_sectionId: {
           attemptId: (await prisma.attempt.findUnique({
             where: { ticketId: ticket.id },
             select: { id: true },
           }))!.id,
-          moduleId: examModule.id,
+          sectionId: examSection.id,
         },
       },
     });
@@ -151,7 +151,7 @@ describe("candidate timer route (integration)", () => {
 
   test("rejects updates when attempt is locked", async () => {
     const candidate = await createCandidate();
-    const { examVersion, examModule } = await createExamVersionBundle();
+    const { examVersion, examSection } = await createExamVersionBundle();
     const pin = "19990101";
     const ticketCode = `TICKET-${randomUUID()}`;
 
@@ -183,7 +183,7 @@ describe("candidate timer route (integration)", () => {
       createRequest("http://localhost/api/candidate/timer", {
         ticketCode,
         pin,
-        moduleId: examModule.id,
+        sectionId: examSection.id,
         elapsedSeconds: 10,
       }),
     );

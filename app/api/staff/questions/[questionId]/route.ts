@@ -18,7 +18,7 @@ const updateSchema = z.object({
   stem: z.string().min(1),
   explanation: z.string().optional().nullable(),
   isActive: z.boolean(),
-  moduleCategoryId: z.string().min(1),
+  sectionCategoryId: z.string().min(1),
   subcategoryId: z.string().optional().nullable(),
   options: z.array(optionSchema).min(2),
 });
@@ -27,8 +27,8 @@ const errorMessage = (code?: string) => {
   switch (code) {
     case "QUESTION_NOT_FOUND":
       return "対象の問題が見つかりません。";
-    case "MODULE_REQUIRED":
-      return "モジュールを選択してください。";
+    case "SECTION_REQUIRED":
+      return "セクションを選択してください。";
     case "SUBCATEGORY_INVALID":
       return "サブカテゴリの選択を確認してください。";
     case "OPTIONS_INVALID":
@@ -109,7 +109,7 @@ export const PATCH = async (
     stem: payload.data.stem,
     explanation: payload.data.explanation ?? null,
     isActive: payload.data.isActive,
-    moduleCategoryId: payload.data.moduleCategoryId,
+    sectionCategoryId: payload.data.sectionCategoryId,
     subcategoryId: payload.data.subcategoryId ?? null,
     options: payload.data.options,
   });

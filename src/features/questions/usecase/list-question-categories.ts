@@ -2,9 +2,9 @@
 
 import { prisma } from "@/shared/db/prisma";
 
-import { QUESTION_MODULE_CODES } from "@/features/questions/domain/question-module-codes";
+import { QUESTION_SECTION_CODES } from "@/features/questions/domain/question-section-codes";
 
-type ModuleCategorySummary = {
+type SectionCategorySummary = {
   categoryId: string;
   code: string;
   name: string;
@@ -17,34 +17,34 @@ type SubcategorySummary = {
 };
 
 const listQuestionCategories = async (): Promise<{
-  modules: ModuleCategorySummary[];
+  sections: SectionCategorySummary[];
   subcategories: SubcategorySummary[];
 }> => {
-  const moduleDefinitions = await prisma.examModule.findMany({
-    where: { code: { in: QUESTION_MODULE_CODES } },
+  const sectionDefinitions = await prisma.examSection.findMany({
+    where: { code: { in: QUESTION_SECTION_CODES } },
     select: { code: true, name: true },
   });
-  const moduleNameByCode = new Map(
-    moduleDefinitions.map((module) => [module.code, module.name]),
+  const sectionNameByCode = new Map(
+    sectionDefinitions.map((section) => [section.code, section.name]),
   );
 
-  const moduleCategories = await prisma.questionCategory.findMany({
-    where: { parentId: null, name: { in: QUESTION_MODULE_CODES } },
+  const sectionCategories = await prisma.questionCategory.findMany({
+    where: { parentId: null, name: { in: QUESTION_SECTION_CODES } },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
 
   const subcategories = await prisma.questionCategory.findMany({
-    where: { parentId: { in: moduleCategories.map((category) => category.id) } },
+    where: { parentId: { in: sectionCategories.map((category) => category.id) } },
     select: { id: true, parentId: true, name: true },
     orderBy: { name: "asc" },
   });
 
   return {
-    modules: moduleCategories.map((category) => ({
+    sections: sectionCategories.map((category) => ({
       categoryId: category.id,
       code: category.name,
-      name: moduleNameByCode.get(category.name) ?? category.name,
+      name: sectionNameByCode.get(category.name) ?? category.name,
     })),
     subcategories: subcategories.map((category) => ({
       categoryId: category.id,
@@ -55,5 +55,5 @@ const listQuestionCategories = async (): Promise<{
 };
 
 export { listQuestionCategories };
-export type { ModuleCategorySummary, SubcategorySummary };
+export type { SectionCategorySummary, SubcategorySummary };
 

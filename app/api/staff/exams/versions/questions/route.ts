@@ -12,7 +12,7 @@ const querySchema = z.object({
 
 const createSchema = z.object({
   examVersionId: z.string().min(1),
-  moduleId: z.string().min(1),
+  sectionId: z.string().min(1),
   questionId: z.string().min(1),
   position: z.number().int().min(1),
   points: z.number().int().min(1),

@@ -29,9 +29,9 @@ type AttemptResultDetail = {
     maxScore: number;
     scoredAt: string;
   } | null;
-  moduleScores: {
-    moduleCode: string;
-    moduleName: string;
+  sectionScores: {
+    sectionCode: string;
+    sectionName: string;
     rawScore: number;
     maxScore: number;
     scoredAt: string;
@@ -85,7 +85,7 @@ const createExamVersionBundle = async () => {
       publishedAt: new Date(),
     },
   });
-  const examModule = await prisma.examModule.upsert({
+  const examSection = await prisma.examSection.upsert({
     where: { code: "VERBAL" },
     update: {},
     create: {
@@ -94,11 +94,11 @@ const createExamVersionBundle = async () => {
       name: "Verbal",
     },
   });
-  await prisma.examVersionModule.create({
+  await prisma.examVersionSection.create({
     data: {
       id: randomUUID(),
       examVersionId: examVersion.id,
-      moduleId: examModule.id,
+      sectionId: examSection.id,
       durationSeconds: 1200,
       position: 1,
     },
@@ -124,7 +124,7 @@ const createExamVersionBundle = async () => {
     data: {
       id: randomUUID(),
       examVersionId: examVersion.id,
-      moduleId: examModule.id,
+      sectionId: examSection.id,
       questionId: question.id,
       position: 1,
       points: 1,
@@ -253,6 +253,6 @@ describe("staff results routes (integration)", () => {
     };
     expect(detailPayload.attempt.ticketCode).toBe(ticketCode);
     expect(detailPayload.attempt.totalScore).not.toBeNull();
-    expect(detailPayload.attempt.moduleScores.length).toBeGreaterThan(0);
+    expect(detailPayload.attempt.sectionScores.length).toBeGreaterThan(0);
   });
 });

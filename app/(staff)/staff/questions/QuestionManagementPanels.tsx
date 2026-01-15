@@ -22,8 +22,10 @@ import MutedText from "@app/ui/MutedText";
 import Panel from "@app/ui/Panel";
 import SectionTitle from "@app/ui/SectionTitle";
 
+import StaffHomeLink from "../StaffHomeLink";
+
 import type {
-  ModuleCategory,
+  SectionCategory,
   QuestionDetail,
   QuestionStatusFilter,
   QuestionSummary,
@@ -36,15 +38,15 @@ type QuestionHeaderPanelProps = {
 
 type QuestionListPanelProps = {
   keyword: string;
-  moduleFilter: string;
+  sectionFilter: string;
   statusFilter: QuestionStatusFilter;
   showIds: boolean;
   listError: string | null;
-  moduleOptions: ModuleCategory[];
+  sectionOptions: SectionCategory[];
   questions: QuestionSummary[];
   selectedQuestionId: string;
   onKeywordChange: (value: string) => void;
-  onModuleFilterChange: (value: string) => void;
+  onSectionFilterChange: (value: string) => void;
   onStatusFilterChange: (value: QuestionStatusFilter) => void;
   onToggleShowIds: (value: boolean) => void;
   onSelectQuestion: (questionId: string) => void;
@@ -55,20 +57,20 @@ type QuestionDetailPanelProps = {
   isCreating: boolean;
   selectedQuestionId: string;
   formState: QuestionDetail;
-  modules: ModuleCategory[];
+  sections: SectionCategory[];
   availableSubcategories: Subcategory[];
-  detailModuleId: string;
+  detailSectionId: string;
   formError: string | null;
   formMessage: string | null;
   fieldErrors: {
     stem?: string;
-    module?: string;
+    section?: string;
     options?: string;
   };
   canSubmit: boolean;
   onStemChange: (value: string) => void;
   onExplanationChange: (value: string) => void;
-  onModuleChange: (value: string) => void;
+  onSectionChange: (value: string) => void;
   onSubcategoryChange: (value: string | null) => void;
   onActiveChange: (value: boolean) => void;
   onCorrectChange: (index: number) => void;
@@ -202,6 +204,7 @@ const QuestionHeaderPanel = ({
 }: QuestionHeaderPanelProps) => (
   <HeaderPanel>
     <Box>
+      <StaffHomeLink />
       <HeaderLabel variant="body2">Staff / 問題管理</HeaderLabel>
       <SectionTitle variant="h4" weight={800}>
         問題管理
@@ -223,15 +226,15 @@ const QuestionHeaderPanel = ({
 /** 問題一覧の検索・選択を行うパネル。 */
 const QuestionListPanel = ({
   keyword,
-  moduleFilter,
+  sectionFilter,
   statusFilter,
   showIds,
   listError,
-  moduleOptions,
+  sectionOptions,
   questions,
   selectedQuestionId,
   onKeywordChange,
-  onModuleFilterChange,
+  onSectionFilterChange,
   onStatusFilterChange,
   onToggleShowIds,
   onSelectQuestion,
@@ -265,19 +268,19 @@ const QuestionListPanel = ({
         ))}
       </StatusFilterRow>
       <FormControl fullWidth>
-        <InputLabel id="question-module-filter-label">
-          モジュールで絞り込み
+        <InputLabel id="question-section-filter-label">
+          セクションで絞り込み
         </InputLabel>
         <Select
-          labelId="question-module-filter-label"
-          label="モジュールで絞り込み"
-          value={moduleFilter}
-          onChange={(event) => onModuleFilterChange(event.target.value)}
-          data-testid="question-filter-module"
+          labelId="question-section-filter-label"
+          label="セクションで絞り込み"
+          value={sectionFilter}
+          onChange={(event) => onSectionFilterChange(event.target.value)}
+          data-testid="question-filter-section"
         >
-          {moduleOptions.map((module) => (
-            <MenuItem key={module.categoryId} value={module.categoryId}>
-              {module.name}
+          {sectionOptions.map((section) => (
+            <MenuItem key={section.categoryId} value={section.categoryId}>
+              {section.name}
             </MenuItem>
           ))}
         </Select>
@@ -309,9 +312,9 @@ const QuestionListPanel = ({
                   flexWrap="wrap"
                 >
                   <Chip
-                    label={question.moduleName ?? "未分類"}
+                    label={question.sectionName ?? "未分類"}
                     size="small"
-                    color={question.moduleName ? "primary" : "default"}
+                    color={question.sectionName ? "primary" : "default"}
                     variant="outlined"
                   />
                   {question.subcategoryName && (
@@ -361,16 +364,16 @@ const QuestionDetailPanel = ({
   isCreating,
   selectedQuestionId,
   formState,
-  modules,
+  sections,
   availableSubcategories,
-  detailModuleId,
+  detailSectionId,
   formError,
   formMessage,
   fieldErrors,
   canSubmit,
   onStemChange,
   onExplanationChange,
-  onModuleChange,
+  onSectionChange,
   onSubcategoryChange,
   onActiveChange,
   onCorrectChange,
@@ -425,24 +428,24 @@ const QuestionDetailPanel = ({
         />
         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
           <FormControl fullWidth>
-            <InputLabel id="question-module-label">モジュール</InputLabel>
+            <InputLabel id="question-section-label">セクション</InputLabel>
             <Select
-              labelId="question-module-label"
-              label="モジュール"
-              value={detailModuleId}
-              onChange={(event) => onModuleChange(event.target.value)}
-              error={Boolean(fieldErrors.module)}
-              data-testid="question-module"
+              labelId="question-section-label"
+              label="セクション"
+              value={detailSectionId}
+              onChange={(event) => onSectionChange(event.target.value)}
+              error={Boolean(fieldErrors.section)}
+              data-testid="question-section"
             >
-              {modules.map((module) => (
-                <MenuItem key={module.categoryId} value={module.categoryId}>
-                  {module.name}
+              {sections.map((section) => (
+                <MenuItem key={section.categoryId} value={section.categoryId}>
+                  {section.name}
                 </MenuItem>
               ))}
             </Select>
-            {fieldErrors.module && (
+            {fieldErrors.section && (
               <Typography variant="caption" color="error">
-                {fieldErrors.module}
+                {fieldErrors.section}
               </Typography>
             )}
           </FormControl>

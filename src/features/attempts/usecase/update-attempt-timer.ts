@@ -1,4 +1,4 @@
-/** モジュール残時間を更新するユースケース。 */
+/** セクション残時間を更新するユースケース。 */
 
 import { authorizeCandidateAccess } from "@/features/auth/usecase/authorize-candidate-access";
 import { prisma } from "@/shared/db/prisma";
@@ -10,7 +10,7 @@ type UpdateAttemptTimerResult = {
 const updateAttemptTimer = async (
   ticketCode: string,
   pin: string,
-  moduleId: string,
+  sectionId: string,
   elapsedSeconds: number,
 ): Promise<UpdateAttemptTimerResult | null> => {
   const candidateAuth = await authorizeCandidateAccess(ticketCode, pin);
@@ -29,11 +29,11 @@ const updateAttemptTimer = async (
       return null;
     }
 
-    const timer = await tx.attemptModuleTimer.findUnique({
+    const timer = await tx.attemptSectionTimer.findUnique({
       where: {
-        attemptId_moduleId: {
+        attemptId_sectionId: {
           attemptId: attempt.id,
-          moduleId,
+          sectionId,
         },
       },
       select: {
@@ -53,11 +53,11 @@ const updateAttemptTimer = async (
     );
     const now = new Date();
 
-    const updated = await tx.attemptModuleTimer.update({
+    const updated = await tx.attemptSectionTimer.update({
       where: {
-        attemptId_moduleId: {
+        attemptId_sectionId: {
           attemptId: attempt.id,
-          moduleId,
+          sectionId,
         },
       },
       data: {
